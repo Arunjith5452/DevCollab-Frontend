@@ -93,12 +93,11 @@ export function RegisterPage() {
 
       console.log("Registration successful:", data);
 
-      router.push("/otp-verification");
+      router.push("/register-otp");
 
     } catch (error: any) {
       console.error("Registration error:", error);
 
-      // Handle backend field-specific errors
       if (error.response?.data?.errors) {
         setFieldErrors(error.response.data.errors);
       } else {
@@ -125,7 +124,7 @@ export function RegisterPage() {
 
         {/* Header */}
 
-        <AuthHeader text={"Log In"} />
+        <AuthHeader text={"Log In"} showButton={true} onButtonClick={() => router.push("/login")} />
 
         {/* Main Content */}
         <div className="px-40 flex flex-1 justify-center py-5">

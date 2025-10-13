@@ -1,24 +1,5 @@
-import axios from "axios";
+import api from "@/lib/axios";
 
-
-const apiClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
-    timeout: 30000,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
-
-apiClient.interceptors.request.use(
-    (config) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
 
 
 export const signup = async (data: {
@@ -28,8 +9,8 @@ export const signup = async (data: {
     confirmPassword: string
 }) => {
     try {
-        const response = await apiClient.post('/api/auth/signup', data)
-        console.log(response)
+        const response = await api.post('/api/auth/signup', data)
+        console.log("hai", response)
         return response.data
     } catch (error) {
         throw error
@@ -44,7 +25,7 @@ export const verifyOTP = async (data: {
 }) => {
     try {
 
-        const response = await apiClient.post('/api/auth/verify-otp',data)
+        const response = await api.post('/api/auth/verify-otp', data)
         console.log(response.data)
         return response.data
 
@@ -54,3 +35,109 @@ export const verifyOTP = async (data: {
 
     }
 }
+
+export const verifyForgotOTP = async (data: {
+    email: string,
+    otp: Number
+
+}) => {
+    try {
+
+        const response = await api.post('/api/auth/verifyForgot-otp', data)
+        console.log(response.data)
+        return response.data
+
+    } catch (error) {
+
+        throw error
+
+    }
+}
+
+export const login = async (data: {
+    email: string,
+    password: string
+}) => {
+    try {
+
+        const response = await api.post('/api/auth/login', data, {
+            withCredentials: true
+        });
+
+
+        return response.data
+
+    } catch (error) {
+        throw error
+    }
+}
+
+export const refreshToken = async () => {
+    try {
+
+        const response = await api.post('/api/auth/refresh', {}, {
+            withCredentials: true
+        })
+
+
+        return response.data
+
+    } catch (error) {
+        throw error
+    }
+}
+
+export const resendOTP = async (token: string) => {
+    try {
+
+        const response = await api.post("/api/auth/resend-otp", { token })
+        return response
+
+    } catch (error) {
+        throw error
+    }
+}
+
+export const resendForgotOTP = async (email: string) => {
+    try {
+
+        const response = await api.post("/api/auth/resendForgot-otp", { email })
+        return response
+
+    } catch (error) {
+        throw error
+    }
+}
+
+
+export const forgotPassword = async (email: string) => {
+    try {
+
+        const response = await api.post("/api/auth/forgot-password", { email })
+        return response
+
+    } catch (error) {
+        throw error
+    }
+
+    }
+
+ export const resetPassword = async (data:{
+    email : string
+    newPassword : string,
+    confirmPassword : string
+ })  =>{
+
+    try {
+
+        const response = await api.post("/api/auth/reset-password",data)
+        return response.data
+        
+    } catch (error) {
+
+        throw error
+        
+    }
+
+ }
+
