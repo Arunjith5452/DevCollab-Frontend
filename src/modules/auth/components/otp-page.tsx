@@ -2,168 +2,151 @@
 
 import { AuthHeader, OTPInputFields } from "@/shared/common/auth-common";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { verifyOTP } from "../services/auth.api";
+import { useRouter, useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
+import { useTimer } from "react-timer-hook";
+import { resendOTP, verifyOTP, resendForgotOTP, verifyForgotOTP } from '../services/auth.api'
 
-export function OTPVerificationPage() {
+interface Props {
+  type: "register" | "forgot";
+  email?: string;
+}
+
+export default function OtpVerificationForm({ type, email }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [otp, setOTP] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState<string>("");
-  const [resendTimer, setResendTimer] = useState(30);
-  const [canResend, setCanResend] = useState(false);
 
+  const forgotEmail = email || searchParams.get("email") || "";
 
-  useEffect(() => {
-    if (resendTimer > 0) {
-      const timer = setTimeout(() => {
-        setResendTimer(resendTimer - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else {
-      setCanResend(true);
-    }
-  }, [resendTimer]);
-
+  const time = new Date();
+  time.setSeconds(time.getSeconds() + 30);
+  const { seconds, restart, isRunning } = useTimer({
+    expiryTimestamp: time,
+    onExpire: () => toast.success("Resend available now "),
+  });
 
   const handleVerify = async () => {
-
-    const token = typeof window !== 'undefined' ? localStorage.getItem('tempToken') : null
-    console.log("token",token)
     if (otp.length !== 6) {
-      setError("Please enter a 6-digit OTP code");
+      setError("Please enter a 6-digit OTP");
       return;
     }
 
     setIsLoading(true);
     setError(null);
 
-    if (!token) {
-      setError("Verification token missing. Please register again.");
-      return;
-    }
-
     try {
-      const result = await verifyOTP({
-        token: token,
-        otp: Number(otp)
-      });
+      if (type === "register") {
+        const token = localStorage.getItem("tempToken");
+        if (!token) throw new Error("Session expired. Please register again.");
 
-      localStorage.removeItem('tempToken')
-
-      console.log("OTP verification successful:", result);
-
-      router.push("/login");
-
-    } catch (error: any) {
-      console.error("OTP verification error:", error);
-
-      if (error.response?.status === 400) {
-        setError("Invalid or expired OTP code. Please try again.");
-      } else if (error.response?.status === 404) {
-        setError("User not found. Please register again.");
-      } else if (error.response?.data?.message) {
-        setError(error.response.data.message);
+        await verifyOTP({ token, otp: Number(otp) });
+        localStorage.removeItem("tempToken");
+        toast.success("Account verified successfully 🎉");
+        router.push("/login");
       } else {
-        setError("Verification failed. Please try again.");
+        if (!forgotEmail) throw new Error("Session expired. Please try again.");
+        await verifyForgotOTP({ email: forgotEmail, otp: Number(otp) });
+        toast.success("OTP verified successfully 🎉");
+        router.push(`/reset-password?email=${encodeURIComponent(forgotEmail)}`);
       }
+    } catch (error: any) {
+      setError(error.response?.data?.message || "Verification failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResendOTP = async () => {
-    if (!canResend) return;
+    if (isRunning) return;
 
     try {
-      // Call resend OTP API
-      // await resendOTP(email);
+      if (type === "register") {
+        const token = localStorage.getItem("tempToken");
+        if (!token) throw new Error("Session expired. Please register again.");
+        await resendOTP(token);
+      } else {
+        if (!forgotEmail) throw new Error("Session expired. Please try again.");
+        await resendForgotOTP(forgotEmail);
+      }
 
-      setResendTimer(30);
-      setCanResend(false);
-      setError(null);
-
-      // Show success message (you can add a success state)
-      console.log("OTP resent successfully");
-
+      const newTime = new Date();
+      newTime.setSeconds(newTime.getSeconds() + 30);
+      restart(newTime);
+      toast.success("OTP resent successfully ✅");
     } catch (error) {
       setError("Failed to resend OTP. Please try again.");
     }
   };
 
   const handleGoBack = () => {
-    router.push("/register");
+    router.push(type === "register" ? "/register" : "/forgot-password");
   };
 
   return (
-    <div className="relative flex size-full min-h-screen flex-col bg-white group/design-root overflow-x-hidden">
+    <div className="relative flex size-full min-h-screen flex-col bg-white overflow-x-hidden">
       <div className="layout-container flex h-full grow flex-col">
-        {/* Header */}
-        <AuthHeader text={''} />
+        <AuthHeader text={""} showButton={false} onButtonClick={() => { }} />
 
-        {/* Main Content */}
         <div className="px-40 flex flex-1 justify-center py-5">
-          <div className="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 max-w-[960px] flex-1">
-            <div className="w-full" style={{ height: '80px' }}></div>
+          <div className="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 flex-1">
+            <div className="w-full" style={{ height: "80px" }}></div>
 
-            {/* Title */}
-            <h2 className="text-[#0c1d1a] tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">
-              Verify Your Account
+            <h2 className="text-[#0c1d1a] text-[28px] font-bold text-center pb-3 pt-5">
+              {type === "register" ? "Verify Your Account" : "Verify Your OTP"}
             </h2>
-            <p className="text-[#0c1d1a] text-base font-normal leading-normal pb-8 pt-1 px-4 text-center">
-              We've sent a 6-digit code to {email ? email : 'your email'}. Please enter it below to verify your account.
+            <p className="text-[#0c1d1a] text-base text-center pb-8 px-4">
+              {type === "register"
+                ? "We’ve sent a 6-digit code to your email. Please verify your account."
+                : "Enter the 6-digit OTP sent to your registered email to reset your password."}
             </p>
 
-            {/* Error Message */}
             {error && (
               <div className="mx-4 mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                 {error}
               </div>
             )}
 
-            {/* OTP Input Fields */}
             <div className="w-full text-center">
               <OTPInputFields otp={otp} setOTP={setOTP} />
             </div>
 
-            {/* Verify Button */}
             <div className="flex justify-center">
               <div className="flex max-w-[480px] w-full px-4 py-6">
                 <button
                   onClick={handleVerify}
                   disabled={isLoading || otp.length !== 6}
-                  className={`flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded h-12 px-5 w-full text-base font-bold leading-normal tracking-[0.015em] ${isLoading || otp.length !== 6
-                    ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                    : 'bg-[#006b5b] text-white hover:bg-[#005248]'
+                  className={`flex items-center justify-center rounded h-12 px-5 w-full text-base font-bold ${isLoading || otp.length !== 6
+                      ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                      : "bg-[#006b5b] text-white hover:bg-[#005248]"
                     }`}
                 >
-                  <span className="truncate">
-                    {isLoading ? "Verifying..." : "Verify"}
-                  </span>
+                  {isLoading ? "Verifying..." : "Verify OTP"}
                 </button>
               </div>
             </div>
 
-            {/* Resend Links */}
             <div className="flex flex-col items-center gap-2 px-4">
               <button
                 onClick={handleResendOTP}
-                disabled={!canResend}
-                className={`text-sm font-normal leading-normal underline cursor-pointer ${canResend ? 'text-[#45a193] hover:text-[#006b5b]' : 'text-gray-400 cursor-not-allowed'
+                disabled={isRunning}
+                className={`text-sm underline ${isRunning
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-[#45a193] hover:text-[#006b5b]"
                   }`}
               >
-                Resend OTP
+                {isRunning ? `Resend OTP in ${seconds}s` : "Resend OTP"}
               </button>
-              <p className="text-[#45a193] text-sm font-normal leading-normal">
-                {canResend ? 'You can resend now' : `Resend available in ${resendTimer}s`}
-              </p>
+
               <button
                 onClick={handleGoBack}
-                className="text-[#45a193] text-sm font-normal leading-normal underline cursor-pointer flex items-center gap-1 mt-2 hover:text-[#006b5b]"
+                className="text-[#45a193] text-sm underline flex items-center gap-1 mt-2 hover:text-[#006b5b]"
               >
                 <span>←</span>
-                <span>Go back to Register</span>
+                <span>Go back</span>
               </button>
             </div>
           </div>

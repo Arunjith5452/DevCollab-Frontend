@@ -1,4 +1,4 @@
-export function AuthHeader({text}) {
+export function AuthHeader({text,showButton = true,onButtonClick}) {
 
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e6f4f2] px-10 py-3">
@@ -8,9 +8,14 @@ export function AuthHeader({text}) {
         </div>
         <h2 className="text-[#0c1d1a] text-lg font-bold leading-tight tracking-[-0.015em]">DevCollab</h2>
       </div>
-      <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded h-10 px-4 bg-[#006b5b] text-[#f8fcfb] text-sm font-bold leading-normal tracking-[0.015em]">
-        <span className="truncate">{text}</span>
-      </button>
+       {/* Show button only if showButton = true */}
+      {showButton && (
+        <button 
+         onClick={onButtonClick}
+         className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded h-10 px-4 bg-[#006b5b] text-[#f8fcfb] text-sm font-bold leading-normal tracking-[0.015em]">
+          <span className="truncate">{text}</span>
+        </button>
+      )}
     </header>
   );
 }

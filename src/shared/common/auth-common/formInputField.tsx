@@ -118,7 +118,7 @@ export function FormInputField({ formField, setFormChange, fieldErrors = {} }: F
       </div>
 
       {/* Debug: Show current state - Remove this in production */}
-      <pre className="text-sm p-4">{JSON.stringify(formField, null, 2)}</pre>
+      {/* <pre className="text-sm p-4">{JSON.stringify(formField, null, 2)}</pre> */}
     </>
   );
 }
