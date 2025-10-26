@@ -13,14 +13,16 @@ export function middleware(req: NextRequest) {
     '/register-otp',
     '/forgot-otp',
     '/reset-password',
-    '/forgot-password'
+    '/forgot-password',
+    '/admin/login'
   ];
 
   const roleRedirectMap: Record<string, string> = {
-    '/admin': '/admin'
+    '/admin': '/admin/dashboard'
   };
 
-  // Allow access to home if either token exists
+  const isAdmin = pathname.startsWith('/admin')
+
   if (pathname === '/home') {
     if (!accessToken && !refreshToken) {
       return NextResponse.redirect(new URL('/login', req.url));
@@ -32,17 +34,14 @@ export function middleware(req: NextRequest) {
     .sort((a, b) => b.length - a.length)
     .find((prefix) => pathname.startsWith(prefix));
 
-  // Redirect authenticated users away from public routes
   if (publicRoutes.includes(pathname) && (accessToken || refreshToken) && matchedRole) {
     return NextResponse.redirect(new URL(roleRedirectMap[matchedRole], req.url));
   }
 
-  // Redirect authenticated users away from login/signup
-  if ((accessToken || refreshToken) && (pathname === '/login' || pathname === '/signup'  || pathname ==='/register-otp' || pathname ==='/reset-password'|| pathname ==='/forgot-otp' || pathname ==='/reset-password'|| pathname ==='/forgot-password')) {
+  if ((accessToken || refreshToken) && (pathname === '/login' || pathname === '/signup'  || pathname ==='/register-otp' || pathname ==='/reset-password'|| pathname ==='/forgot-otp' || pathname ==='/reset-password'|| pathname ==='/forgot-password') && !isAdmin ) {
     return NextResponse.redirect(new URL('/home', req.url));
   }
 
-  // Block access to protected routes only if BOTH tokens are missing
   if (!publicRoutes.includes(pathname) && !accessToken && !refreshToken && matchedRole) {
     return NextResponse.redirect(new URL(`${matchedRole}/login`, req.url));
   }

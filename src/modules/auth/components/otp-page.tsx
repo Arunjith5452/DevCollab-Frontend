@@ -45,16 +45,16 @@ export default function OtpVerificationForm({ type, email }: Props) {
 
         await verifyOTP({ token, otp: Number(otp) });
         localStorage.removeItem("tempToken");
-        toast.success("Account verified successfully 🎉");
+        toast.success("Account verified successfully ");
         router.push("/login");
       } else {
         if (!forgotEmail) throw new Error("Session expired. Please try again.");
         await verifyForgotOTP({ email: forgotEmail, otp: Number(otp) });
-        toast.success("OTP verified successfully 🎉");
+        toast.success("OTP verified successfully ");
         router.push(`/reset-password?email=${encodeURIComponent(forgotEmail)}`);
       }
     } catch (error: any) {
-      setError(error.response?.data?.message || "Verification failed. Please try again.");
+      setError(error.response?.data|| "Verification failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

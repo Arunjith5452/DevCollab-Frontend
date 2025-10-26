@@ -98,11 +98,11 @@ export function RegisterPage() {
     } catch (error: any) {
       console.error("Registration error:", error);
 
-      if (error.response?.data?.errors) {
-        setFieldErrors(error.response.data.errors);
+      if (error.response?.data) {
+        setFieldErrors(error.response.data);
       } else {
-        if (error.response?.data?.message) {
-          setError(error.response.data.message);
+        if (error.response?.data) {
+          setError(error.response.data);
         } else if (error.response?.status === 409) {
           setFieldErrors({ email: "User already exists with this email" });
         } else if (error.response?.status === 400) {
