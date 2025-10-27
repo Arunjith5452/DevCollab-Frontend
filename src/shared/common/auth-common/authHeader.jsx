@@ -1,4 +1,4 @@
-import { ThemeToggle } from "../ThemeToggle";
+// import { ThemeToggle } from "../ThemeToggle";
 
 
 export function AuthHeader({ text, showButton = true, onButtonClick }) {
@@ -26,7 +26,7 @@ export function AuthHeader({ text, showButton = true, onButtonClick }) {
         )}
 
         {/* Theme toggle button */}
-        <ThemeToggle />
+        {/* <ThemeToggle /> */}
       </div>
     </header>
   );

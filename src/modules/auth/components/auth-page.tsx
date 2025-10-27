@@ -4,7 +4,7 @@ import { AuthHeader, Footer, GitHubButton, GoogleButton } from "@/shared/common/
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import PageLoader from "@/app/loading";
+import PageLoader from "@/shared/common/LoadingComponent";
 
 export function AuthLogin({
   title,
@@ -40,25 +40,25 @@ export function AuthLogin({
       console.log(response.role)
 
       if (response.role === "admin") {
-        console.log("Reachend role admin")
         router.push("/admin/dashboard");
       } else {
         router.push("/home");
       }
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err.response?.data || "Login failed. Please try again.");
+      const message = err.response?.data?.message ||  "Login failed. Please try again.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
- if (isLoading)
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <PageLoader />
-    </div>
-  );
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <PageLoader />
+      </div>
+    );
 
 
   return (

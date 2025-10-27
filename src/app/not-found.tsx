@@ -8,6 +8,5 @@ export const metadata = {
 };
 
 export default function NotFound() {
-  console.log("the user notfound")
   return <NotFoundPage homeLink='/home' />;
 }

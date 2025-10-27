@@ -7,6 +7,5 @@ export const metadata = {
 };
 
 export default function NotFound() {
-     console.log("the admin not foudn")
   return <NotFoundPage homeLink='/admin/dashboard' />;
 }

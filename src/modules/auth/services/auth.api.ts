@@ -62,9 +62,6 @@ export const login = async (data: {
             withCredentials: true
         });
 
-        console.log("response",response)
-
-
         return response.data
 
     } catch (error) {

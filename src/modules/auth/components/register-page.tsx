@@ -91,27 +91,21 @@ export function RegisterPage() {
         localStorage.setItem('tempToken', data.token);
       }
 
-      console.log("Registration successful:", data);
-
       router.push("/register-otp");
 
     } catch (error: any) {
       console.error("Registration error:", error);
 
-      if (error.response?.data) {
-        setFieldErrors(error.response.data);
+      const status = error.response?.status;
+      const data = error.response?.data;
+
+      if (data && typeof data === "object" && !data.message) {
+        setFieldErrors(data);
+      } else if (status === 409) {
+        setFieldErrors({ email: "User already exists with this email" });
       } else {
-        if (error.response?.data) {
-          setError(error.response.data);
-        } else if (error.response?.status === 409) {
-          setFieldErrors({ email: "User already exists with this email" });
-        } else if (error.response?.status === 400) {
-          setError("Invalid input. Please check your details");
-        } else if (error.message) {
-          setError(error.message);
-        } else {
-          setError("Registration failed. Please try again.");
-        }
+        const message = data?.message || error.message || "Registration failed. Please try again.";
+        setError(message);
       }
     } finally {
       setIsLoading(false);

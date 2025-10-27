@@ -46,15 +46,23 @@ api.interceptors.response.use(
 
     // Common error handling
     if (status === 400) {
-      const message =
-        err.response?.data?.message || 'Invalid request. Please check your input.';
+      const data = err.response?.data;
+      let message = 'Invalid request. Please check your input.';
+
+      if (typeof data === 'string') {
+        message = data;
+      } else if (typeof data === 'object') {
+        message = Object.values(data).join(', ');
+      }
+
       toast.error(message);
-    } else if (status === 404) {
-      toast.error('Requested resource not found.');
+    }
+    else if (status === 404) {
+      console.error('Requested resource not found.');
     } else if (status === 500) {
-      toast.error('Server error! Please try again later.');
+      console.error('Server error! Please try again later.');
     } else if (!status) {
-      toast.error('Network error! Check your internet connection.');
+      console.error('Network error! Check your internet connection.');
     }
 
     console.error(

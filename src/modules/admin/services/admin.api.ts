@@ -18,8 +18,6 @@ export const updateUserStatus = async (data: {
     newStatus: string
 }) => {
 
-    console.log('data -> ',data)
-
     try {
         const response = await api.patch(ADMIN_ROUTES.UPDATE_USER_STATUS(data.userId),{newStatus:data.newStatus})
         return response

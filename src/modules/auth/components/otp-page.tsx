@@ -54,7 +54,8 @@ export default function OtpVerificationForm({ type, email }: Props) {
         router.push(`/reset-password?email=${encodeURIComponent(forgotEmail)}`);
       }
     } catch (error: any) {
-      setError(error.response?.data|| "Verification failed. Please try again.");
+      const message = error.response?.data?.message || "Verification failed. Please try again.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -120,8 +121,8 @@ export default function OtpVerificationForm({ type, email }: Props) {
                   onClick={handleVerify}
                   disabled={isLoading || otp.length !== 6}
                   className={`flex items-center justify-center rounded h-12 px-5 w-full text-base font-bold ${isLoading || otp.length !== 6
-                      ? "bg-gray-400 cursor-not-allowed text-gray-200"
-                      : "bg-[#006b5b] text-white hover:bg-[#005248]"
+                    ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                    : "bg-[#006b5b] text-white hover:bg-[#005248]"
                     }`}
                 >
                   {isLoading ? "Verifying..." : "Verify OTP"}
@@ -134,8 +135,8 @@ export default function OtpVerificationForm({ type, email }: Props) {
                 onClick={handleResendOTP}
                 disabled={isRunning}
                 className={`text-sm underline ${isRunning
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-[#45a193] hover:text-[#006b5b]"
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-[#45a193] hover:text-[#006b5b]"
                   }`}
               >
                 {isRunning ? `Resend OTP in ${seconds}s` : "Resend OTP"}

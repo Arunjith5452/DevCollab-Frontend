@@ -6,7 +6,7 @@ import { ChevronDown, Download } from "lucide-react";
 import { getAllUsers, updateUserStatus } from "../services/admin.api";
 import { SearchInput } from "@/shared/common/admin-common/Searching";
 import toast from "react-hot-toast";
-import PageLoader from "@/app/loading";
+import PageLoader from "@/shared/common/LoadingComponent";
 
 export default function UserManagement() {
   const [activeTab, setActiveTab] = useState("users");
