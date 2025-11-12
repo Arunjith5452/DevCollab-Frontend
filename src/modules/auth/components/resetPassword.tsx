@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { resetPassword } from "../services/auth.api";
+import { getErrorMessage } from "@/shared/utils/ErrorMessage";
 
 export function ResetPasswordPage() {
   const router = useRouter();
@@ -29,10 +30,11 @@ export function ResetPasswordPage() {
     try {
       setIsLoading(true);
       const result = await resetPassword({ email, newPassword, confirmPassword });
-      toast.success(result.message || "Password reset successfully!");
+      toast.success("Password reset successfully!");
       router.push("/login")
     } catch (error) {
-      toast.error("Failed to reset password");
+      console.error(error)
+      const message = getErrorMessage(error);
     } finally {
       setIsLoading(false);
     }
@@ -96,8 +98,8 @@ export function ResetPasswordPage() {
                   onClick={handleResetPassword}
                   disabled={isLoading}
                   className={`flex min-w-[84px] items-center justify-center rounded h-12 px-5 w-full text-base font-bold ${isLoading
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-[#006b5b] text-white cursor-pointer"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#006b5b] text-white cursor-pointer"
                     }`}
                 >
                   <span className="truncate">

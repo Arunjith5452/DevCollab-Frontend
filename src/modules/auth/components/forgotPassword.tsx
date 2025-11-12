@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { forgotPassword } from "../services/auth.api";
+import { getErrorMessage } from "@/shared/utils/ErrorMessage";
 
 export function ForgotPasswordPage() {
   const router = useRouter();
@@ -23,10 +24,10 @@ export function ForgotPasswordPage() {
       toast.success("OTP sent to your email!");
 
       router.push(`/forgot-otp?email=${encodeURIComponent(email)}`);
-    } catch (err: any) {
-      console.error("hello", err);
-      setError(err.response?.data?.message || "Something went wrong");
-      toast.error(err.response?.data?.message || "Failed to send OTP");
+    } catch (error: any) {
+
+      const message = getErrorMessage(error);
+      setError(message);
     } finally {
       setIsLoading(false);
     }

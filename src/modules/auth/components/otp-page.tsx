@@ -1,11 +1,12 @@
 "use client";
 
 import { AuthHeader, OTPInputFields } from "@/shared/common/auth-common";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useTimer } from "react-timer-hook";
 import { resendOTP, verifyOTP, resendForgotOTP, verifyForgotOTP } from '../services/auth.api'
+import { getErrorMessage } from "@/shared/utils/ErrorMessage";
 
 interface Props {
   type: "register" | "forgot";
@@ -45,16 +46,17 @@ export default function OtpVerificationForm({ type, email }: Props) {
 
         await verifyOTP({ token, otp: Number(otp) });
         localStorage.removeItem("tempToken");
-        toast.success("Account verified successfully 🎉");
+        toast.success("Account verified successfully ");
         router.push("/login");
       } else {
         if (!forgotEmail) throw new Error("Session expired. Please try again.");
         await verifyForgotOTP({ email: forgotEmail, otp: Number(otp) });
-        toast.success("OTP verified successfully 🎉");
+        toast.success("OTP verified successfully ");
         router.push(`/reset-password?email=${encodeURIComponent(forgotEmail)}`);
       }
     } catch (error: any) {
-      setError(error.response?.data?.message || "Verification failed. Please try again.");
+      const message = getErrorMessage(error);
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -66,6 +68,7 @@ export default function OtpVerificationForm({ type, email }: Props) {
     try {
       if (type === "register") {
         const token = localStorage.getItem("tempToken");
+        console.log("Resend OTP token:", token);
         if (!token) throw new Error("Session expired. Please register again.");
         await resendOTP(token);
       } else {
@@ -78,7 +81,9 @@ export default function OtpVerificationForm({ type, email }: Props) {
       restart(newTime);
       toast.success("OTP resent successfully ✅");
     } catch (error) {
-      setError("Failed to resend OTP. Please try again.");
+      console.error("Resend OTP error:", error);
+      const message = getErrorMessage(error);
+      setError(message || "Failed to resend OTP. Please try again.");
     }
   };
 
@@ -120,8 +125,8 @@ export default function OtpVerificationForm({ type, email }: Props) {
                   onClick={handleVerify}
                   disabled={isLoading || otp.length !== 6}
                   className={`flex items-center justify-center rounded h-12 px-5 w-full text-base font-bold ${isLoading || otp.length !== 6
-                      ? "bg-gray-400 cursor-not-allowed text-gray-200"
-                      : "bg-[#006b5b] text-white hover:bg-[#005248]"
+                    ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                    : "bg-[#006b5b] text-white hover:bg-[#005248]"
                     }`}
                 >
                   {isLoading ? "Verifying..." : "Verify OTP"}
@@ -134,8 +139,8 @@ export default function OtpVerificationForm({ type, email }: Props) {
                 onClick={handleResendOTP}
                 disabled={isRunning}
                 className={`text-sm underline ${isRunning
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-[#45a193] hover:text-[#006b5b]"
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-[#45a193] hover:text-[#006b5b]"
                   }`}
               >
                 {isRunning ? `Resend OTP in ${seconds}s` : "Resend OTP"}

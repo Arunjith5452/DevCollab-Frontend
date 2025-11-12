@@ -1,4 +1,5 @@
 import api from "@/lib/axios";
+import { AUTH_ROUTES } from "@/shared/constant/routes";
 
 
 
@@ -9,8 +10,7 @@ export const signup = async (data: {
     confirmPassword: string
 }) => {
     try {
-        const response = await api.post('/api/auth/signup', data)
-        console.log("hai", response)
+        const response = await api.post(AUTH_ROUTES.SIGNUP, data)
         return response.data
     } catch (error) {
         throw error
@@ -25,8 +25,7 @@ export const verifyOTP = async (data: {
 }) => {
     try {
 
-        const response = await api.post('/api/auth/verify-otp', data)
-        console.log(response.data)
+        const response = await api.post(AUTH_ROUTES.VERIFY_OTP, data)
         return response.data
 
     } catch (error) {
@@ -43,8 +42,7 @@ export const verifyForgotOTP = async (data: {
 }) => {
     try {
 
-        const response = await api.post('/api/auth/verifyForgot-otp', data)
-        console.log(response.data)
+        const response = await api.post(AUTH_ROUTES.VERIFY_FORGOT_OTP, data)
         return response.data
 
     } catch (error) {
@@ -56,14 +54,13 @@ export const verifyForgotOTP = async (data: {
 
 export const login = async (data: {
     email: string,
-    password: string
+    password: string,
 }) => {
     try {
 
-        const response = await api.post('/api/auth/login', data, {
+        const response = await api.post(AUTH_ROUTES.LOGIN, data, {
             withCredentials: true
         });
-
 
         return response.data
 
@@ -75,7 +72,7 @@ export const login = async (data: {
 export const refreshToken = async () => {
     try {
 
-        const response = await api.post('/api/auth/refresh', {}, {
+        const response = await api.post(AUTH_ROUTES.REFRESH_TOKEN, {}, {
             withCredentials: true
         })
 
@@ -90,7 +87,7 @@ export const refreshToken = async () => {
 export const resendOTP = async (token: string) => {
     try {
 
-        const response = await api.post("/api/auth/resend-otp", { token })
+        const response = await api.post(AUTH_ROUTES.RESEND_OTP, { token })
         return response
 
     } catch (error) {
@@ -101,7 +98,7 @@ export const resendOTP = async (token: string) => {
 export const resendForgotOTP = async (email: string) => {
     try {
 
-        const response = await api.post("/api/auth/resendForgot-otp", { email })
+        const response = await api.post(AUTH_ROUTES.RESEND_FORGOT_OTP, { email })
         return response
 
     } catch (error) {
@@ -113,31 +110,42 @@ export const resendForgotOTP = async (email: string) => {
 export const forgotPassword = async (email: string) => {
     try {
 
-        const response = await api.post("/api/auth/forgot-password", { email })
+        const response = await api.post(AUTH_ROUTES.FORGOT_PASSWORD, { email })
         return response
 
     } catch (error) {
         throw error
     }
 
-    }
+}
 
- export const resetPassword = async (data:{
-    email : string
-    newPassword : string,
-    confirmPassword : string
- })  =>{
+export const resetPassword = async (data: {
+    email: string
+    newPassword: string,
+    confirmPassword: string
+}) => {
 
     try {
 
-        const response = await api.post("/api/auth/reset-password",data)
-        return response.data
-        
+        const response = await api.post(AUTH_ROUTES.RESET_PASSWORD, data)
+        console.log("response",response)
+        return response
+
     } catch (error) {
 
         throw error
-        
+
     }
 
- }
+}
+
+export const googleLogin = async () => {
+    try {
+        const response = await api.post(AUTH_ROUTES.GOOGLE_LOGIN);
+        return response;
+    } catch (error) {
+        throw error;
+    }
+};
+
 
