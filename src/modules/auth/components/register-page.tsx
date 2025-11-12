@@ -12,6 +12,7 @@ import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormField } from "../types/auth.type";
 import { signup } from "../services/auth.api";
+import { getErrorMessage } from "@/shared/utils/ErrorMessage";
 
 export function RegisterPage() {
   const router = useRouter();
@@ -87,24 +88,19 @@ export function RegisterPage() {
     try {
       const data = await signup(formField);
 
-      if (data.token) {
-        localStorage.setItem('tempToken', data.token);
+      if (data) {
+        localStorage.setItem('tempToken', data);
       }
-
       router.push("/register-otp");
 
     } catch (error: any) {
       console.error("Registration error:", error);
 
-      const status = error.response?.status;
-      const data = error.response?.data;
+      const message = getErrorMessage(error);
 
-      if (data && typeof data === "object" && !data.message) {
-        setFieldErrors(data);
-      } else if (status === 409) {
-        setFieldErrors({ email: "User already exists with this email" });
+      if (message.toLowerCase().includes("email")) {
+        setFieldErrors({ email: message });
       } else {
-        const message = data?.message || error.message || "Registration failed. Please try again.";
         setError(message);
       }
     } finally {

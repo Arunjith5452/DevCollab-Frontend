@@ -1,3 +1,5 @@
+
+import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 import { ToasterProvider } from "./ToasterProvider";
 import type { Metadata } from "next";
@@ -20,11 +22,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-     <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {/* <ThemeProviderWrapper> */}
+        {/* <SessionProvider> */}
           {children}
-          <ToasterProvider />
+        {/* </SessionProvider> */}
+        <ToasterProvider />
         {/* </ThemeProviderWrapper> */}
       </body>
     </html>

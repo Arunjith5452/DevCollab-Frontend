@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 export function useRoleRedirect() {
 
@@ -8,10 +8,10 @@ export function useRoleRedirect() {
 
     const redirectByRole = (role: string) => {
         const roleRedirects: Record<string, string> = {
-            ADMIN: "/admin",
-            USER: "/"
+            ADMIN: "/admin/dashboard",
+            USER: "/home"
         }
-        const redirectPath = roleRedirects[role] || "/"
+        const redirectPath = roleRedirects[role] || "/home"
         router.push(redirectPath)
     }
     return { redirectByRole }

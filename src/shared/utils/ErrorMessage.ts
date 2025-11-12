@@ -1,15 +1,15 @@
 export function getErrorMessage(err: any): string {
   const data = err?.response?.data;
 
-  if (typeof data === "string") return data;
+  if (data && typeof data === "object") {
+    if (data.error) return data.error;
 
-  if (typeof data === "object") {
-    return (
-      data.message ||
-      Object.values(data)[0] || 
-      "Something went wrong"
-    );
+    if (data.message) return data.message;
   }
 
-  return "Something went wrong";
+  const status = err?.response?.status;
+  if (status === 404) return "Requested resource not found.";
+  if (status === 500) return "Server error! Please try again later.";
+
+  return err.message || "Something went wrong. Please try again.";
 }

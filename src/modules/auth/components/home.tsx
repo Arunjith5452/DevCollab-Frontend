@@ -1,94 +1,29 @@
 "use client"
 import api from "@/lib/axios";
 import { useEffect, useState } from "react"
-import toast from "react-hot-toast";
 import { Code, Users, GitBranch, Star, ArrowRight, Search, Bell, Menu, X, TrendingUp, Award } from 'lucide-react';
+import { Header } from "@/shared/common/user-common/Header";
+import { Footer } from "@/shared/common/user-common/Footer";
+import { useRouter } from "next/navigation";
 
 export function HomePage() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const router = useRouter()
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await api.get('/api/profile/me', { withCredentials: true })
+        const { data } = await api.get('/api/profile/me', { withCredentials: true });
       } catch (error: any) {
-        toast.error(error.message)
+        console.error(error.message);
       }
-    }
-    fetchData()
-  }, [])
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    fetchData();
+  }, [])
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Enhanced Header - ONLY THIS CHANGED */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/95 backdrop-blur-lg shadow-lg' : 'bg-white/80 backdrop-blur-sm'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Code className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-gray-900">DevCollab</span>
-            </div>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              <a href="#" className="text-gray-700 hover:text-green-600 font-medium transition-colors">Projects</a>
-              <a href="#" className="text-gray-700 hover:text-green-600 font-medium transition-colors">Community</a>
-              <a href="#" className="text-gray-700 hover:text-green-600 font-medium transition-colors">Resources</a>
-            </nav>
-
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-4">
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                <Search className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-green-600 rounded-full"></span>
-              </button>
-              <button className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:scale-105 transition-all">
-                Upgrade to Pro
-              </button>
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-pink-500 rounded-full cursor-pointer hover:scale-110 transition-transform shadow-md"></div>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden mt-4 pb-4 border-t border-gray-200 pt-4 animate-in slide-in-from-top duration-300">
-              <nav className="flex flex-col space-y-3">
-                <a href="#" className="text-gray-700 hover:text-green-600 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors">Projects</a>
-                <a href="#" className="text-gray-700 hover:text-green-600 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors">Community</a>
-                <a href="#" className="text-gray-700 hover:text-green-600 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors">Resources</a>
-                <button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold mt-4 hover:shadow-lg transition-all">
-                  Upgrade to Pro
-                </button>
-              </nav>
-            </div>
-          )}
-        </div>
-      </header>
+      <Header />
 
       {/* Enhanced Hero Section - ONLY THIS CHANGED */}
       <section className="relative bg-gradient-to-br from-green-600 via-green-700 to-green-800 pt-32 pb-20 px-6 overflow-hidden">
@@ -111,9 +46,9 @@ export function HomePage() {
               <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
                 Collaborate on Open Source Projects
               </h1>
-              
+
               <p className="text-lg text-green-100 leading-relaxed">
-                Join a vibrant community of developers building amazing projects together. 
+                Join a vibrant community of developers building amazing projects together.
                 Contribute your skills, learn new technologies, and make an impact on the world.
               </p>
 
@@ -150,11 +85,11 @@ export function HomePage() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="group bg-white text-green-700 px-8 py-4 rounded-xl font-semibold hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center space-x-2">
+                <button onClick={()=>{router.push("/project-list")}} className="group bg-white text-green-700 px-8 py-4 rounded-xl font-semibold hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center space-x-2">
                   <span>Explore Projects</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-green-700 transition-all">
+                <button onClick={()=>{router.push("/create-project")}} className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-green-700 transition-all">
                   Create Project
                 </button>
               </div>
@@ -163,8 +98,8 @@ export function HomePage() {
               <div className="flex items-center space-x-4 pt-4">
                 <div className="flex -space-x-3">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <div 
-                      key={i} 
+                    <div
+                      key={i}
                       className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 border-2 border-white shadow-lg"
                     ></div>
                   ))}
@@ -355,51 +290,7 @@ export function HomePage() {
       </section>
 
       {/* YOUR ORIGINAL Footer - UNCHANGED */}
-      <footer className="bg-gray-50 px-6 py-12 mt-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">About</h4>
-              <ul className="space-y-2 text-gray-600">
-                <li><a href="#" className="hover:text-gray-900">Our Story</a></li>
-                <li><a href="#" className="hover:text-gray-900">Team</a></li>
-                <li><a href="#" className="hover:text-gray-900">Careers</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Community</h4>
-              <ul className="space-y-2 text-gray-600">
-                <li><a href="#" className="hover:text-gray-900">Discord</a></li>
-                <li><a href="#" className="hover:text-gray-900">GitHub</a></li>
-                <li><a href="#" className="hover:text-gray-900">Blog</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Contact</h4>
-              <ul className="space-y-2 text-gray-600">
-                <li><a href="#" className="hover:text-gray-900">Support</a></li>
-                <li><a href="#" className="hover:text-gray-900">Help Center</a></li>
-                <li><a href="#" className="hover:text-gray-900">Contact Us</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row justify-between items-center pt-8 mt-8 border-t border-gray-200">
-            <p className="text-gray-600 text-sm">© 2024 DevShare. All rights reserved.</p>
-            <div className="flex space-x-6 mt-4 sm:mt-0">
-              <a href="#" className="text-gray-400 hover:text-gray-600">
-                <div className="w-5 h-5 bg-current rounded"></div>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-gray-600">
-                <div className="w-5 h-5 bg-current rounded"></div>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-gray-600">
-                <div className="w-5 h-5 bg-current rounded"></div>
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

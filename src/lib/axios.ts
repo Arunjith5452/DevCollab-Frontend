@@ -1,42 +1,63 @@
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Request interceptor
+// Request Interceptor
 api.interceptors.request.use(
   (request) => request,
-  async (err) => Promise.reject(err)
+  async (error) => Promise.reject(error)
 );
 
-// Response interceptor
+// Response Interceptor
 api.interceptors.response.use(
-  (response) => response,
-  async (err) => {
-    const originalRequest = err.config;
-    const status = err.response?.status;
+  (response) => {
+    if (response.data && typeof response.data === "object") {
+      const { success, message, data } = response.data;
+
+      if (success === true) {
+        return {
+          ...response,
+          data,
+          message, 
+        };
+      }
+    }
+
+    return response;
+  },
+
+  async (error) => {
+    const originalRequest = error.config;
+    const status = error.response?.status;
+
+    console.error(" API Error:", error.response?.data);
+
+    if (error.response?.data?.blocked) {
+      window.location.href = "/login";
+      return Promise.reject(error);
+    }
 
     if ((status === 401 || status === 403) && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        const refreshRes = await api.post('/api/auth/refresh', {}, { withCredentials: true });
-        const accessToken = refreshRes.data.data;
+        const refreshRes = await api.post("/api/auth/refresh", {}, { withCredentials: true });
+        const accessToken = refreshRes.data.accessToken;
 
-        originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+        originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshError: any) {
         if (refreshError.response?.status === 401) {
-          toast.error('Session expired. Please login again.');
-          if (typeof window !== 'undefined') {
+          if (typeof window !== "undefined") {
             setTimeout(() => {
-              window.location.href = '/login';
+              window.location.href = "/login";
             }, 1000);
           }
         }
@@ -44,32 +65,28 @@ api.interceptors.response.use(
       }
     }
 
-    // Common error handling
-    if (status === 400) {
-      const data = err.response?.data;
-      let message = 'Invalid request. Please check your input.';
+    //  Common Error Handling
+    if (error.response?.data && typeof error.response.data === "object") {
+      const { success, message, error: errorMsg } = error.response.data;
 
-      if (typeof data === 'string') {
-        message = data;
-      } else if (typeof data === 'object') {
-        message = Object.values(data).join(', ');
+      if (success === false) {
+        toast.error(message || errorMsg || "Something went wrong.");
+      } else {
+        toast.error("Unexpected error occurred.");
       }
-
-      toast.error(message);
-    }
-    else if (status === 404) {
-      console.error('Requested resource not found.');
+    } else if (status === 404) {
+      toast.error("Requested resource not found.");
     } else if (status === 500) {
-      console.error('Server error! Please try again later.');
+      toast.error("Server error! Please try again later.");
     } else if (!status) {
-      console.error('Network error! Check your internet connection.');
+      toast.error("Network error! Check your internet connection.");
     }
 
     console.error(
-      `API Error: ${status || 'NETWORK'} - ${err.response?.data?.message || err.message}`
+      ` API Error: ${status || "NETWORK"} - ${error.response?.data?.message || error.message}`
     );
 
-    return Promise.reject(err);
+    return Promise.reject(error);
   }
 );
 

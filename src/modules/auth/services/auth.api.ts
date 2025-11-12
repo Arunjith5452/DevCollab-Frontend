@@ -54,7 +54,7 @@ export const verifyForgotOTP = async (data: {
 
 export const login = async (data: {
     email: string,
-    password: string
+    password: string,
 }) => {
     try {
 
@@ -128,7 +128,8 @@ export const resetPassword = async (data: {
     try {
 
         const response = await api.post(AUTH_ROUTES.RESET_PASSWORD, data)
-        return response.data
+        console.log("response",response)
+        return response
 
     } catch (error) {
 
@@ -137,4 +138,14 @@ export const resetPassword = async (data: {
     }
 
 }
+
+export const googleLogin = async () => {
+    try {
+        const response = await api.post(AUTH_ROUTES.GOOGLE_LOGIN);
+        return response;
+    } catch (error) {
+        throw error;
+    }
+};
+
 

@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import PageLoader from "@/shared/common/LoadingComponent";
+import { googleLogin } from "../services/auth.api";
+import { getErrorMessage } from "@/shared/utils/ErrorMessage";
 
 export function AuthLogin({
   title,
@@ -35,18 +37,18 @@ export function AuthLogin({
     try {
       const response = await onLogin({ email, password });
 
+
       toast.success(`Login successful`);
 
-      console.log(response.role)
-
-      if (response.role === "admin") {
+      if (response.role.includes("admin")) {
         router.push("/admin/dashboard");
       } else {
         router.push("/home");
       }
-    } catch (err: any) {
-      console.error("Login error:", err);
-      const message = err.response?.data?.message ||  "Login failed. Please try again.";
+
+    } catch (error: any) {
+      console.error("Login error:", error);
+      const message = getErrorMessage(error);
       setError(message);
     } finally {
       setIsLoading(false);
@@ -60,6 +62,9 @@ export function AuthLogin({
       </div>
     );
 
+  const handleGoogleLogin = async () => {
+    return await googleLogin()
+  }
 
   return (
     <div className="relative flex size-full min-h-screen flex-col bg-white group/design-root overflow-x-hidden">
@@ -156,7 +161,7 @@ export function AuthLogin({
                 <div className="flex justify-center">
                   <div className="flex max-w-[480px] w-full flex-col items-stretch px-4 py-3 gap-3">
                     <GitHubButton onClick={() => { }} text={"Sign In with GitHub"} />
-                    <GoogleButton onClick={() => { }} text={"Sign In with Google"} />
+                    <GoogleButton onClick={() => { handleGoogleLogin() }} text={"Sign In with Google"} />
                   </div>
                 </div>
 

@@ -1,11 +1,12 @@
 "use client";
 
 import { AuthHeader, OTPInputFields } from "@/shared/common/auth-common";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useTimer } from "react-timer-hook";
 import { resendOTP, verifyOTP, resendForgotOTP, verifyForgotOTP } from '../services/auth.api'
+import { getErrorMessage } from "@/shared/utils/ErrorMessage";
 
 interface Props {
   type: "register" | "forgot";
@@ -54,7 +55,7 @@ export default function OtpVerificationForm({ type, email }: Props) {
         router.push(`/reset-password?email=${encodeURIComponent(forgotEmail)}`);
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || "Verification failed. Please try again.";
+      const message = getErrorMessage(error);
       setError(message);
     } finally {
       setIsLoading(false);
@@ -67,6 +68,7 @@ export default function OtpVerificationForm({ type, email }: Props) {
     try {
       if (type === "register") {
         const token = localStorage.getItem("tempToken");
+        console.log("Resend OTP token:", token);
         if (!token) throw new Error("Session expired. Please register again.");
         await resendOTP(token);
       } else {
@@ -79,7 +81,9 @@ export default function OtpVerificationForm({ type, email }: Props) {
       restart(newTime);
       toast.success("OTP resent successfully ✅");
     } catch (error) {
-      setError("Failed to resend OTP. Please try again.");
+      console.error("Resend OTP error:", error);
+      const message = getErrorMessage(error);
+      setError(message || "Failed to resend OTP. Please try again.");
     }
   };
 
