@@ -17,6 +17,10 @@ export const PROJECT_ROUTES = {
   PROJECT_DETAILS: "/api/users/projects" 
 };
 
+export const USER_ROUTERS = {
+  USER_PROFILE : "/api/users/profile",
+  EDIT_PROFILE : "/api/users/profile"
+}
 
 export const ADMIN_ROUTES = {
   GET_ALL_USERS: "/api/admin/users",

@@ -53,20 +53,28 @@ export default function ProjectDetailsPage() {
   return (
     <div className="relative flex flex-col min-h-screen bg-white overflow-x-hidden">
       {/* Header */}
-      <Header />
+      <Header user={{name:"Arunjith"}} />
 
       {/* Main Content */}
       <main className="flex-1 px-4 sm:px-8 md:px-12 lg:px-24 xl:px-40 py-8 mt-20">
         <div className="max-w-5xl mx-auto">
           {/* Hero Image */}
           <div className="w-full h-56 sm:h-64 rounded-lg overflow-hidden mb-6">
-            <img
-              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 300'%3E%3Crect fill='%23d4c4b0' width='800' height='300'/%3E%3Crect fill='%23a08060' x='0' y='0' width='80' height='300'/%3E%3Crect fill='%23e8d4c0' x='120' y='100' width='200' height='200'/%3E%3Crect fill='%2380a090' x='400' y='0' width='400' height='300'/%3E%3Crect fill='%23304030' x='420' y='40' width='100' height='60'/%3E%3Crect fill='%23c8b8a0' x='600' y='120' width='180' height='30'/%3E%3Ccircle cx='250' cy='80' r='40' fill='%23405040'/%3E%3Crect fill='%23606050' x='140' y='150' width='40' height='30'/%3E%3Crect fill='%23505040' x='200' y='170' width='40' height='30'/%3E%3C/svg%3E"
-              alt="Project workspace"
-              className="w-full h-full object-cover"
-            />
+            {project._image ? (
+              <img
+                src={project._image} 
+                alt={`Image for ${project._title}`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100 border border-gray-300">
+                <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span className="ml-3 text-gray-500 font-medium">No Project Image</span>
+              </div>
+            )}
           </div>
-
           {/* Project Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
             <div className="flex flex-wrap items-center gap-3">

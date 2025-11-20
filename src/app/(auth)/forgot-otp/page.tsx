@@ -1,6 +1,5 @@
 "use client"
 
-
 import OtpVerificationForm from "@/modules/auth/components/otp-page";
 import { useSearchParams } from "next/navigation";
 

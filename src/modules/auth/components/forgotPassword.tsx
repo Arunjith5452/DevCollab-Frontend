@@ -24,7 +24,7 @@ export function ForgotPasswordPage() {
       toast.success("OTP sent to your email!");
 
       router.push(`/forgot-otp?email=${encodeURIComponent(email)}`);
-    } catch (error: any) {
+    } catch (error) {
 
       const message = getErrorMessage(error);
       setError(message);

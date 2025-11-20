@@ -3,7 +3,7 @@ export interface Project {
   title: string;
   description: string;
   featured: boolean;
-  image: string;
+  image?: string | null;
   techStack: string[];
   difficulty: string;
   roleNeeded: string;

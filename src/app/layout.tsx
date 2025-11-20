@@ -1,5 +1,4 @@
-
-import { SessionProvider } from "next-auth/react";
+import { Providers } from "@/modules/auth/components/wrapper/session-wrapper";
 import "./globals.css";
 import { ToasterProvider } from "./ToasterProvider";
 import type { Metadata } from "next";
@@ -25,9 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {/* <ThemeProviderWrapper> */}
-        {/* <SessionProvider> */}
+        <Providers>
           {children}
-        {/* </SessionProvider> */}
+        </Providers>
         <ToasterProvider />
         {/* </ThemeProviderWrapper> */}
       </body>
