@@ -54,7 +54,7 @@ export default function OtpVerificationForm({ type, email }: Props) {
         toast.success("OTP verified successfully ");
         router.push(`/reset-password?email=${encodeURIComponent(forgotEmail)}`);
       }
-    } catch (error: any) {
+    } catch (error) {
       const message = getErrorMessage(error);
       setError(message);
     } finally {

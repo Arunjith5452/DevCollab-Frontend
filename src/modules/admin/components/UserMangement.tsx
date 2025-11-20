@@ -63,7 +63,7 @@ export default function UserManagement() {
       toast.success(
         `User ${newStatus === "block" ? "blocked" : "unblocked"} successfully`
       );
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Failed to update user status");
     } finally {
       setShowConfirmModal(false);

@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { FormField } from "../types/auth.type";
 import { signup } from "../services/auth.api";
 import { getErrorMessage } from "@/shared/utils/ErrorMessage";
+import { signIn } from "next-auth/react";
 
 export function RegisterPage() {
   const router = useRouter();
@@ -93,7 +94,7 @@ export function RegisterPage() {
       }
       router.push("/register-otp");
 
-    } catch (error: any) {
+    } catch (error) {
       console.error("Registration error:", error);
 
       const message = getErrorMessage(error);
@@ -164,11 +165,11 @@ export function RegisterPage() {
             <div className="flex justify-center">
               <div className="flex max-w-[480px] w-full flex-col items-stretch px-4 py-3 gap-3">
                 <GitHubButton
-                  onClick={() => { }}
+                  onClick={() => signIn("github", { callbackUrl: '/callback' })}
                   text="Sign Up with GitHub"
                 />
                 <GoogleButton
-                  onClick={() => { }}
+                  onClick={() => signIn("google", { callbackUrl: '/callback' })}
                   text="Sign Up with Google"
                 />
               </div>

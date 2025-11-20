@@ -1,4 +1,3 @@
-import { Code } from 'lucide-react';
 
 interface FooterLink {
   label: string;

@@ -12,8 +12,9 @@ export function Dashboard() {
       try {
         const { data } = await api.get("/api/profile/me", { withCredentials: true });
 
-    }catch(error : any){
-        toast.error(error.message)
+    }catch(error ){
+      let err = error as Error
+        toast.error(err.message)
     }
 }
 

@@ -1,75 +1,78 @@
-// app/api/auth/[...nextauth]/route.ts
-import { googleLogin } from "@/modules/auth/services/auth.api";
+
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import GithubProvider from "next-auth/providers/github";
+
+
+interface CustomSessionUser {
+    githubUrl?: string;
+    id: string;
+    provider: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+}
+
+interface CustomSession {
+    user: CustomSessionUser;
+    expires: string;
+}
+
+interface GitHubProfile {
+    html_url?: string;
+}
 
 const handler = NextAuth({
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: { prompt: "consent", access_type: "offline", response_type: "code" },
-      },
-    }),
-  ],
-  secret: process.env.NEXTAUTH_SECRET,
-  pages: { signIn: "/login", error: "/auth/error" },
+    providers: [
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID as string,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+        }),
+        GithubProvider({
+            clientId: process.env.GITHUB_ID as string,
+            clientSecret: process.env.GITHUB_SECRET as string,
+        })
+    ],
 
-  callbacks: {
-    /** 1. Call your backend → get DB userId */
-    async signIn({ user, account, profile }) {
-      try {
-        if (!account?.providerAccountId || !user.email) return false;
+    callbacks: {
+        async redirect({ url, baseUrl }) {
+            if (url === '/api/auth/signin') return baseUrl
+            return url
+        },
+        async jwt({ token, account, user, profile }) {
+            if (account && user) {
+                token.email = user.email
+                token.picture = user.image
+                token.name = user.name
+                token.id = user.id
 
-        const payload = {
-          googleId: account.providerAccountId,
-          name: user.name || (profile as any)?.name || "",
-          email: user.email,
-          image: user.image || (profile as any)?.picture || "",
-        };
+                token.provider = account.provider
 
-        const data = await googleLogin(payload);
-        if (!data?.id) return false;
+                if (account.provider === 'github') {
+                    const ghProfile = profile as GitHubProfile;
+                    if (ghProfile.html_url) {
+                        token.githubUrl = ghProfile.html_url;
+                    }
+                }
+            }
+            return token;
+        },
 
-        // Save your DB userId under a custom key
-        (user as any).backendId = data.id;
-        (user as any).role = data.role;
+        async session({ session, token }) {
+            const email = token.email as string || undefined
+            const customSession = session as CustomSession;
 
-        return true;
-      } catch (e) {
-        console.error("Google signIn error:", e);
-        return false;
-      }
+            customSession.user = customSession.user || {}
+            customSession.user.email = email ?? null
+
+            customSession.user.id = (token.id as string) ?? "";
+            customSession.user.provider = token.provider as string;
+
+            customSession.user.githubUrl = token.githubUrl as string  || undefined
+
+            return customSession;
+        },
     },
-
-    /** 2. Pass DB id to JWT */
-    async jwt({ token, user }) {
-      if (user) {
-        const u = user as any;
-        token.backendId = u.backendId;
-        token.role = u.role;
-      }
-      return token;
-    },
-
-    /** 3. Expose DB id in session */
-    async session({ session, token }) {
-      if (token.backendId) {
-        session.user = {
-          ...session.user,
-          id: token.backendId as string,
-          role: token.role as string | undefined,
-        } as typeof session.user & { id: string; role?: string };
-      }
-      return session;
-    },
-
-    /** 4. Redirect after login */
-    async redirect({ url, baseUrl }) {
-      return url.startsWith(baseUrl) ? url : `${baseUrl}/home`;
-    },
-  },
 });
 
 export { handler as GET, handler as POST };

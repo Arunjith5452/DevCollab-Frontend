@@ -11,7 +11,7 @@ export const createProject = async (data: any) => {
         const response = await api.post(PROJECT_ROUTES.CREATE_PROJECT, data)
         return response.data
 
-    } catch (error: any) {
+    } catch (error) {
         throw error
     }
 

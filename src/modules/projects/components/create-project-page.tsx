@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
+import { useS3Upload } from '@/shared/hooks/uses3Upload';
 
 
 interface TeamRole {
@@ -27,6 +28,7 @@ interface ProjectFormData {
     expectations: string;
     isPublic: boolean;
     requiredRoles: TeamRole[];
+    image?: string | null
 }
 
 export default function CreateProjectPage() {
@@ -38,8 +40,9 @@ export default function CreateProjectPage() {
         const fetchData = async () => {
             try {
                 const { data } = await api.get('/api/profile/me', { withCredentials: true });
-            } catch (error: any) {
-                console.error(error.message);
+            } catch (error) {
+                let err = error as Error
+                console.error(err.message);
             }
         };
         fetchData();
@@ -66,9 +69,12 @@ export default function CreateProjectPage() {
             isPublic: false,
             requiredRoles: [
                 { roleName: '', requiredCount: '', experienceLevel: '' }
-            ]
+            ],
+            image: null
         }
     });
+
+    const { uploadToS3, fileUrl, loading, error } = useS3Upload()
 
 
 
@@ -80,14 +86,15 @@ export default function CreateProjectPage() {
     const skillLevel = watch('skillLevel');
     const isPublic = watch('isPublic');
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setUploadedImage(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+
+        const url = await uploadToS3(file);
+        console.log("frontend",url)
+        if (url) {
+            setUploadedImage(url);
+            setValue("image", url);   
         }
     };
 
@@ -118,8 +125,11 @@ export default function CreateProjectPage() {
                 role: role.roleName,
                 count: role.requiredCount,
                 experience: role.experienceLevel,
-            }))
+            })),
+            image: uploadedImage
         };
+
+        console.log("formatted",formattedPayload)
 
         try {
             const response = await createProject(formattedPayload);
@@ -133,7 +143,7 @@ export default function CreateProjectPage() {
 
     return (
         <>
-            <Header />
+            <Header user={{name:"Arunjith"}} />
 
             <main className="pt-20 min-h-screen bg-gray-50">
                 <div className="max-w-3xl mx-auto px-6 py-12">
@@ -145,6 +155,7 @@ export default function CreateProjectPage() {
                         {/* Upload Project Image */}
                         <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-8">
                             <div className="text-center">
+
                                 <div className="mb-4">
                                     {uploadedImage ? (
                                         <div className="relative inline-block">
@@ -165,12 +176,15 @@ export default function CreateProjectPage() {
                                         <Upload className="w-12 h-12 text-gray-400 mx-auto" />
                                     )}
                                 </div>
+
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                                     Upload Project Image
                                 </h3>
+
                                 <p className="text-sm text-gray-500 mb-4">
                                     Drag and drop or click to upload
                                 </p>
+
                                 <label className="inline-block">
                                     <input
                                         type="file"
@@ -179,9 +193,11 @@ export default function CreateProjectPage() {
                                         className="hidden"
                                     />
                                     <span className="cursor-pointer bg-teal-50 text-teal-600 px-6 py-2 rounded-lg text-sm font-medium hover:bg-teal-100 transition-colors inline-block">
-                                        Upload Image
+                                        {loading ? "Uploading..." : "Upload Image"}
                                     </span>
                                 </label>
+
+                                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
                             </div>
                         </div>
 
