@@ -70,16 +70,16 @@ api.interceptors.response.use(
       const { success, message, error: errorMsg } = error.response.data;
 
       if (success === false) {
-        toast.error(message || errorMsg || "Something went wrong.");
+        console.error(message || errorMsg || "Something went wrong.");
       } else {
-        toast.error("Unexpected error occurred.");
+        console.error("Unexpected error occurred.");
       }
     } else if (status === 404) {
-      toast.error("Requested resource not found.");
+      console.error("Requested resource not found.");
     } else if (status === 500) {
-      toast.error("Server error! Please try again later.");
+      console.error("Server error! Please try again later.");
     } else if (!status) {
-      toast.error("Network error! Check your internet connection.");
+      console.error("Network error! Check your internet connection.");
     }
 
     console.error(

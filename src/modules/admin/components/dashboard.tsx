@@ -2,24 +2,23 @@
 
 import { useEffect } from "react";
 import api from "@/lib/axios";
-import toast from "react-hot-toast";
 import { Activity, ArrowUpRight, Bell, Calendar, ChevronDown, Code, DollarSign, Download, Filter, Folder, FolderOpen, Home, Mail, MoreVertical, Search, Settings, Target, TrendingUp, User, UserCheck, Users } from "lucide-react";
 
 export function Dashboard() {
 
-  useEffect(() => {
-    const fetchAdminData = async () => {
-      try {
-        const { data } = await api.get("/api/profile/me", { withCredentials: true });
+//   useEffect(() => {
+//     const fetchAdminData = async () => {
+//       try {
+//         const { data } = await api.get("/api/profile/me", { withCredentials: true });
 
-    }catch(error ){
-      let err = error as Error
-        toast.error(err.message)
-    }
-}
+//     }catch(error ){
+//       let err = error as Error
+//         console.log(err.message)
+//     }
+// }
 
-    fetchAdminData();
-  }, [])
+//     fetchAdminData();
+//   }, [])
 
   return (
   <div className="flex min-h-screen bg-gray-100">

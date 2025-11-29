@@ -81,7 +81,7 @@ export function Header({
 
           {/* Logo */}
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/home')}
             className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
           >
             <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">

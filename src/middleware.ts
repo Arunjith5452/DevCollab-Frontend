@@ -18,7 +18,7 @@ export function middleware(req: NextRequest) {
   ];
 
   const roleRedirectMap: Record<string, string> = {
-    '/admin': '/admin/dashboard'
+    '/admin': '/admin/dashboard7'
   };
 
   const isAdmin = pathname.startsWith('/admin')
@@ -38,12 +38,14 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(roleRedirectMap[matchedRole], req.url));
   }
 
-  if ((accessToken || refreshToken) && (pathname === '/login' || pathname === '/signup'  || pathname ==='/register-otp' || pathname ==='/reset-password'|| pathname ==='/forgot-otp' || pathname ==='/reset-password'|| pathname ==='/forgot-password') && !isAdmin ) {
+  if ((accessToken || refreshToken) && (pathname === '/login' || pathname === '/signup' || pathname === '/register-otp' || pathname === '/reset-password' || pathname === '/forgot-otp' || pathname === '/reset-password' || pathname === '/forgot-password') && !isAdmin) {
     return NextResponse.redirect(new URL('/home', req.url));
   }
-
-  if (!publicRoutes.includes(pathname) && !accessToken && !refreshToken && matchedRole) {
-    return NextResponse.redirect(new URL(`${matchedRole}/login`, req.url));
+  if (!publicRoutes.includes(pathname) && !accessToken && !refreshToken) {
+    if (pathname.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/admin/login', req.url));
+    }
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
   return NextResponse.next();

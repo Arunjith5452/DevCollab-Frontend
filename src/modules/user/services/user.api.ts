@@ -2,6 +2,15 @@ import api from "@/lib/axios"
 import { USER_ROUTERS } from "@/shared/constant/routes"
 
 
+export interface EditProfilePayload {
+  username: string;
+  title: string | null;
+  bio: string | null;
+  techStack: string[] | null;
+  profileImage: string | null;
+}
+
+
 
 export const userProfile = async () => {
     try {
@@ -17,10 +26,10 @@ export const userProfile = async () => {
     }
 }
 
-export const editProfile = async () => {
+export const editProfile = async (data: EditProfilePayload) => {
 
     try {
-        const response = await api.patch(USER_ROUTERS.EDIT_PROFILE)
+        const response = await api.patch(USER_ROUTERS.EDIT_PROFILE,data)
 
         return response
 

@@ -12,9 +12,14 @@ export const AUTH_ROUTES = {
 };
 
 export const PROJECT_ROUTES = {
-  CREATE_PROJECT: "/api/users/projects",          
-  PROJECT_LISTING: "/api/users/projects",        
-  PROJECT_DETAILS: "/api/users/projects" 
+  CREATE_PROJECT: "/api/projects",          
+  PROJECT_LISTING: "/api/projects",        
+  PROJECT_DETAILS: "/api/projects" ,
+  APPLY_PROJECT:"/api/projects",
+  GET_PENDING_APPLICATIONS:"/api/projects",
+  APPLICATION_STATUS:"/api/application",
+  GET_MY_PROJECT:"/api/user/projects/created",
+  GET_APPLIED_PROJECT:"/api/user/projects/applied"
 };
 
 export const USER_ROUTERS = {
