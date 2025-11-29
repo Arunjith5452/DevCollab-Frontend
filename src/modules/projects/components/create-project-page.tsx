@@ -33,20 +33,23 @@ interface ProjectFormData {
 
 export default function CreateProjectPage() {
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+    const [techStackItems, setTechStackItems] = useState<string[]>([]);
+    const [techStackInput, setTechStackInput] = useState('');
+
 
     let router = useRouter()
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const { data } = await api.get('/api/profile/me', { withCredentials: true });
-            } catch (error) {
-                let err = error as Error
-                console.error(err.message);
-            }
-        };
-        fetchData();
-    }, [])
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             const { data } = await api.get('/api/profile/me', { withCredentials: true });
+    //         } catch (error) {
+    //             let err = error as Error
+    //             console.error(err.message);
+    //         }
+    //     };
+    //     fetchData();
+    // }, [])
 
 
     const {
@@ -91,10 +94,10 @@ export default function CreateProjectPage() {
         if (!file) return;
 
         const url = await uploadToS3(file);
-        console.log("frontend",url)
+        console.log("frontend", url)
         if (url) {
             setUploadedImage(url);
-            setValue("image", url);   
+            setValue("image", url);
         }
     };
 
@@ -106,6 +109,26 @@ export default function CreateProjectPage() {
         if (fields.length > 1) {
             remove(index);
         }
+    };
+
+    const handleAddTechStack = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const value = techStackInput.trim();
+            if (value && !techStackItems.includes(value)) {
+                const updatedStack = [...techStackItems, value];
+                setTechStackItems(updatedStack);
+                setValue('techStack', updatedStack.join(', '));
+                setTechStackInput('');
+                e.currentTarget.focus()
+            }
+        }
+    };
+
+    const handleRemoveTechStack = (indexToRemove: number) => {
+        const updatedStack = techStackItems.filter((_, index) => index !== indexToRemove);
+        setTechStackItems(updatedStack);
+        setValue('techStack', updatedStack.join(', '));
     };
 
     const onSubmit = async (data: ProjectFormData) => {
@@ -129,8 +152,6 @@ export default function CreateProjectPage() {
             image: uploadedImage
         };
 
-        console.log("formatted",formattedPayload)
-
         try {
             const response = await createProject(formattedPayload);
             toast.success("Project Created Successfully")
@@ -141,9 +162,10 @@ export default function CreateProjectPage() {
         }
     }
 
+
     return (
         <>
-            <Header user={{name:"Arunjith"}} />
+            <Header user={{ name: "Arunjith" }} />
 
             <main className="pt-20 min-h-screen bg-gray-50">
                 <div className="max-w-3xl mx-auto px-6 py-12">
@@ -268,21 +290,61 @@ export default function CreateProjectPage() {
                             <label className="block text-sm font-semibold text-gray-900 mb-2">
                                 Tech Stack
                             </label>
+
                             <div className="relative">
                                 <input
                                     type="text"
-                                    {...register('techStack', {
-                                        required: 'Tech stack is required'
-                                    })}
-                                    placeholder="e.g., React, Node.js"
+                                    value={techStackInput}
+                                    onChange={(e) => setTechStackInput(e.target.value)}
+                                    onKeyDown={handleAddTechStack}
+                                    placeholder="Type a technology and press Enter (e.g., React, Node.js, Tailwind)"
                                     className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                                 />
-                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 border-2 border-gray-400 rounded-full"></div>
+                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                                    <Plus className="w-5 h-5 text-gray-400" />
+                                </div>
                             </div>
+
+                            {/* Chips */}
+                            {techStackItems.length > 0 && (
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                    {techStackItems.map((tech, index) => (
+                                        <div
+                                            key={index}
+                                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-teal-50 text-teal-700 rounded-full text-sm font-medium border border-teal-200 transition-all hover:bg-teal-100"
+                                        >
+                                            <span>{tech}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveTechStack(index)}
+                                                className="ml-1 hover:bg-teal-200 rounded-full p-0.5 transition-colors"
+                                                aria-label={`Remove ${tech}`}
+                                            >
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Hidden input for react-hook-form */}
+                            <input
+                                type="hidden"
+                                {...register('techStack', {
+                                    required: 'At least one tech stack is required',
+                                    validate: () => techStackItems.length > 0 || 'At least one tech stack is required'
+                                })}
+                            />
+
+                            <p className="text-xs text-gray-500 mt-3">
+                                Press Enter after typing each technology
+                            </p>
+
                             {errors.techStack && (
                                 <p className="text-red-500 text-sm mt-1">{errors.techStack.message}</p>
                             )}
                         </div>
+
 
                         {/* Skill Level */}
                         <div>

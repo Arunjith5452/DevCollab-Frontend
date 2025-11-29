@@ -8,18 +8,29 @@ import { SearchInput } from "@/shared/common/admin-common/Searching";
 import toast from "react-hot-toast";
 import PageLoader from "@/shared/common/LoadingComponent";
 
+
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: "user" | "creator" | "contributer" | "maintainer" | "admin";
+  status: "active" | "block";
+  createdAt: string;
+}
+
+
 export default function UserManagement() {
   const [activeTab, setActiveTab] = useState("users");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newStatus, setNewStatus] = useState<"block" | "active" | null>(null);
 
   useEffect(() => {
@@ -45,7 +56,7 @@ export default function UserManagement() {
     fetchUsers();
   }, [searchTerm, roleFilter, statusFilter, currentPage]);
 
-  const confirmAction = (user: any) => {
+  const confirmAction = (user: User) => {
     setSelectedUser(user);
     setNewStatus(user.status === "block" ? "active" : "block");
     setShowConfirmModal(true);
@@ -64,7 +75,7 @@ export default function UserManagement() {
         `User ${newStatus === "block" ? "blocked" : "unblocked"} successfully`
       );
     } catch (error) {
-      toast.error("Failed to update user status");
+      console.error("Failed to update user status");
     } finally {
       setShowConfirmModal(false);
       setSelectedUser(null);
@@ -76,26 +87,26 @@ export default function UserManagement() {
     {
       label: "Name",
       key: "name",
-      render: (row: any) => (
+      render: (row: User) => (
         <span className="text-sm font-semibold text-gray-900">{row.name}</span>
       ),
     },
     {
       label: "Email",
       key: "email",
-      render: (row: any) => (
+      render: (row: User) => (
         <span className="text-sm text-teal-600">{row.email}</span>
       ),
     },
     {
       label: "Role",
       key: "role",
-      render: (row: any) => <Badge variant="info">{row.role}</Badge>,
+      render: (row: User) => <Badge variant="info">{row.role}</Badge>,
     },
     {
       label: "Status",
       key: "status",
-      render: (row: any) => (
+      render: (row: User) => (
         <Badge variant={row.status === "block" ? "danger" : "success"}>
           {row.status === "block" ? "Blocked" : "Active"}
         </Badge>
@@ -104,7 +115,7 @@ export default function UserManagement() {
     {
       label: "Joined Date",
       key: "createdAt",
-      render: (row: any) => (
+      render: (row: User) => (
         <span className="text-sm text-gray-600">
           {new Date(row.createdAt).toLocaleDateString()}
         </span>
@@ -113,14 +124,13 @@ export default function UserManagement() {
     {
       label: "Actions",
       key: "actions",
-      render: (row: any) => (
+      render: (row: User) => (
         <button
           onClick={() => confirmAction(row)}
           className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all
-            ${
-              row.status === "block"
-                ? "border-green-500 text-green-700 hover:bg-green-50"
-                : "border-red-500 text-red-700 hover:bg-red-50"
+            ${row.status === "block"
+              ? "border-green-500 text-green-700 hover:bg-green-50"
+              : "border-red-500 text-red-700 hover:bg-red-50"
             }`}
         >
           {row.status === "block" ? "Unblock User" : "Block User"}
@@ -215,11 +225,10 @@ export default function UserManagement() {
             <div className="flex justify-center space-x-4">
               <button
                 onClick={handleBlockUnblock}
-                className={`px-4 py-2 rounded-lg text-white font-medium ${
-                  newStatus === "block"
+                className={`px-4 py-2 rounded-lg text-white font-medium ${newStatus === "block"
                     ? "bg-red-600 hover:bg-red-700"
                     : "bg-green-600 hover:bg-green-700"
-                }`}
+                  }`}
               >
                 Yes
               </button>

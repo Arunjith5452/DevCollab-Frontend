@@ -1,7 +1,8 @@
+import { FormField } from "@/modules/auth/types/auth.type";
 import { ChangeEvent } from "react";
 
 type FormInputFieldProps = {
-  formField: any,
+  formField: FormField,
   setFormChange: (e: ChangeEvent<HTMLInputElement>) => void;
   fieldErrors?: {
     name?: string;
@@ -116,9 +117,6 @@ export function FormInputField({ formField, setFormChange, fieldErrors = {} }: F
           </label>
         </div>
       </div>
-
-      {/* Debug: Show current state - Remove this in production */}
-      {/* <pre className="text-sm p-4">{JSON.stringify(formField, null, 2)}</pre> */}
     </>
   );
 }

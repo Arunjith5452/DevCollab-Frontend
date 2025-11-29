@@ -10,17 +10,17 @@ export function HomePage() {
 
   const router = useRouter()
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data } = await api.get('/api/profile/me', { withCredentials: true });
-      } catch (error) {
-        let err = error as Error
-        console.error(err.message);
-      }
-    };
-    fetchData();
-  }, [])
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const { data } = await api.get('/api/profile/me', { withCredentials: true });
+  //     } catch (error) {
+  //       let err = error as Error
+  //       console.error(err.message);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [])
 
   return (
     <div className="min-h-screen bg-white">

@@ -26,17 +26,17 @@ export const useS3Upload = (): UploadResult => {
             const { uploadUrl, fileUrl: finalUrl } = data;
 
             // 2️⃣ Upload directly to S3 using fetch
-            // const s3Response = await fetch(uploadUrl, {
-            //     method: "PUT",
-            //     body: file,
-            //     headers: {
-            //         "Content-Type": file.type,
-            //     },
-            // });
+            const s3Response = await fetch(uploadUrl, {
+                method: "PUT",
+                body: file,
+                headers: {
+                    "Content-Type": file.type,
+                },
+            });
 
-            // if (!s3Response.ok) {
-            //     throw new Error("S3 upload failed");
-            // }
+            if (!s3Response.ok) {
+                throw new Error("S3 upload failed");
+            }
 
             setFileUrl(finalUrl);
             return finalUrl;

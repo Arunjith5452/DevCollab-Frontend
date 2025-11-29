@@ -7,6 +7,7 @@ import { projectDetails } from "../services/project.api";
 import { getErrorMessage } from "@/shared/utils/ErrorMessage";
 import PageLoader from "@/shared/common/LoadingComponent";
 import { ProjectDetails } from "../types/project.types";
+import api from "@/lib/axios";
 
 export default function ProjectDetailsPage() {
 
@@ -18,6 +19,17 @@ export default function ProjectDetailsPage() {
   const [project, setProject] = useState<ProjectDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const { data } = await api.get('/api/profile/me', { withCredentials: true });
+  //     } catch (error) {
+  //       let err = error as Error
+  //       console.error(err.message);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [])
 
   useEffect(() => {
 
@@ -53,7 +65,7 @@ export default function ProjectDetailsPage() {
   return (
     <div className="relative flex flex-col min-h-screen bg-white overflow-x-hidden">
       {/* Header */}
-      <Header user={{name:"Arunjith"}} />
+      <Header user={{ name: "Arunjith" }} />
 
       {/* Main Content */}
       <main className="flex-1 px-4 sm:px-8 md:px-12 lg:px-24 xl:px-40 py-8 mt-20">
@@ -62,7 +74,7 @@ export default function ProjectDetailsPage() {
           <div className="w-full h-56 sm:h-64 rounded-lg overflow-hidden mb-6">
             {project._image ? (
               <img
-                src={project._image} 
+                src={project._image}
                 alt={`Image for ${project._title}`}
                 className="w-full h-full object-cover"
               />
@@ -213,11 +225,15 @@ export default function ProjectDetailsPage() {
 
           {/* Apply Button */}
           <div className="flex justify-center">
-            <button 
-            onClick={()=>{router.push("/apply-project")}}
-             className="px-8 py-3 bg-[#006b5b] text-white text-base font-bold rounded hover:bg-[#005a4d] transition-colors">
+            <button
+              onClick={() => {
+                router.push(`/apply-project?projectId=${id}&tech=${encodeURIComponent(JSON.stringify(project._techStack))}`);
+              }}
+              className="px-8 py-3 bg-[#006b5b] text-white text-base font-bold rounded hover:bg-[#005a4d] transition-colors"
+            >
               Apply to Join This Project
             </button>
+
           </div>
         </div>
       </main>

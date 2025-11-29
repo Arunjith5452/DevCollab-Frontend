@@ -34,6 +34,7 @@ export interface RequiredRole {
 }
 
 export interface ProjectDetails {
+  _image: any;
   _id: string;
   _title: string;
   _description: string;
@@ -46,4 +47,19 @@ export interface ProjectDetails {
   _techStack: string[];
   _expectation: string;
   _requiredRoles: RequiredRole[];
+}
+export interface PendingApplication {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    avatar?: string;
+    bio?:string;
+    profileImage?:string;
+    github?: string;
+  };
+  techStack: string[];
+  profileUrl: string;
+  reason: string;
+  createdAt: string;
 }

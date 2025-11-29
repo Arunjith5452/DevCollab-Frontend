@@ -30,17 +30,17 @@ export default function ExploreProjectsPage() {
   const techInputRef = useRef<HTMLInputElement>(null);
 
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data } = await api.get('/api/profile/me', { withCredentials: true });
-      } catch (error) {
-        let err = error as Error
-        console.error(err.message);
-      }
-    };
-    fetchData();
-  }, [])
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const { data } = await api.get('/api/profile/me', { withCredentials: true });
+  //     } catch (error) {
+  //       let err = error as Error
+  //       console.error(err.message);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [])
 
 
   const featuredProjects: Project[] = [
@@ -443,7 +443,7 @@ export default function ExploreProjectsPage() {
                           href={`/project-details/${project._id}`}
                           className="inline-block mt-3 px-5 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-lg hover:bg-teal-100 transition-colors"
                         >
-                          View Projecti
+                          View Project
                         </Link>
                       </div>
 
