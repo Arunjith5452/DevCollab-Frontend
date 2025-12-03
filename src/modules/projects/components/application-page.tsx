@@ -12,7 +12,6 @@ import { PendingApplication } from "../types/project.types";
 export default function ApplicationsPage() {
     const searchParams = useSearchParams();
     const projectId = searchParams.get("projectId")
-    console.log("projectId",projectId)
 
     const [applications, setApplications] = useState<PendingApplication[]>([]);
     const [selectedApplicant, setSelectedApplicant] = useState<PendingApplication | null>(null);

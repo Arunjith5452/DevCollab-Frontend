@@ -1,12 +1,11 @@
 "use client"
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { Upload, Link as LinkIcon, X, Plus } from 'lucide-react';
 import { Header } from '@/shared/common/user-common/Header';
 import { createProject } from '../services/project.api';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/axios';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 import { useS3Upload } from '@/shared/hooks/uses3Upload';
 
@@ -94,7 +93,6 @@ export default function CreateProjectPage() {
         if (!file) return;
 
         const url = await uploadToS3(file);
-        console.log("frontend", url)
         if (url) {
             setUploadedImage(url);
             setValue("image", url);
@@ -161,7 +159,6 @@ export default function CreateProjectPage() {
             console.log(message)
         }
     }
-
 
     return (
         <>

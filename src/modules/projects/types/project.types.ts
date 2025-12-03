@@ -48,14 +48,15 @@ export interface ProjectDetails {
   _expectation: string;
   _requiredRoles: RequiredRole[];
 }
+
 export interface PendingApplication {
   id: string;
   user: {
     id: string;
     name: string;
     avatar?: string;
-    bio?:string;
-    profileImage?:string;
+    bio?: string;
+    profileImage?: string;
     github?: string;
   };
   techStack: string[];
@@ -63,3 +64,22 @@ export interface PendingApplication {
   reason: string;
   createdAt: string;
 }
+
+export interface BaseProjectPayload {
+  title: string;
+  description: string;
+  githubRepo: string;
+  techStack: string[];
+  difficulty: string; 
+  startDate: string;
+  endDate: string;
+  expectation: string;
+  visibility: string;
+  requiredRoles: {
+    role: string;
+    count: string;
+    experience: string;
+  }[];
+  image: string | null;
+}
+

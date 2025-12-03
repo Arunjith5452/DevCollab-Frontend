@@ -1,6 +1,4 @@
-import ApplicationsPage from "@/modules/projects/components/application-page";
-
-
+import ApplicationsPage from '@/modules/projects/components/application-page'
 
 export default function ApplyProject(){
     return (

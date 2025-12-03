@@ -19,8 +19,15 @@ export const PROJECT_ROUTES = {
   GET_PENDING_APPLICATIONS:"/api/projects",
   APPLICATION_STATUS:"/api/application",
   GET_MY_PROJECT:"/api/user/projects/created",
-  GET_APPLIED_PROJECT:"/api/user/projects/applied"
+  GET_APPLIED_PROJECT:"/api/user/projects/applied",
+  GET_PROJECT_FOR_EDIT:"/api/projects",
+  EDIT_PROJECT:"/api/projects"
+
 };
+
+export const TASK_ROUTERS ={
+  CREATE_TASK:"/api/task"
+}
 
 export const USER_ROUTERS = {
   USER_PROFILE : "/api/users/profile",

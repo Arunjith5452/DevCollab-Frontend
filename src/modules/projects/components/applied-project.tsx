@@ -79,7 +79,7 @@ export function AppliedProjectsTab() {
     return (
       <div className="text-center py-24">
         <p className="text-red-600 text-lg mb-4">{error}</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="px-6 py-3 bg-[#006b5b] text-white rounded-lg hover:bg-[#005a4d] transition"
         >
@@ -95,7 +95,7 @@ export function AppliedProjectsTab() {
         <FileText className="w-20 h-20 mx-auto mb-6 text-[#45a193]/20" />
         <h3 className="text-2xl font-bold text-[#0c1d1a] mb-2">No Applications Yet</h3>
         <p className="text-gray-600 mb-8">Browse projects and apply to join awesome teams!</p>
-        <button 
+        <button
           onClick={() => router.push('/project-list')}
           className="px-8 py-3 bg-[#006b5b] text-white font-bold rounded-lg hover:bg-[#005a4d] transition"
         >
@@ -116,14 +116,14 @@ export function AppliedProjectsTab() {
           const project = app._projectId;
 
           return (
-            <div 
+            <div
               key={app._id}
               className="bg-white border border-[#e6f4f2] rounded-xl p-6 hover:shadow-lg transition-all duration-200"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-3">
-                    <h3 
+                    <h3
                       onClick={() => router.push(`/project/${project._id}`)}
                       className="text-xl font-bold text-[#0c1d1a] hover:text-[#006b5b] cursor-pointer transition-colors"
                     >
@@ -140,7 +140,7 @@ export function AppliedProjectsTab() {
                   {app._techStack && app._techStack.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
                       {app._techStack.map((tech) => (
-                        <span 
+                        <span
                           key={tech}
                           className="px-3 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-full border border-teal-200"
                         >
@@ -151,7 +151,7 @@ export function AppliedProjectsTab() {
                   )}
                 </div>
 
-                <ExternalLink 
+                <ExternalLink
                   onClick={() => router.push(`/project-details/${project._id}`)}
                   className="w-5 h-5 text-[#45a193] cursor-pointer hover:text-[#006b5b] ml-4 flex-shrink-0"
                 />
@@ -199,7 +199,7 @@ export function AppliedProjectsTab() {
                     className="px-5 py-2.5 bg-[#006b5b] text-white font-medium rounded-lg hover:bg-[#005a4d] transition flex items-center gap-2"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Go to Dashboard
+                    Contributor Dashboard
                   </button>
                 )}
               </div>
