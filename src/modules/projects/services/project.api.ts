@@ -1,10 +1,11 @@
 import api from "@/lib/axios"
 import { PROJECT_ROUTES } from "@/shared/constant/routes"
+import { BaseProjectPayload } from "@/modules/projects/types/project.types"
 
 
 
 
-export const createProject = async (data: any) => {
+export const createProject = async (data: BaseProjectPayload) => {
 
     try {
 
@@ -117,10 +118,37 @@ export const getMyAppliedProject = async () => {
 export const getMyCreatedProject = async () => {
     try {
 
-         const response = await api.get(PROJECT_ROUTES.GET_MY_PROJECT)
-         return response
+        const response = await api.get(PROJECT_ROUTES.GET_MY_PROJECT)
+        return response
 
     } catch (error) {
         throw error
     }
 }
+
+export const getProjectForEdit = async (projectId: string) => {
+    try {
+
+        const response = await api.get(`${PROJECT_ROUTES.GET_PROJECT_FOR_EDIT}/${projectId}/edit`)
+
+        return response
+
+    } catch (error) {
+       throw error
+    }
+}
+
+export const editProject = async ({
+    projectId,
+    data
+}: {
+    projectId: string;
+    data: BaseProjectPayload;
+}) => {
+    try {
+        const response = await api.patch(`${PROJECT_ROUTES.EDIT_PROJECT}/${projectId}/edit`, data);
+        return response.data
+    } catch (error) {
+        throw error;
+    }
+};

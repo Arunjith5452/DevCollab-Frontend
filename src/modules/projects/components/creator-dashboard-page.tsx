@@ -1,7 +1,13 @@
+"use client"
+
 import CreatorHeader from "@/shared/common/user-common/Creator-header";
 import { CreatorSidebar } from "@/shared/common/user-common/Creator-sidebar";
+import { useRouter } from "next/navigation";
 
 export default function CreatorDashboardPage() {
+
+    let router = useRouter()
+
     return (
         <div className="flex h-screen overflow-hidden bg-white">
             <CreatorSidebar activeItem="dashboard" />

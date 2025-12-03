@@ -17,7 +17,7 @@ export const useS3Upload = (): UploadResult => {
             setLoading(true);
             setError(null);
 
-            // 1️⃣ Request signed URL from backend
+            //  Request signed URL from backend
             const { data } = await api.post("/api/signed-url", {
                 fileName: file.name,
                 fileType: file.type,
@@ -25,7 +25,7 @@ export const useS3Upload = (): UploadResult => {
 
             const { uploadUrl, fileUrl: finalUrl } = data;
 
-            // 2️⃣ Upload directly to S3 using fetch
+            // Upload directly to S3 using fetch
             const s3Response = await fetch(uploadUrl, {
                 method: "PUT",
                 body: file,
