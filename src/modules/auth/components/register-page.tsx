@@ -12,6 +12,8 @@ import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormField } from "../types/auth.type";
 import { signup } from "../services/auth.api";
+import { getErrorMessage } from "@/shared/utils/ErrorMessage";
+import { signIn } from "next-auth/react";
 
 export function RegisterPage() {
   const router = useRouter();
@@ -87,32 +89,20 @@ export function RegisterPage() {
     try {
       const data = await signup(formField);
 
-      if (data.token) {
-        localStorage.setItem('tempToken', data.token);
+      if (data) {
+        localStorage.setItem('tempToken', data);
       }
+      router.push("/register-otp");
 
-      console.log("Registration successful:", data);
-
-      router.push("/otp-verification");
-
-    } catch (error: any) {
+    } catch (error) {
       console.error("Registration error:", error);
 
-      // Handle backend field-specific errors
-      if (error.response?.data?.errors) {
-        setFieldErrors(error.response.data.errors);
+      const message = getErrorMessage(error);
+
+      if (message.toLowerCase().includes("email")) {
+        setFieldErrors({ email: message });
       } else {
-        if (error.response?.data?.message) {
-          setError(error.response.data.message);
-        } else if (error.response?.status === 409) {
-          setFieldErrors({ email: "User already exists with this email" });
-        } else if (error.response?.status === 400) {
-          setError("Invalid input. Please check your details");
-        } else if (error.message) {
-          setError(error.message);
-        } else {
-          setError("Registration failed. Please try again.");
-        }
+        setError(message);
       }
     } finally {
       setIsLoading(false);
@@ -125,7 +115,7 @@ export function RegisterPage() {
 
         {/* Header */}
 
-        <AuthHeader text={"Log In"} />
+        <AuthHeader text={"Log In"} showButton={true} onButtonClick={() => router.push("/login")} />
 
         {/* Main Content */}
         <div className="px-40 flex flex-1 justify-center py-5">
@@ -175,11 +165,11 @@ export function RegisterPage() {
             <div className="flex justify-center">
               <div className="flex max-w-[480px] w-full flex-col items-stretch px-4 py-3 gap-3">
                 <GitHubButton
-                  onClick={() => { }}
+                  onClick={() => signIn("github", { callbackUrl: '/callback' })}
                   text="Sign Up with GitHub"
                 />
                 <GoogleButton
-                  onClick={() => { }}
+                  onClick={() => signIn("google", { callbackUrl: '/callback' })}
                   text="Sign Up with Google"
                 />
               </div>

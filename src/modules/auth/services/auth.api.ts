@@ -1,24 +1,6 @@
-import axios from "axios";
+import api from "@/lib/axios";
+import { AUTH_ROUTES } from "@/shared/constant/routes";
 
-
-const apiClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
-    timeout: 30000,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
-
-apiClient.interceptors.request.use(
-    (config) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
 
 
 export const signup = async (data: {
@@ -28,8 +10,7 @@ export const signup = async (data: {
     confirmPassword: string
 }) => {
     try {
-        const response = await apiClient.post('/api/auth/signup', data)
-        console.log(response)
+        const response = await api.post(AUTH_ROUTES.SIGNUP, data)
         return response.data
     } catch (error) {
         throw error
@@ -44,8 +25,7 @@ export const verifyOTP = async (data: {
 }) => {
     try {
 
-        const response = await apiClient.post('/api/auth/verify-otp',data)
-        console.log(response.data)
+        const response = await api.post(AUTH_ROUTES.VERIFY_OTP, data)
         return response.data
 
     } catch (error) {
@@ -54,3 +34,118 @@ export const verifyOTP = async (data: {
 
     }
 }
+
+export const verifyForgotOTP = async (data: {
+    email: string,
+    otp: Number
+
+}) => {
+    try {
+
+        const response = await api.post(AUTH_ROUTES.VERIFY_FORGOT_OTP, data)
+        return response.data
+
+    } catch (error) {
+
+        throw error
+
+    }
+}
+
+export const login = async (data: {
+    email: string,
+    password: string,
+}) => {
+    try {
+
+        const response = await api.post(AUTH_ROUTES.LOGIN, data, {
+            withCredentials: true
+        });
+
+        return response.data
+
+    } catch (error) {
+        throw error
+    }
+}
+
+export const refreshToken = async () => {
+    try {
+
+        const response = await api.post(AUTH_ROUTES.REFRESH_TOKEN, {}, {
+            withCredentials: true
+        })
+
+
+        return response.data
+
+    } catch (error) {
+        throw error
+    }
+}
+
+export const resendOTP = async (token: string) => {
+    try {
+
+        const response = await api.post(AUTH_ROUTES.RESEND_OTP, { token })
+        return response
+
+    } catch (error) {
+        throw error
+    }
+}
+
+export const resendForgotOTP = async (email: string) => {
+    try {
+
+        const response = await api.post(AUTH_ROUTES.RESEND_FORGOT_OTP, { email })
+        return response
+
+    } catch (error) {
+        throw error
+    }
+}
+
+
+export const forgotPassword = async (email: string) => {
+    try {
+
+        const response = await api.post(AUTH_ROUTES.FORGOT_PASSWORD, { email })
+        return response
+
+    } catch (error) {
+        throw error
+    }
+
+}
+
+export const resetPassword = async (data: {
+    email: string
+    newPassword: string,
+    confirmPassword: string
+}) => {
+
+    try {
+
+        const response = await api.post(AUTH_ROUTES.RESET_PASSWORD, data)
+        console.log("response",response)
+        return response
+
+    } catch (error) {
+
+        throw error
+
+    }
+
+}
+
+export const googleLogin = async () => {
+    try {
+        const response = await api.post(AUTH_ROUTES.GOOGLE_LOGIN);
+        return response;
+    } catch (error) {
+        throw error;
+    }
+};
+
+
