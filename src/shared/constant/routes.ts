@@ -8,7 +8,8 @@ export const AUTH_ROUTES = {
     FORGOT_PASSWORD: "/api/auth/forgot-password",
     RESET_PASSWORD: "/api/auth/reset-password",
     REFRESH_TOKEN: "/api/auth/refresh",
-    GOOGLE_LOGIN :"/api/auth/google/callback"
+    GOOGLE_LOGIN :"/api/auth/google/callback",
+    LOGOUT:"/api/auth/logout"
 };
 
 export const PROJECT_ROUTES = {
@@ -21,12 +22,15 @@ export const PROJECT_ROUTES = {
   GET_MY_PROJECT:"/api/user/projects/created",
   GET_APPLIED_PROJECT:"/api/user/projects/applied",
   GET_PROJECT_FOR_EDIT:"/api/projects",
-  EDIT_PROJECT:"/api/projects"
+  EDIT_PROJECT:"/api/projects",
+  GET_PROJECT_MEMBERS:"/api/projects",
+  DISABLE_PROJECT:'/api/projects'
 
 };
 
 export const TASK_ROUTERS ={
-  CREATE_TASK:"/api/task"
+  CREATE_TASK:"/api/task",
+  GET_ASSIGNEES:"/api/task/assignees"
 }
 
 export const USER_ROUTERS = {

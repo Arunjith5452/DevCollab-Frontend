@@ -70,7 +70,7 @@ export interface BaseProjectPayload {
   description: string;
   githubRepo: string;
   techStack: string[];
-  difficulty: string; 
+  difficulty: string;
   startDate: string;
   endDate: string;
   expectation: string;
@@ -83,3 +83,40 @@ export interface BaseProjectPayload {
   image: string | null;
 }
 
+export interface Member {
+  id: string;
+  name: string;
+  role: 'contributor' | 'maintainer';
+  email: string;
+}
+
+export interface JoinRequest {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface TeamMembersPageProps {
+  initialMembers: Member[];
+  initialJoinRequests?: JoinRequest[];
+}
+
+import { TaskStatus } from "@/modules/tasks/types/task.types";
+import { TaskComment } from "@/modules/tasks/types/task.types";
+
+export interface TaskListItem {
+  id: string;
+  title: string;
+  description: string;
+  assignedId: string;
+  deadline: string;
+  status: TaskStatus;
+  tags: string[];
+  payment: number;
+  advancePaid: number;
+  approval?: "approved" | "improvement-needed" | "under-review";
+  feedback?: string;
+  acceptanceCriteria?: { text: string; completed: boolean }[];
+  documents?: string[];
+  comments?: { createdAt: Date | string; message: string; userId: string }[];
+}

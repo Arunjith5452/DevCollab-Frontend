@@ -79,6 +79,7 @@ export default function EditProjectPage() {
             try {
                 setIsLoading(true);
                 const response = await getProjectForEdit(projectId);
+                console.log("response",response)
 
                 if (!response?.data) {
                     toast.error('Project not found');
@@ -196,8 +197,7 @@ export default function EditProjectPage() {
 
     return (
         <>
-            <Header user={{ name: "User" }} />
-             
+            <Header />
             <main className="pt-20 min-h-screen bg-gray-50">
                 <div className="max-w-3xl mx-auto px-6 py-12">
                     <h1 className="text-3xl font-bold text-gray-900 mb-8">Edit Project</h1>

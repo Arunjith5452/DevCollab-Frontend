@@ -1,5 +1,5 @@
 export {Header} from '../admin-common/Header'
 export {Sidebar} from '../admin-common/Sidebar'
-export {DataTable} from '../admin-common/DataTable'
-export {Pagination} from '../admin-common/Pagination'
+export {DataTable} from '../DataTable'
+export {Pagination} from '../Pagination'
 export {Badge} from '../admin-common/Badge'

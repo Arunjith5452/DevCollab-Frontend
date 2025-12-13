@@ -1,4 +1,3 @@
-// app/not-found.tsx
 
 import NotFoundPage from "@/shared/common/NotFoundPage";
 

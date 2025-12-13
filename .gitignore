@@ -2,3 +2,4 @@
 .env
 /dist
 /.next
+.env.local

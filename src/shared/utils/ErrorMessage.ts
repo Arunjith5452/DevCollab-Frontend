@@ -1,4 +1,4 @@
-// export function getErrorMessage(err: any): string {
+// export function getErrorMessage(err): string {
 //   const data = err?.response?.data;
 
 //   if (data && typeof data === "object") {

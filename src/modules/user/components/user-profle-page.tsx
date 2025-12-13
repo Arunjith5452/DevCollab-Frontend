@@ -58,7 +58,7 @@ export default function UserProfilePage() {
 
   return (
     <div className="relative flex size-full min-h-screen flex-col bg-white overflow-x-hidden">
-      <Header user={{ name: user?.name || "Guest" }} />
+      <Header />
 
       <main className="flex-1 pt-20 px-4 md:px-8 lg:px-40">
         <div className="max-w-4xl mx-auto">

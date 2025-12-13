@@ -8,10 +8,23 @@ import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { approveApplication, getPendingApplications, rejectApplication } from "../services/project.api";
 import { PendingApplication } from "../types/project.types";
+import api from "@/lib/axios";
 
 export default function ApplicationsPage() {
     const searchParams = useSearchParams();
     const projectId = searchParams.get("projectId")
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const { data } = await api.get('/api/profile/me', { withCredentials: true });
+            } catch (error) {
+                let err = error as Error
+                console.error(err.message);
+            }
+        };
+        fetchData();
+    }, [])
 
     const [applications, setApplications] = useState<PendingApplication[]>([]);
     const [selectedApplicant, setSelectedApplicant] = useState<PendingApplication | null>(null);
@@ -27,7 +40,7 @@ export default function ApplicationsPage() {
             toast.error("Failed to load applications");
         } finally {
             setLoading(false);
-        }   
+        }
     };
 
     useEffect(() => {
@@ -59,7 +72,7 @@ export default function ApplicationsPage() {
             setApplications(prev => prev.filter(a => a.id !== selectedApplicant.id));
             closeModal();
         } catch (err) {
-            console.log("error",err)
+            console.log("error", err)
         }
     };
 

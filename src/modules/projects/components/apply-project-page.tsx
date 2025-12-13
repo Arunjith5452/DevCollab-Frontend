@@ -87,7 +87,7 @@ export default function ApplyToProjectPage() {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-white overflow-x-hidden">
-      <Header user={{ name: "Arunjith" }} />
+      <Header/>
 
       <main className="flex-1 px-4 sm:px-8 md:px-12 lg:px-24 xl:px-40 py-8 mt-20">
         <div className="max-w-2xl mx-auto">

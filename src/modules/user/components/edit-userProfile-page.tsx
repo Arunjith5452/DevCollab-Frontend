@@ -110,7 +110,7 @@ export default function ProfileEditPage() {
 
   return (
     <div className="relative flex size-full min-h-screen flex-col bg-white overflow-x-hidden">
-      <Header user={{ name: user?.name || "User" }} />
+      <Header />
 
       <main className="pt-24 pb-12 px-4 md:px-8 lg:px-6">
         <div className="max-w-7xl mx-auto">
