@@ -4,9 +4,8 @@ import { ChevronDown, X, Filter, Code2, BarChart3, Users } from 'lucide-react';
 import { Header } from '@/shared/common/user-common/Header';
 import { Pagination } from '@/shared/common/admin-common';
 import { listProject } from '../services/project.api';
-import { SearchInput } from '@/shared/common/admin-common/Searching';
+import { SearchInput } from '@/shared/common/Searching';
 import { CustomSelectProps, ListProjectResponse, Project } from '../types/project.types';
-import api from '@/lib/axios';
 import Link from 'next/link';
 import PageLoader from '@/shared/common/LoadingComponent';
 
@@ -175,7 +174,7 @@ export default function ExploreProjectsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header user={{ name: "Arunjith" }} />
+      <Header />
 
       <main className="pt-16 pb-16 md:pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

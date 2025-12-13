@@ -65,7 +65,7 @@ export default function ProjectDetailsPage() {
   return (
     <div className="relative flex flex-col min-h-screen bg-white overflow-x-hidden">
       {/* Header */}
-      <Header user={{ name: "Arunjith" }} />
+      <Header/>
 
       {/* Main Content */}
       <main className="flex-1 px-4 sm:px-8 md:px-12 lg:px-24 xl:px-40 py-8 mt-20">

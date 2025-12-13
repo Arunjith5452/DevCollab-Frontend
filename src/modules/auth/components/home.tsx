@@ -1,6 +1,5 @@
 "use client"
-import api from "@/lib/axios";
-import { useEffect } from "react"
+
 import { Users, GitBranch, Star, ArrowRight, TrendingUp, Award } from 'lucide-react';
 import { Header } from "@/shared/common/user-common/Header";
 import { Footer } from "@/shared/common/user-common/Footer";
@@ -24,7 +23,7 @@ export function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header user={{ name: "arunjith" }} />
+      <Header/>
 
       {/* Enhanced Hero Section - ONLY THIS CHANGED */}
       <section className="relative bg-gradient-to-br from-green-600 via-green-700 to-green-800 pt-32 pb-20 px-6 overflow-hidden">

@@ -5,6 +5,10 @@ import {
   Bell, Code, Menu, Search, X, LogOut, User,
   ChevronDown, Loader2
 } from 'lucide-react';
+import { useAuthStore, useUser } from '@/store/useUserStore';
+import { logout } from "@/modules/auth/services/auth.api"
+import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 
 interface NavLink { label: string; href: string; }
 interface HeaderProps {
@@ -12,8 +16,6 @@ interface HeaderProps {
   showSearch?: boolean;
   showNotifications?: boolean;
   className?: string;
-  /** Pass user if logged in, null if not */
-  user?: { name: string; avatar?: string } | null;
 }
 
 export function Header({
@@ -25,24 +27,39 @@ export function Header({
   showSearch = true,
   showNotifications = true,
   className = '',
-  user = null // <-- null = not logged in
 }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
 
-  // Scroll effect
+  const user = useUser()
+  const fetchUser = useAuthStore((state) => state.fetchUser)
+  console.log(user?.profileImage)
+
+  useEffect(() => {
+    const loadUser = async () => {
+      setIsLoading(true);
+      try {
+        await fetchUser();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadUser();
+  }, [fetchUser])
+
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Click outside to close dropdown
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -55,26 +72,22 @@ export function Header({
 
   const active = (href: string) => pathname === href;
 
-  const logout = async () => {
-    if (!confirm('Are you sure you want to log out?')) return;
-    setLoggingOut(true);
+  const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await logout();
+      localStorage.clear()
+      toast.success('Logged out')
       router.push('/login');
-    } catch (err) {
-      console.error(err);
-      alert('Logout failed');
-    } finally {
-      setLoggingOut(false);
-      setDropdownOpen(false);
+
+    } catch (error) {
+      getErrorMessage(error)
     }
   };
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/95 backdrop-blur-lg shadow-lg' : 'bg-white/80 backdrop-blur-sm'
-      } ${className}`}
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-lg shadow-lg' : 'bg-white/80 backdrop-blur-sm'
+        } ${className}`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
@@ -96,9 +109,8 @@ export function Header({
               <a
                 key={l.href}
                 href={l.href}
-                className={`font-medium transition-colors ${
-                  active(l.href) ? 'text-green-600' : 'text-gray-700 hover:text-green-600'
-                }`}
+                className={`font-medium transition-colors ${active(l.href) ? 'text-green-600' : 'text-gray-700 hover:text-green-600'
+                  }`}
               >
                 {l.label}
               </a>
@@ -121,9 +133,9 @@ export function Header({
               </button>
             )}
 
-            {/* === AUTH STATE === */}
-            {user ? (
-              /* LOGGED IN: Profile Dropdown */
+            {isLoading ? (
+              <div className="w-9 h-9 bg-gray-200 rounded-full animate-pulse" />
+            ) : user ? (
               <div ref={dropdownRef} className="relative">
                 <button
                   onClick={() => setDropdownOpen(v => !v)}
@@ -131,8 +143,8 @@ export function Header({
                   aria-label="User menu"
                 >
                   <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-pink-500 rounded-full flex items-center justify-center text-white font-medium text-sm shadow-md overflow-hidden">
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    {user.profileImage ? (
+                      <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
                       user.name.charAt(0).toUpperCase()
                     )}
@@ -151,7 +163,7 @@ export function Header({
                       <span className="text-sm font-medium">View Profile</span>
                     </a>
                     <button
-                      onClick={logout}
+                      onClick={handleLogout}
                       disabled={loggingOut}
                       className="flex w-full items-center space-x-3 px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
                     >
@@ -164,7 +176,6 @@ export function Header({
                 )}
               </div>
             ) : (
-              /* NOT LOGGED IN: Sign In + Sign Up */
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => router.push('/login')}
@@ -200,18 +211,21 @@ export function Header({
                   key={l.href}
                   href={l.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`py-2 px-4 rounded-lg font-medium transition-colors ${
-                    active(l.href)
-                      ? 'text-green-600 bg-green-50'
-                      : 'text-gray-700 hover:text-green-600 hover:bg-gray-50'
-                  }`}
+                  className={`py-2 px-4 rounded-lg font-medium transition-colors ${active(l.href)
+                    ? 'text-green-600 bg-green-50'
+                    : 'text-gray-700 hover:text-green-600 hover:bg-gray-50'
+                    }`}
                 >
                   {l.label}
                 </a>
               ))}
 
               {/* Mobile Auth */}
-              {user ? (
+              {isLoading ? (
+                <div className="border-t border-gray-200 pt-3 mt-3">
+                  <div className="w-full h-10 bg-gray-200 rounded-lg animate-pulse" />
+                </div>
+              ) : user ? (
                 <div className="border-t border-gray-200 pt-3 mt-3">
                   <button
                     onClick={() => setDropdownOpen(v => !v)}

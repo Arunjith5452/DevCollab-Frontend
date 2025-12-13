@@ -128,7 +128,7 @@ export const resetPassword = async (data: {
     try {
 
         const response = await api.post(AUTH_ROUTES.RESET_PASSWORD, data)
-        console.log("response",response)
+        console.log("response", response)
         return response
 
     } catch (error) {
@@ -149,3 +149,13 @@ export const googleLogin = async () => {
 };
 
 
+export const logout = async () => {
+
+    try {
+        const response = await api.post(AUTH_ROUTES.LOGOUT)
+        return response
+    } catch (error) {
+        throw error
+    }
+
+}

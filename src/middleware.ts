@@ -7,9 +7,18 @@ export function middleware(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
 
+  if (
+    pathname.startsWith("/api/auth") ||
+    pathname === "/callback" ||         
+    pathname.includes("callback")
+  ) {
+    return NextResponse.next();
+  }
+
+
   const publicRoutes = [
     '/login',
-    '/signup',
+    '/register',
     '/register-otp',
     '/forgot-otp',
     '/reset-password',
@@ -18,7 +27,7 @@ export function middleware(req: NextRequest) {
   ];
 
   const roleRedirectMap: Record<string, string> = {
-    '/admin': '/admin/dashboard7'
+    '/admin': '/admin/dashboard'
   };
 
   const isAdmin = pathname.startsWith('/admin')

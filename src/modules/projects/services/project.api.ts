@@ -30,7 +30,6 @@ export const listProject = async ({ search = '', techStack = '', difficulty = ''
     } catch (error) {
 
         throw error
-
     }
 }
 
@@ -134,7 +133,7 @@ export const getProjectForEdit = async (projectId: string) => {
         return response
 
     } catch (error) {
-       throw error
+        throw error
     }
 }
 
@@ -152,3 +151,31 @@ export const editProject = async ({
         throw error;
     }
 };
+
+
+export const getProjectMember = async (projectId: string) => {
+
+    try {
+
+        const response = await api.get(`${PROJECT_ROUTES.GET_PROJECT_MEMBERS}/${projectId}/members`)
+        return response
+
+    } catch (error) {
+
+        throw error
+
+    }
+
+}
+
+export const disableProject = async (projectId: string) => {
+    try {
+
+        const response = await api.patch(`${PROJECT_ROUTES.DISABLE_PROJECT}/${projectId}/disable`)
+
+        return response
+
+    } catch (error) {
+        throw error
+    }
+}
