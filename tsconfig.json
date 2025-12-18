@@ -20,7 +20,10 @@
     ],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": [
+      
+    ]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/shared/common/user-common/Footer.tsx", "src/shared/common/user-common/Header.tsx","/src/shared/types/**/*.d.ts"],
   "exclude": ["node_modules"]

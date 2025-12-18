@@ -15,11 +15,13 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  console.log("this is working")
 
   const publicRoutes = [
     '/login',
     '/register',
     '/register-otp',
+    '/demo',
     '/forgot-otp',
     '/reset-password',
     '/forgot-password',

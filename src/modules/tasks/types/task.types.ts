@@ -22,6 +22,10 @@ export interface ProjectTask {
     tags?: string[];
     payment: number;
     advancePaid: number;
+    approval?: "approved" | "improvement-needed" | "under-review";
+    prLink?: string;
+    feedback?: string
+    workDescription?: string;
     acceptanceCriteria?: AcceptanceCriteria[];
     documents?: string[];
     comments?: TaskComment[];

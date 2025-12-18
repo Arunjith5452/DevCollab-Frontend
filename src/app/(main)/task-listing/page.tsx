@@ -52,7 +52,6 @@ export default async function TasksPage({
 
         if (res.ok) {
             const payload = await res.json();
-
             const tasks = payload.data?.tasks || [];
             const total = payload.data?.total || 0;
             const totalPages = Math.ceil(total / limit);
@@ -63,6 +62,8 @@ export default async function TasksPage({
                 currentPage: page,
                 totalItems: total,
             };
+
+            console.log("This is the tasks comming form the severside fetching", tasks)
         }
     } catch (err) {
         console.error('Failed to fetch tasks:', err);

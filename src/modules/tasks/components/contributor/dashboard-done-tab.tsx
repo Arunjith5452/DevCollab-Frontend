@@ -20,6 +20,8 @@ export default function DoneTab({ tasks, getAssigneeName, onViewDetails }: DoneT
     });
   };
 
+  console.log("teh task donetab approval",tasks.map((val)=>val))
+
   return (
     <div className="space-y-4">
       {tasks.length > 0 ? (
