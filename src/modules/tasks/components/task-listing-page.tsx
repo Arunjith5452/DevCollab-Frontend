@@ -14,6 +14,7 @@ import { getAssignees } from '../services/task.api';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/useUserStore';
 import TaskDetailsPanel from '@/shared/common/user-common/task-details-panel';
+import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 
 interface InitialData {
   tasks: ProjectTask[];
@@ -42,7 +43,7 @@ export default function TasksListingPage({
 }: TasksListingProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,11 +51,10 @@ export default function TasksListingPage({
         const { data } = await api.get('/api/profile/me', { withCredentials: true });
         console.log("check data", data)
       } catch (error) {
-        let err = error as Error
-        console.error(err.message);
+        getErrorMessage(error)
       }
-    };
-    fetchData();
+    }
+    fetchData()
   }, [])
 
   const [searchTerm, setSearchTerm] = useState(initialFilters.search);
@@ -71,9 +71,9 @@ export default function TasksListingPage({
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [assignees, setAssignees] = useState<Assignee[]>([])
 
-  const statusRef = useRef<HTMLDivElement>(null);
-  const assigneeRef = useRef<HTMLDivElement>(null);
-  const reassignRef = useRef<HTMLDivElement>(null);
+  const statusRef = useRef<HTMLDivElement>(null)
+  const assigneeRef = useRef<HTMLDivElement>(null)
+  const reassignRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -83,17 +83,18 @@ export default function TasksListingPage({
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [])
 
-  // Sync selectedTask with initialData when data refreshes (e.g. after adding a comment)
+
   useEffect(() => {
     if (selectedTask) {
       const updatedTask = initialData.tasks.find(t => t.id === selectedTask.id);
       if (updatedTask && JSON.stringify(updatedTask) !== JSON.stringify(selectedTask)) {
-        setSelectedTask(updatedTask);
+        setSelectedTask(updatedTask)
       }
     }
-  }, [initialData, selectedTask]);
+  }, [initialData, selectedTask])
+
 
   useEffect(() => {
     if (projectId) {
@@ -101,7 +102,8 @@ export default function TasksListingPage({
         .then(r => setAssignees(r.data || []))
         .catch(() => toast.error('Failed to load members'));
     }
-  }, [projectId]);
+  }, [projectId])
+
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -200,9 +202,6 @@ export default function TasksListingPage({
     }
   };
 
-  const isValidUrl = (str: string) => {
-    try { new URL(str); return true; } catch { return false; }
-  };
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -232,7 +231,7 @@ export default function TasksListingPage({
                 </button>
                 {showStatusDropdown && (
                   <div className="absolute top-full right-0 mt-2 w-48 border border-[#cdeae5] rounded-lg bg-white shadow-lg z-50">
-                    {['all', 'todo', 'in-progress', 'done', 'improvement-needed'].map(val => (
+                    {['all', 'todo', 'in-progress', 'done'].map(val => (
                       <button key={val} onClick={() => { setStatusFilter(val); setShowStatusDropdown(false); }}
                         className={`w-full px-4 py-3 text-left hover:bg-[#e6f4f2] text-sm ${statusFilter === val ? 'bg-[#e6f4f2] text-[#006b5b] font-medium' : 'text-[#0c1d1a]'}`}>
                         {val === 'all' ? 'All Status' : getStatusLabel(val)}
@@ -282,8 +281,8 @@ export default function TasksListingPage({
                         <h3 className="text-lg font-semibold text-[#0c1d1a] mb-2">{task.title}</h3>
                         <p className="text-[#6b7280] text-sm mb-3">{task.description || 'No description'}</p>
                         <div className="flex flex-wrap gap-2 mb-3">
-                          {task.tags?.map(tag => (
-                            <span key={tag} className="px-3 py-1 bg-[#e6f4f2] text-[#006b5b] rounded-full text-xs font-medium">
+                          {task.tags?.map((tag, index) => (
+                            <span key={index} className="px-3 py-1 bg-[#e6f4f2] text-[#006b5b] rounded-full text-xs font-medium">
                               {tag}
                             </span>
                           ))}

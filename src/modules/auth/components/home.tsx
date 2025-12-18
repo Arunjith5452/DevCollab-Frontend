@@ -4,22 +4,24 @@ import { Users, GitBranch, Star, ArrowRight, TrendingUp, Award } from 'lucide-re
 import { Header } from "@/shared/common/user-common/Header";
 import { Footer } from "@/shared/common/user-common/Footer";
 import { useRouter } from "next/navigation";
+import { useEffect } from 'react';
+import api from '@/lib/axios';
 
 export function HomePage() {
 
   const router = useRouter()
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const { data } = await api.get('/api/profile/me', { withCredentials: true });
-  //     } catch (error) {
-  //       let err = error as Error
-  //       console.error(err.message);
-  //     }
-  //   };
-  //   fetchData();
-  // }, [])
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data } = await api.get('/api/profile/me', { withCredentials: true });
+      } catch (error) {
+        let err = error as Error
+        console.error(err.message);
+      }
+    };
+    fetchData();
+  }, [])
 
   return (
     <div className="min-h-screen bg-white">

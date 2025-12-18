@@ -102,7 +102,6 @@ export interface TeamMembersPageProps {
 }
 
 import { TaskStatus } from "@/modules/tasks/types/task.types";
-import { TaskComment } from "@/modules/tasks/types/task.types";
 
 export interface TaskListItem {
   id: string;
@@ -114,8 +113,10 @@ export interface TaskListItem {
   tags: string[];
   payment: number;
   advancePaid: number;
+  workDescription?: string;
   approval?: "approved" | "improvement-needed" | "under-review";
   feedback?: string;
+  prLink?: string;
   acceptanceCriteria?: { text: string; completed: boolean }[];
   documents?: string[];
   comments?: { createdAt: Date | string; message: string; userId: string }[];

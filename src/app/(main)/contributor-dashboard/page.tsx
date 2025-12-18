@@ -54,6 +54,7 @@ export default async function ContributorDashboard({
     if (res.ok) {
       const payload: ContributorTasksResponse = await res.json();
       tasks = payload.data || [];
+      console.log("this is the tasks",tasks)
     } else if (res.status === 401) {
       redirect("/login");
     }

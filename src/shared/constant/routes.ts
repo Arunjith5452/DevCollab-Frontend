@@ -30,7 +30,8 @@ export const PROJECT_ROUTES = {
 
 export const TASK_ROUTERS ={
   CREATE_TASK:"/api/task",
-  GET_ASSIGNEES:"/api/task/assignees"
+  GET_ASSIGNEES:"/api/task/assignees",
+  ADD_COMMENT:"/api/tasks"
 }
 
 export const USER_ROUTERS = {

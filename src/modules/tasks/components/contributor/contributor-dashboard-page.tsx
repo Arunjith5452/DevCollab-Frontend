@@ -111,12 +111,15 @@ export default function ContributorDashboardPage({
     setSubmitModalOpen(true);
   };
 
-  const handleSubmitWork = async (data: { prLink: string, description: string }) => {
+  const handleSubmitWork = async (data: { prLink: string, workDescription: string }) => {
     if (!submittingTaskId) return;
 
     setIsSubmitting(true);
     try {
-      await api.patch(`/api/tasks/${submittingTaskId}/done`, data);
+      await api.patch(`/api/tasks/${submittingTaskId}/done`, {
+        prLink: data.prLink,
+        workDescription: data.workDescription,
+      });
       toast.success("Task submitted for review!");
       setTasks(prev => prev.map(t => t.id === submittingTaskId ? { ...t, status: "done", approval: "under-review" } : t));
       setSelectedTask(null);

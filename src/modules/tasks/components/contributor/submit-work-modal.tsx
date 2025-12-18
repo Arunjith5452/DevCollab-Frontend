@@ -6,19 +6,19 @@ import { X, ExternalLink, FileText } from 'lucide-react';
 interface SubmitWorkModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: { prLink: string; description: string }) => Promise<void>;
+    onSubmit: (data: { prLink: string; workDescription: string }) => Promise<void>;
     isSubmitting: boolean;
 }
 
 export default function SubmitWorkModal({ isOpen, onClose, onSubmit, isSubmitting }: SubmitWorkModalProps) {
     const [prLink, setPrLink] = useState('');
-    const [description, setDescription] = useState('');
+    const [workDescription, setDescription] = useState('');
 
     if (!isOpen) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit({ prLink, description });
+        onSubmit({ prLink, workDescription });
     };
 
     return (
@@ -54,7 +54,7 @@ export default function SubmitWorkModal({ isOpen, onClose, onSubmit, isSubmittin
                             <FileText className="absolute left-3 top-3 w-4 h-4 text-[#6b7280]" />
                             <textarea
                                 required
-                                value={description}
+                                value={workDescription}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Describe what you've done..."
                                 rows={4}
