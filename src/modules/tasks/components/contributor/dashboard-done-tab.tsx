@@ -20,7 +20,7 @@ export default function DoneTab({ tasks, getAssigneeName, onViewDetails }: DoneT
     });
   };
 
-  console.log("teh task donetab approval",tasks.map((val)=>val))
+  console.log("teh task donetab approval", tasks.map((val) => val))
 
   return (
     <div className="space-y-4">
@@ -80,18 +80,23 @@ export default function DoneTab({ tasks, getAssigneeName, onViewDetails }: DoneT
                 {task.approval === 'approved' ? (
                   <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
                     <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-green-700">Approved</p>
-                      <p className="text-xs text-green-600">Your work has been approved by the creator</p>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold text-green-700">Approved</p>
+                        <span className="px-2 py-0.5 bg-green-600 text-white text-[10px] font-bold rounded-full uppercase">
+                          Payment Released
+                        </span>
+                      </div>
+                      <p className="text-xs text-green-600">Your work has been approved and payment released.</p>
                     </div>
                   </div>
-                ) : (
+                ) : task.approval === 'improvement-needed' ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
                       <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0" />
                       <div>
                         <p className="text-sm font-semibold text-orange-700">Needs Improvement</p>
-                        <p className="text-xs text-orange-600">Creator has provided feedback</p>
+                        <p className="text-xs text-orange-600">Creator has requested changes</p>
                       </div>
                     </div>
 
@@ -114,7 +119,7 @@ export default function DoneTab({ tasks, getAssigneeName, onViewDetails }: DoneT
                       </div>
                     )}
                   </div>
-                )}
+                ) : null}
               </div>
             )}
           </div>

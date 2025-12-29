@@ -13,7 +13,7 @@ import {
   Search,
 } from 'lucide-react';
 import { Header } from '@/shared/common/user-common/Header';
-import { createTask, getAssignees } from '../services/task.api';
+import { createCheckoutSession, createTask, getAssignees } from '../services/task.api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 import { useS3Upload } from '@/shared/hooks/uses3Upload';
@@ -39,7 +39,9 @@ interface FormValues {
 
 export default function CreateTaskPage() {
   const router = useRouter();
-  const projectId = useSearchParams().get('projectId');
+  const searchParams = useSearchParams();
+  const rawProjectId = searchParams.get('projectId');
+  const projectId = (rawProjectId && rawProjectId !== 'undefined' && rawProjectId !== 'null') ? rawProjectId : null;
 
   const {
     register,
@@ -64,6 +66,7 @@ export default function CreateTaskPage() {
   const watchPayment = watch('payment');
   const watchAssignedId = watch('assignedId');
   const watchDocuments = watch('documents') || [];
+  const advancePaid = watch('payment.advancePaid') || 0
 
   const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
@@ -77,11 +80,72 @@ export default function CreateTaskPage() {
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    if (!projectId) return
+    if (!projectId || projectId === 'undefined') return
     getAssignees(projectId)
       .then((r) => setAssignees(r.data || []))
       .catch(() => toast.error('Failed to load team members'));
   }, [projectId]);
+
+  // Handle successful payment return from Stripe Checkout
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const sessionId = searchParams.get('session_id');
+
+    if (sessionId) {
+      // Retrieve pending task data from localStorage
+      const pendingDataStr = localStorage.getItem('pendingTaskData');
+
+      if (pendingDataStr) {
+        try {
+          const pendingData = JSON.parse(pendingDataStr);
+
+          // Robust resolution of projectId
+          const qProjId = searchParams.get('projectId');
+          const currentProjectId = (qProjId && qProjId !== 'undefined' && qProjId !== 'null')
+            ? qProjId
+            : (pendingData.projectId && pendingData.projectId !== 'undefined' && pendingData.projectId !== 'null' ? pendingData.projectId : null);
+
+          if (!currentProjectId) {
+            console.error('Project ID resolution failed:', { qProjId, pendingDataProj: pendingData.projectId });
+            toast.error('Project ID missing after payment');
+            return;
+          }
+
+          // Create task with session ID
+          const taskPayload = {
+            ...pendingData,
+            projectId: currentProjectId,
+            payment: {
+              ...pendingData.payment,
+              sessionId: sessionId,
+              amount: pendingData.payment.amount || advancePaid
+            }
+          };
+
+          console.log('Final task payload for creation:', taskPayload);
+
+          toast.loading('Creating task...', { id: 'create-task' });
+
+          createTask(taskPayload)
+            .then(() => {
+              localStorage.removeItem('pendingTaskData');
+              toast.dismiss('create-task');
+              toast.success('Task created successfully with payment!');
+              router.push(`/task-listing?projectId=${currentProjectId}`);
+            })
+            .catch((err) => {
+              toast.dismiss('create-task');
+              toast.error(getErrorMessage(err));
+              // Clear session_id from URL but keep projectId
+              window.history.replaceState({}, '', window.location.pathname + `?projectId=${currentProjectId}`);
+            });
+        } catch (err) {
+          console.error('Error handling post-payment task creation:', err);
+          toast.error('Failed to create task after payment');
+        }
+      }
+    }
+  }, [router, projectId, advancePaid]);
 
   const predefinedTags = ['Frontend', 'React', 'UIUX', 'Backend'];
 
@@ -209,10 +273,62 @@ export default function CreateTaskPage() {
       return;
     }
 
-    const payload: any = { ...data, projectId };
+    const advancePaid = data.payment?.advancePaid || 0;
+
+
+    if (advancePaid > 0) {
+      if (!projectId || projectId === 'undefined') {
+        toast.error('Task cannot be created without a valid Project ID');
+        return;
+      }
+
+      try {
+        const amountInPaise = Math.round(advancePaid * 100);
+        console.log("amountPisa:", amountInPaise)
+
+        const response = await createCheckoutSession({
+          amount: amountInPaise,
+          metadata: {
+            task_title: data.title,
+            project_id: projectId || '',
+            // Add more if needed for webhook identification
+          },
+        });
+
+        if (response.url) {
+          // Optional: Save form data to localStorage before redirect
+          // Ensure we save a valid projectId string or null, never 'undefined'
+          const safeProjectId = (projectId && projectId !== 'undefined' && projectId !== 'null') ? projectId : null;
+
+          const pendingData = {
+            ...data,
+            projectId: safeProjectId,
+            payment: {
+              ...data.payment,
+              amount: data.payment?.amount || advancePaid
+            }
+          };
+
+          console.log('Saving pending task data:', pendingData);
+          localStorage.setItem('pendingTaskData', JSON.stringify(pendingData));
+          window.location.href = response.url; // Redirect to Stripe Checkout
+        } else {
+          toast.error('Failed to start payment');
+        }
+      } catch (err) {
+        toast.error('Payment initiation failed');
+      }
+      return; // Always return after redirect attempt
+    }
+
+    // No advance → create task directly
+    const payload: any = {
+      ...data,
+      projectId,
+    };
 
     if (!payload.documents?.length) delete payload.documents;
-    if (!payload.payment?.amount) delete payload.payment;
+    if (payload.payment && payload.payment.advancePaid === 0 && !payload.payment.amount) delete payload.payment;
 
     try {
       await createTask(payload);

@@ -99,7 +99,7 @@ export default function TaskDetailsPanel({
       toast.error("Feedback is required");
       return;
     }
-    console.log("feedbackText:",feedbackText)
+    console.log("feedbackText:", feedbackText)
     setIsSubmittingApproval(true);
     try {
       await api.patch(`/api/tasks/${task!.id}/request-improvement`, {
@@ -197,7 +197,7 @@ export default function TaskDetailsPanel({
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${statusConfig.bg}`}>
                 <span className={`text-sm font-medium ${statusConfig.color}`}>
                   {task.approval === 'approved'
-                    ? 'Approved'
+                    ? (task.escrowStatus === 'released' ? 'Approved & Payment Released' : 'Approved')
                     : task.approval === 'under-review'
                       ? 'Under Review'
                       : task.status === 'done'
