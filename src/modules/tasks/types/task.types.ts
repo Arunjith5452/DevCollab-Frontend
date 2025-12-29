@@ -26,6 +26,7 @@ export interface ProjectTask {
     prLink?: string;
     feedback?: string
     workDescription?: string;
+    escrowStatus?: "not-paid" | "held" | "released";
     acceptanceCriteria?: AcceptanceCriteria[];
     documents?: string[];
     comments?: TaskComment[];

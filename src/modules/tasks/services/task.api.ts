@@ -30,3 +30,20 @@ export const addComment = async (taskId: string, message: string) => {
         throw error;
     }
 }
+
+
+
+// export const createPaymentIntent = async (amount: number, currency: string = 'INR', metadata?: Record<string, string>) => {
+//     try {
+//         const response = await api.post(TASK_ROUTERS.CREATE_PAYMENT, { amount, currency, metadata });
+//         return response.data;
+//     } catch (error) {
+//         throw error;
+//     }
+// }
+
+// services/task.api.ts or payment.api.ts
+export const createCheckoutSession = async (data: { amount: number; metadata: Record<string, string> }) => {
+    const response = await api.post(TASK_ROUTERS.CREATE_CHECKOUT_SESSION, data);
+    return response.data;
+};
