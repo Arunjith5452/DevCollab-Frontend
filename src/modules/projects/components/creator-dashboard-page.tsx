@@ -1,32 +1,69 @@
-"use client"
+"use client";
 
+import { useEffect, useState } from "react";
 import CreatorHeader from "@/shared/common/user-common/Creator-header";
 import { CreatorSidebar } from "@/shared/common/user-common/Creator-sidebar";
 import { useRouter, useSearchParams } from "next/navigation";
+import { projectDetails } from "../services/project.api";
+import PageLoader from "@/shared/common/LoadingComponent";
+
+import { useProjectStore } from "@/store/useProjectStore";
 
 export default function CreatorDashboardPage() {
-
-    let router = useRouter()
+    const router = useRouter();
     const searchParams = useSearchParams();
     const projectId = searchParams.get('projectId');
+    const [project, setProjectData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const { setProject } = useProjectStore();
 
+    useEffect(() => {
+        if (projectId) {
+            console.log("Fetching project details for ID:", projectId);
+            projectDetails(projectId)
+                .then(res => {
+                    console.log("Received project data:", res.data);
+                    setProjectData(res.data);
+                    setProject({ id: res.data.id, title: res.data.title });
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.error("Failed to fetch project details:", err);
+                    setLoading(false);
+                });
+        } else {
+            setLoading(false);
+        }
+    }, [projectId, setProject]);
+
+    if (loading) return <div className="flex h-screen items-center justify-center"><PageLoader /></div>;
+
+    const projectName = project?.title || "Project";
 
     return (
         <div className="flex h-screen overflow-hidden bg-white">
             <CreatorSidebar activeItem="dashboard" />
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                <CreatorHeader projectName="Project Alpha" />
+                <CreatorHeader />
                 <main className="flex-1 overflow-y-auto p-8">
                     <div className="mb-8">
                         <h2 className="text-[#0c1d1a] text-xl font-bold mb-4">Project Overview</h2>
                         <div className="flex items-start justify-between">
                             <div>
-                                <h3 className="text-[#0c1d1a] font-semibold mb-1">Project Alpha</h3>
-                                <p className="text-[#6b7280] text-sm">40% Tasks Completed | 8 Active Contributors | 5 Open PRs</p>
+                                <h3 className="text-[#0c1d1a] font-semibold mb-1">{projectName}</h3>
+                                <p className="text-[#6b7280] text-sm">
+                                    {project?.status === 'active' ? 'Active Project' : 'Project Dashboard'} | {project?.members?.length || 0} Members
+                                </p>
                             </div>
-                            <div className="w-32 h-32 rounded-lg overflow-hidden bg-[#f5e6d3]">
-                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23f5e6d3' width='200' height='200'/%3E%3Cellipse cx='100' cy='100' rx='60' ry='80' fill='%23e8d4c0'/%3E%3C/svg%3E" alt="Project" className="w-full h-full object-cover" />
+                            <div className="w-32 h-32 rounded-lg overflow-hidden bg-[#f5e6d3] border border-[#e6f4f2]">
+                                {project?.image ? (
+                                    <img src={project.image} alt={projectName} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-[#f5e6d3]">
+                                        <div className="w-12 h-12 bg-[#0c1d1a] rounded-sm opacity-10"></div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -88,79 +125,81 @@ export default function CreatorDashboardPage() {
                         </div>
                     </div>
 
+
+
                     {/* Task Management */}
                     <div className="mb-8">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-[#0c1d1a] text-xl font-bold">Task Management</h2>
-                            <button onClick={() =>router.push(`/create-task?projectId=${projectId}`)} className="px-4 py-2 bg-[#006b5b] text-white text-sm font-medium rounded hover:bg-[#005a4d]">
-                            Create Task
-                        </button>
-                    </div>
-                    <div className="bg-white rounded-lg border border-[#e6f4f2] overflow-hidden">
-                        <table className="w-full">
-                            <thead className="bg-[#f8fcfb] border-b border-[#e6f4f2]">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Task</th>
-                                    <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Assignee</th>
-                                    <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Status</th>
-                                    <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Deadline</th>
-                                    <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Reminder</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr className="border-b border-[#e6f4f2]">
-                                    <td className="px-6 py-4 text-[#0c1d1a] text-sm">Implement user authentication</td>
-                                    <td className="px-6 py-4 text-[#6b7280] text-sm">Ethan Harper</td>
-                                    <td className="px-6 py-4">
-                                        <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">In Progress</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-[#6b7280] text-sm">2024-08-15</td>
-                                    <td className="px-6 py-4 text-[#6b7280] text-sm">true</td>
-                                </tr>
-                                <tr className="border-b border-[#e6f4f2]">
-                                    <td className="px-6 py-4 text-[#0c1d1a] text-sm">Design landing page</td>
-                                    <td className="px-6 py-4 text-[#6b7280] text-sm">Olivia Bennett</td>
-                                    <td className="px-6 py-4">
-                                        <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Completed</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-[#6b7280] text-sm">2024-08-10</td>
-                                    <td className="px-6 py-4 text-[#6b7280] text-sm">false</td>
-                                </tr>
-                                <tr>
-                                    <td className="px-6 py-4 text-[#0c1d1a] text-sm">Test user authentication</td>
-                                    <td className="px-6 py-4 text-[#6b7280] text-sm">Noah Carter</td>
-                                    <td className="px-6 py-4">
-                                        <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">Pending</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-[#6b7280] text-sm">2024-08-20</td>
-                                    <td className="px-6 py-4 text-[#6b7280] text-sm">true</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        {/* Pagination */}
-                        <div className="flex items-center justify-center gap-2 py-4 border-t border-[#e6f4f2]">
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] rounded">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                            <button className="w-8 h-8 flex items-center justify-center bg-[#006b5b] text-white text-sm font-medium rounded">1</button>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">2</button>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">3</button>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">4</button>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">5</button>
-                            <span className="text-[#6b7280] text-sm">...</span>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">10</button>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] rounded">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                </svg>
+                            <button onClick={() => router.push(`/create-task?projectId=${projectId}`)} className="px-4 py-2 bg-[#006b5b] text-white text-sm font-medium rounded hover:bg-[#005a4d]">
+                                Create Task
                             </button>
                         </div>
+                        <div className="bg-white rounded-lg border border-[#e6f4f2] overflow-hidden">
+                            <table className="w-full">
+                                <thead className="bg-[#f8fcfb] border-b border-[#e6f4f2]">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Task</th>
+                                        <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Assignee</th>
+                                        <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Status</th>
+                                        <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Deadline</th>
+                                        <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Reminder</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="border-b border-[#e6f4f2]">
+                                        <td className="px-6 py-4 text-[#0c1d1a] text-sm">Implement user authentication</td>
+                                        <td className="px-6 py-4 text-[#6b7280] text-sm">Ethan Harper</td>
+                                        <td className="px-6 py-4">
+                                            <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">In Progress</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-[#6b7280] text-sm">2024-08-15</td>
+                                        <td className="px-6 py-4 text-[#6b7280] text-sm">true</td>
+                                    </tr>
+                                    <tr className="border-b border-[#e6f4f2]">
+                                        <td className="px-6 py-4 text-[#0c1d1a] text-sm">Design landing page</td>
+                                        <td className="px-6 py-4 text-[#6b7280] text-sm">Olivia Bennett</td>
+                                        <td className="px-6 py-4">
+                                            <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Completed</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-[#6b7280] text-sm">2024-08-10</td>
+                                        <td className="px-6 py-4 text-[#6b7280] text-sm">false</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="px-6 py-4 text-[#0c1d1a] text-sm">Test user authentication</td>
+                                        <td className="px-6 py-4 text-[#6b7280] text-sm">Noah Carter</td>
+                                        <td className="px-6 py-4">
+                                            <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">Pending</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-[#6b7280] text-sm">2024-08-20</td>
+                                        <td className="px-6 py-4 text-[#6b7280] text-sm">true</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            {/* Pagination */}
+                            <div className="flex items-center justify-center gap-2 py-4 border-t border-[#e6f4f2]">
+                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] rounded">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                                <button className="w-8 h-8 flex items-center justify-center bg-[#006b5b] text-white text-sm font-medium rounded">1</button>
+                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">2</button>
+                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">3</button>
+                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">4</button>
+                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">5</button>
+                                <span className="text-[#6b7280] text-sm">...</span>
+                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">10</button>
+                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] rounded">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-            </div>
-        </main>
+                </main>
             </div >
         </div >
     );
