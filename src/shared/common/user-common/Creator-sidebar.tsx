@@ -18,9 +18,9 @@ export const CreatorSidebar = ({ activeItem = 'dashboard' }: SidebarProps) => {
         { id: 'tasks', label: 'Tasks', icon: <Clipboard size={20} />, href: '/task-listing' },
         { id: 'members', label: 'Members', icon: <Users size={20} />, href: '/team-members' },
         { id: 'applications', label: 'Applications', icon: <FileText size={20} />, href: '/applications' },
-        { id: 'meetings', label: 'Meetings', icon: <Calendar size={20} />, href: '/dashboard/meetings' },
-        { id: 'chat', label: 'Chat', icon: <User size={20} />, href: '/dashboard/chat' },
-        { id: 'announcements', label: 'Announcements', icon: <Megaphone size={20} />, href: '/dashboard/announcements' },
+        { id: 'meetings', label: 'Meetings', icon: <Calendar size={20} />, href: '/creator-meetings' },
+        // { id: 'chat', label: 'Chat', icon: <User size={20} />, href: '/dashboard/chat' },
+        // { id: 'announcements', label: 'Announcements', icon: <Megaphone size={20} />, href: '/dashboard/announcements' },
     ];
 
     const handleNavigation = (href: string) => {
