@@ -44,7 +44,7 @@ export default function ExploreProjectsPage() {
 
   const featuredProjects: Project[] = [
     {
-      _id: '1',
+      id: '1',
       title: 'AI-Powered Chatbot for Customer Support',
       description: 'Develop an intelligent chatbot using natural language processing to handle customer inquiries and provide instant support.',
       featured: true,
@@ -392,7 +392,7 @@ export default function ExploreProjectsPage() {
           <section className="mb-12">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5">Featured Projects</h2>
             {featuredProjects.map((project) => (
-              <div key={project._id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-5 shadow-sm hover:shadow-md transition-shadow">
+              <div key={project.id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-center">
                   <div className="md:col-span-2 space-y-3 order-2 md:order-1">
                     <div className="inline-block px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-semibold rounded-full">
@@ -429,7 +429,7 @@ export default function ExploreProjectsPage() {
             ) : (
               <div className="space-y-5">
                 {projects.map((project, index) => (
-                  <div key={project._id || index} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div key={project.id || index} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-center">
                       <div className="md:col-span-2 space-y-3">
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
@@ -439,7 +439,7 @@ export default function ExploreProjectsPage() {
                           {project.description}
                         </p>
                         <Link
-                          href={`/project-details/${project._id}`}
+                          href={`/project-details/${project.id}`}
                           className="inline-block mt-3 px-5 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-lg hover:bg-teal-100 transition-colors"
                         >
                           View Project

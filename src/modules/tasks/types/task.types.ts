@@ -21,7 +21,6 @@ export interface ProjectTask {
     deadline?: string | null;
     tags?: string[];
     payment: number;
-    advancePaid: number;
     approval?: "approved" | "improvement-needed" | "under-review";
     prLink?: string;
     feedback?: string
@@ -32,3 +31,19 @@ export interface ProjectTask {
     comments?: TaskComment[];
 }
 
+
+export interface CreateTaskPayload {
+    title: string;
+    description: string;
+    projectId: string;
+    assignedId?: string;
+    deadline: string;
+    tags: string[];
+    acceptanceCriteria: Array<{ text: string; completed: boolean }>;
+    payment?: {
+        amount: number;
+        escrowStatus?: 'not-paid' | 'held' | 'released';
+    };
+    documents?: string[];
+    status?: TaskStatus;
+}

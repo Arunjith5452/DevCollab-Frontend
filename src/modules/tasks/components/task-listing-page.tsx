@@ -180,6 +180,17 @@ export default function TasksListingPage({
     return labels[status] || status;
   };
 
+  const safeFormatDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '—';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return '—';
+      return format(date, 'MMM d, yyyy');
+    } catch {
+      return '—';
+    }
+  };
+
   const handleTaskClick = (task: ProjectTask) => {
     setSelectedTask(task);
     setReassignMember(task.assignedId);
@@ -207,7 +218,7 @@ export default function TasksListingPage({
     <div className="flex min-h-screen bg-white">
       <CreatorSidebar activeItem="tasks" />
       <div className="flex-1 flex flex-col">
-        <CreatorHeader projectName="" />
+        <CreatorHeader />
 
         <main className="flex-1 px-8 py-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
@@ -300,11 +311,11 @@ export default function TasksListingPage({
                       </div>
                       <div><p className="text-xs text-[#6b7280]">Deadline</p>
                         <p className="font-medium text-[#0c1d1a]">
-                          {task.deadline ? format(new Date(task.deadline), 'MMM d, yyyy') : '—'}
+                          {safeFormatDate(task.deadline)}
                         </p>
                       </div>
                       <div><p className="text-xs text-[#6b7280]">Payment</p>
-                        <p className="font-medium text-[#0c1d1a]">${task.payment} <span className="text-xs text-[#6b7280]">(${task.advancePaid} paid)</span></p>
+                        <p className="font-medium text-[#0c1d1a]">${task.payment}</p>
                       </div>
                     </div>
                   </div>

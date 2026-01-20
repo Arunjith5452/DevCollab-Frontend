@@ -22,6 +22,7 @@ import toast from 'react-hot-toast';
 import { ProjectTask, TaskComment } from "@/modules/tasks/types/task.types";
 import { addComment } from "@/modules/tasks/services/task.api";
 import api from '@/lib/axios';
+import ConfirmModal from '../ConfirmModal';
 
 interface Assignee {
   userId: string;
@@ -74,6 +75,7 @@ export default function TaskDetailsPanel({
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   const [isSubmittingApproval, setIsSubmittingApproval] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
 
   // Helper variables
   const isUnderReview = task?.status === 'done' && task?.approval === 'under-review';
@@ -244,9 +246,11 @@ export default function TaskDetailsPanel({
               <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-xl border border-amber-200">
                 <div className="flex items-center gap-2 mb-1">
                   <Check className="w-4 h-4 text-amber-600" />
-                  <span className="text-xs font-medium text-amber-600">Advance Paid</span>
+                  <span className="text-xs font-medium text-amber-600">Released</span>
                 </div>
-                <p className="text-2xl font-bold text-amber-900">${task.advancePaid || 0}</p>
+                <p className="text-2xl font-bold text-amber-900">
+                  ${(task.approval === 'approved' && task.escrowStatus === 'released') ? (task.payment || 0) : 0}
+                </p>
               </div>
               <div className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl border border-emerald-200">
                 <div className="flex items-center gap-2 mb-1">
@@ -254,7 +258,7 @@ export default function TaskDetailsPanel({
                   <span className="text-xs font-medium text-emerald-600">Balance Due</span>
                 </div>
                 <p className="text-2xl font-bold text-emerald-900">
-                  ${((task.payment || 0) - (task.advancePaid || 0)).toFixed(2)}
+                  ${(task.approval === 'approved' && task.escrowStatus === 'released') ? 0 : (task.payment || 0)}
                 </p>
               </div>
             </div>
@@ -391,7 +395,7 @@ export default function TaskDetailsPanel({
 
                       {/* Approve Button */}
                       <button
-                        onClick={() => handleApprove(task.id)}
+                        onClick={() => setShowApproveModal(true)}
                         disabled={isSubmittingApproval}
                         className="
       flex-1 px-6 py-4
@@ -435,7 +439,7 @@ export default function TaskDetailsPanel({
                       <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5" />
                       <p className="text-xs text-blue-700">
                         <strong>Note:</strong> Approving will release the remaining balance of $
-                        {((task.payment || 0) - (task.advancePaid || 0)).toFixed(2)}
+                        {((task.payment || 0) - ((task.approval === 'approved' && task.escrowStatus === 'released') ? (task.payment || 0) : 0)).toFixed(2)}
                       </p>
                     </div>
 
@@ -661,6 +665,14 @@ export default function TaskDetailsPanel({
             </div>
           )
         }
+        <ConfirmModal
+          open={showApproveModal}
+          title="Approve Task & Release Payment?"
+          message={`Are you sure you want to approve this task? This will release the full payment of $${task.payment} to the contributor. This action cannot be undone.`}
+          confirmText="Approve & Pay"
+          onConfirm={() => handleApprove(task.id)}
+          onCancel={() => setShowApproveModal(false)}
+        />
       </div >
     </>
   );
