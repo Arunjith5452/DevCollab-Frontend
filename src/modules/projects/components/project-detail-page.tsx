@@ -7,37 +7,28 @@ import { projectDetails } from "../services/project.api";
 import { getErrorMessage } from "@/shared/utils/ErrorMessage";
 import PageLoader from "@/shared/common/LoadingComponent";
 import { ProjectDetails } from "../types/project.types";
-import api from "@/lib/axios";
+
+import { useProjectStore } from "@/store/useProjectStore";
 
 export default function ProjectDetailsPage() {
 
   const router = useRouter()
-
-
   const { id } = useParams<{ id: string }>()
 
-  const [project, setProject] = useState<ProjectDetails | null>(null);
+  const [project, setProjectData] = useState<ProjectDetails | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const { data } = await api.get('/api/profile/me', { withCredentials: true });
-  //     } catch (error) {
-  //       let err = error as Error
-  //       console.error(err.message);
-  //     }
-  //   };
-  //   fetchData();
-  // }, [])
+  const { setProject } = useProjectStore();
 
   useEffect(() => {
 
     const fetchProject = async () => {
       try {
         if (!id) return;
-        const data = await projectDetails(id)
-        setProject(data.data)
+        const res = await projectDetails(id)
+        if (res.data) {
+          setProjectData(res.data);
+          setProject({ id: res.data.id, title: res.data.title });
+        }
       } catch (error) {
         let message = getErrorMessage(error)
         console.error(message)
@@ -48,7 +39,7 @@ export default function ProjectDetailsPage() {
 
     fetchProject()
 
-  }, [id])
+  }, [id, setProject])
 
 
   if (loading)
@@ -65,17 +56,17 @@ export default function ProjectDetailsPage() {
   return (
     <div className="relative flex flex-col min-h-screen bg-white overflow-x-hidden">
       {/* Header */}
-      <Header/>
+      <Header />
 
       {/* Main Content */}
       <main className="flex-1 px-4 sm:px-8 md:px-12 lg:px-24 xl:px-40 py-8 mt-20">
         <div className="max-w-5xl mx-auto">
           {/* Hero Image */}
           <div className="w-full h-56 sm:h-64 rounded-lg overflow-hidden mb-6">
-            {project._image ? (
+            {project.image ? (
               <img
-                src={project._image}
-                alt={`Image for ${project._title}`}
+                src={project.image}
+                alt={`Image for ${project.title}`}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -91,29 +82,29 @@ export default function ProjectDetailsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-[#0c1d1a] text-2xl sm:text-3xl font-bold">
-                {project._title}
+                {project.title}
               </h1>
               <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                {project._status}
+                {project.status}
               </span>
               <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
-                {project._difficulty}
+                {project.difficulty}
               </span>
             </div>
             <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full self-start sm:self-auto">
-              {project._visibility}
+              {project.visibility}
             </span>
           </div>
 
           <p className="text-[#6b7280] text-sm mb-6">
-            A collaborative platform for developers to build and launch innovative web applications.
+            Building the future of collaborative development.
           </p>
 
           {/* About Section */}
           <div className="mb-8">
             <h2 className="text-[#0c1d1a] text-xl font-bold mb-3">About This Project</h2>
             <p className="text-[#0c1d1a] text-base leading-relaxed">
-              {project._description}
+              {project.description}
             </p>
           </div>
 
@@ -121,15 +112,21 @@ export default function ProjectDetailsPage() {
           <div className="mb-8">
             <h3 className="text-[#0c1d1a] text-lg font-semibold mb-3">Project Creator</h3>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-[#d4a373] overflow-hidden">
-                <img
-                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23d4a373' width='100' height='100'/%3E%3Ccircle cx='50' cy='40' r='20' fill='%23fff'/%3E%3Cellipse cx='50' cy='75' rx='25' ry='20' fill='%23fff'/%3E%3C/svg%3E"
-                  alt="Sophia Bennett"
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-12 h-12 rounded-full bg-[#d4a373] overflow-hidden flex items-center justify-center">
+                {project.creator?.avatar ? (
+                  <img
+                    src={project.creator.avatar}
+                    alt={project.creator.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#d4a373] to-[#b5835a] flex items-center justify-center text-white font-bold">
+                    {project.creator?.name?.charAt(0).toUpperCase() || "C"}
+                  </div>
+                )}
               </div>
               <div>
-                <p className="text-[#0c1d1a] font-semibold text-sm">Sophia Bennett</p>
+                <p className="text-[#0c1d1a] font-semibold text-sm">{project.creator?.name || "Anonymous Member"}</p>
                 <p className="text-[#6b7280] text-xs">Project Lead</p>
               </div>
             </div>
@@ -138,18 +135,18 @@ export default function ProjectDetailsPage() {
           {/* Project Info Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 p-6 bg-[#f8fcfb] rounded-lg border border-[#e6f4f2]">
             {(() => {
-              const totalTeamSize = project._requiredRoles?.reduce(
+              const totalTeamSize = project.requiredRoles?.reduce(
                 (sum: number, role: any) => sum + Number(role.count || 0),
                 0
               );
 
               return [
                 ["Team Size", `${totalTeamSize} Members`],
-                ["Difficulty Level", project._difficulty || "N/A"],
-                ["Start Date", new Date(project._startDate).toDateString()],
-                ["End Date", new Date(project._endDate).toDateString()],
-                ["Status", project._status || "N/A"],
-                ["Visibility", project._visibility || "N/A"],
+                ["Difficulty Level", project.difficulty || "N/A"],
+                ["Start Date", new Date(project.startDate).toDateString()],
+                ["End Date", new Date(project.endDate).toDateString()],
+                ["Status", project.status || "N/A"],
+                ["Visibility", project.visibility || "N/A"],
               ].map(([label, value]) => (
                 <div key={label}>
                   <p className="text-[#6b7280] text-sm mb-1">{label}</p>
@@ -171,7 +168,7 @@ export default function ProjectDetailsPage() {
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 0c-6.626 0-12 5.373-12 12..." />
               </svg>
-              {project._githubRepo}
+              {project.githubRepo}
             </a>
           </div>
 
@@ -179,7 +176,7 @@ export default function ProjectDetailsPage() {
           <div className="mb-8">
             <h3 className="text-[#0c1d1a] text-lg font-semibold mb-3">Tech Stack</h3>
             <div className="flex flex-wrap gap-2">
-              {project._techStack?.map((tech: string) => (
+              {project.techStack?.map((tech: string) => (
                 <span
                   key={tech}
                   className="px-4 py-2 bg-[#f3f4f6] text-[#0c1d1a] text-sm font-medium rounded"
@@ -196,9 +193,9 @@ export default function ProjectDetailsPage() {
               Required Roles
             </h3>
             <div className="space-y-3">
-              {project._requiredRoles?.map((role: any) => (
+              {project.requiredRoles?.map((role: any, index: number) => (
                 <div
-                  key={role._id}
+                  key={role.id || index}
                   className="p-4 bg-white border border-[#e6f4f2] rounded-lg"
                 >
                   <div className="flex justify-between items-start mb-2">
@@ -219,7 +216,7 @@ export default function ProjectDetailsPage() {
           <div className="mb-8">
             <h2 className="text-[#0c1d1a] text-xl font-bold mb-3">Expectations</h2>
             <p className="text-[#0c1d1a] text-base leading-relaxed">
-              {project._expectation}
+              {project.expectation}
             </p>
           </div>
 
@@ -227,7 +224,7 @@ export default function ProjectDetailsPage() {
           <div className="flex justify-center">
             <button
               onClick={() => {
-                router.push(`/apply-project?projectId=${id}&tech=${encodeURIComponent(JSON.stringify(project._techStack))}`);
+                router.push(`/apply-project?projectId=${id}&tech=${encodeURIComponent(JSON.stringify(project.techStack))}`);
               }}
               className="px-8 py-3 bg-[#006b5b] text-white text-base font-bold rounded hover:bg-[#005a4d] transition-colors"
             >

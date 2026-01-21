@@ -62,8 +62,6 @@ export default async function TasksPage({
                 currentPage: page,
                 totalItems: total,
             };
-
-            console.log("This is the tasks comming form the severside fetching", tasks)
         }
     } catch (err) {
         console.error('Failed to fetch tasks:', err);

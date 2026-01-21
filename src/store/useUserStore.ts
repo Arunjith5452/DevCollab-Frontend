@@ -3,17 +3,17 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface User {
-    userId: string;
-    name: string;
-    profileImage:string
-    email: string;
-    role: string;
+  userId: string;
+  name: string;
+  profileImage: string
+  email: string;
+  role: string;
 }
 
 interface AuthState {
-    user: User | null;
-    fetchUser: () => Promise<void>;
-    logout: () => void;
+  user: User | null;
+  fetchUser: () => Promise<void>;
+  logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -27,9 +27,9 @@ export const useAuthStore = create<AuthState>()(
 
           const { data } = await api.get("/api/profile/me");
 
-          console.log("data",data)
-
-          if (data?.userId && data?.name) {
+          if (data?.success && data?.data) {
+            set({ user: data.data });
+          } else if (data?.userId && data?.name) {
             set({ user: data });
           } else {
             set({ user: null });
@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState>()(
       }
     }),
 
-    { name: "auth-storage" } 
+    { name: "auth-storage" }
   )
 );
 

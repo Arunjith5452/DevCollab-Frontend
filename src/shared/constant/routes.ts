@@ -43,5 +43,6 @@ export const USER_ROUTERS = {
 
 export const ADMIN_ROUTES = {
   GET_ALL_USERS: "/api/admin/users",
+  GET_ALL_PROJECTS:"/api/admin/projects",
   UPDATE_USER_STATUS: (id: string) => `/api/admin/users/${id}/status`,
 };

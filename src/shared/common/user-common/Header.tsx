@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import {
   Bell, Code, Menu, Search, X, LogOut, User,
   ChevronDown, Loader2
@@ -9,7 +10,7 @@ import { useAuthStore, useUser } from '@/store/useUserStore';
 import { logout } from "@/modules/auth/services/auth.api"
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
-
+  
 interface NavLink { label: string; href: string; }
 interface HeaderProps {
   navLinks?: NavLink[];
@@ -39,7 +40,6 @@ export function Header({
 
   const user = useUser()
   const fetchUser = useAuthStore((state) => state.fetchUser)
-  console.log(user?.profileImage)
 
   useEffect(() => {
     const loadUser = async () => {
@@ -106,14 +106,14 @@ export function Header({
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-8">
             {navLinks.map(l => (
-              <a
+              <Link
                 key={l.href}
                 href={l.href}
                 className={`font-medium transition-colors ${active(l.href) ? 'text-green-600' : 'text-gray-700 hover:text-green-600'
                   }`}
               >
                 {l.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -155,13 +155,13 @@ export function Header({
 
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <a
+                    <Link
                       href="/user-profile"
                       className="flex items-center space-x-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       <User className="w-4 h-4" />
                       <span className="text-sm font-medium">View Profile</span>
-                    </a>
+                    </Link>
                     <button
                       onClick={handleLogout}
                       disabled={loggingOut}
@@ -207,7 +207,7 @@ export function Header({
           <div className="md:hidden mt-4 pb-4 border-t border-gray-200 pt-4">
             <nav className="flex flex-col space-y-3">
               {navLinks.map(l => (
-                <a
+                <Link
                   key={l.href}
                   href={l.href}
                   onClick={() => setMobileOpen(false)}
@@ -217,7 +217,7 @@ export function Header({
                     }`}
                 >
                   {l.label}
-                </a>
+                </Link>
               ))}
 
               {/* Mobile Auth */}
@@ -242,14 +242,14 @@ export function Header({
 
                   {dropdownOpen && (
                     <div className="mt-2 space-y-1 px-4">
-                      <a
+                      <Link
                         href="/profile"
                         onClick={() => setMobileOpen(false)}
                         className="flex items-center space-x-2 py-2 text-gray-700 hover:text-green-600"
                       >
                         <User className="w-4 h-4" />
                         <span>View Profile</span>
-                      </a>
+                      </Link>
                       <button
                         onClick={logout}
                         disabled={loggingOut}

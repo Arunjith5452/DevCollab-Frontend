@@ -33,7 +33,7 @@ interface FormValues {
   status: TaskStatus;
   tags: string[];
   acceptanceCriteria: { text: string; completed: boolean }[];
-  payment?: { amount: number; advancePaid: number };
+  payment?: { amount: number };
   documents?: string[];
 }
 
@@ -66,7 +66,7 @@ export default function CreateTaskPage() {
   const watchPayment = watch('payment');
   const watchAssignedId = watch('assignedId');
   const watchDocuments = watch('documents') || [];
-  const advancePaid = watch('payment.advancePaid') || 0
+  const paymentAmount = watch('payment.amount') || 0
 
   const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
@@ -118,7 +118,8 @@ export default function CreateTaskPage() {
             payment: {
               ...pendingData.payment,
               sessionId: sessionId,
-              amount: pendingData.payment.amount || advancePaid
+              amount: pendingData.payment.amount,
+              advancePaid: 0 // Explicitly set to 0 for backend consistency
             }
           };
 
@@ -145,7 +146,7 @@ export default function CreateTaskPage() {
         }
       }
     }
-  }, [router, projectId, advancePaid]);
+  }, [router, projectId, paymentAmount]);
 
   const predefinedTags = ['Frontend', 'React', 'UIUX', 'Backend'];
 
@@ -273,17 +274,17 @@ export default function CreateTaskPage() {
       return;
     }
 
-    const advancePaid = data.payment?.advancePaid || 0;
+    const paymentAmount = data.payment?.amount || 0;
 
 
-    if (advancePaid > 0) {
+    if (paymentAmount > 0) {
       if (!projectId || projectId === 'undefined') {
         toast.error('Task cannot be created without a valid Project ID');
         return;
       }
 
       try {
-        const amountInPaise = Math.round(advancePaid * 100);
+        const amountInPaise = Math.round(paymentAmount * 100);
         console.log("amountPisa:", amountInPaise)
 
         const response = await createCheckoutSession({
@@ -305,7 +306,8 @@ export default function CreateTaskPage() {
             projectId: safeProjectId,
             payment: {
               ...data.payment,
-              amount: data.payment?.amount || advancePaid
+              amount: paymentAmount,
+              advancePaid: 0
             }
           };
 
@@ -328,7 +330,7 @@ export default function CreateTaskPage() {
     };
 
     if (!payload.documents?.length) delete payload.documents;
-    if (payload.payment && payload.payment.advancePaid === 0 && !payload.payment.amount) delete payload.payment;
+    if (payload.payment && !payload.payment.amount) delete payload.payment;
 
     try {
       await createTask(payload);
@@ -485,10 +487,10 @@ export default function CreateTaskPage() {
             </div>
 
             {/* Payment */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-[#0c1d1a] mb-2">
-                  Payment Amount (Optional)
+                  Payment Amount to Escrow
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -500,25 +502,7 @@ export default function CreateTaskPage() {
                     className="w-full pl-12 pr-4 py-3 border border-[#cdeae5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006b5b]"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-[#0c1d1a] mb-2">
-                  Advance Paid
-                </label>
-                <div className="relative">
-                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    type="number"
-                    step="0.01"
-                    {...register('payment.advancePaid', { valueAsNumber: true })}
-                    placeholder="0.00"
-                    className="w-full pl-12 pr-4 py-3 border border-[#cdeae5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006b5b]"
-                  />
-                </div>
-                <p className="text-xs text-gray-600 mt-1">
-                  Balance: $
-                  {((watchPayment?.amount || 0) - (watchPayment?.advancePaid || 0)).toFixed(2)}
-                </p>
+                <p className="text-xs text-gray-500 mt-1">This amount will be held in escrow until completion.</p>
               </div>
             </div>
 

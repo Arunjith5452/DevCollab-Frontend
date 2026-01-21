@@ -15,6 +15,7 @@ interface DataTableProps<T> {
   loading?: boolean;
   emptyMessage?: string;
   className?: string;
+  pagination?: ReactNode;
 }
 
 export function DataTable<T extends { id?: string | number }>({
@@ -23,6 +24,7 @@ export function DataTable<T extends { id?: string | number }>({
   loading = false,
   emptyMessage = "No data found",
   className = "",
+  pagination,
 }: DataTableProps<T>) {
   if (loading) {
     return (
@@ -71,33 +73,35 @@ export function DataTable<T extends { id?: string | number }>({
           <tbody className="divide-y divide-gray-100 bg-white">
             {data.map((row, rowIndex) => (
               <tr
-              key={row.id ?? rowIndex}
-              className="group transition-all duration-200 hover:bg-teal-50/50"
-            >
-              {columns.map((column, colIndex) => (
-                <td
-                  key={colIndex}
-                  className={`
+                key={row.id ?? rowIndex}
+                className="group transition-all duration-200 hover:bg-teal-50/50"
+              >
+                {columns.map((column, colIndex) => (
+                  <td
+                    key={colIndex}
+                    className={`
                     px-6 py-5 text-sm text-gray-800
                     ${column.align === 'center' && 'text-center'}
                     ${column.align === 'right' && 'text-right'}
                     transition-colors duration-200
                   `}
-                >
-                  <div className="flex items-center justify-start">
-                    {column.render
-                      ? column.render(row, rowIndex)
-                      : column.key
-                        ? String(row[column.key] ?? '')
-                        : null}
-                  </div>
-                </td>
-              ))}
-            </tr>
-          ))}
+                  >
+                    <div className="flex items-center justify-start">
+                      {column.render
+                        ? column.render(row, rowIndex)
+                        : column.key
+                          ? String(row[column.key] ?? '')
+                          : null}
+                    </div>
+                  </td>
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
+
+      {pagination}
 
       {/* Optional subtle footer shadow when scrollable */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent opacity-70" />

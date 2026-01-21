@@ -1,5 +1,5 @@
 export interface Project {
-  _id: string;
+  id: string;
   title: string;
   description: string;
   featured: boolean;
@@ -7,6 +7,11 @@ export interface Project {
   techStack: string[];
   difficulty: string;
   roleNeeded: string;
+  creator?: {
+    name: string;
+    email: string;
+    avatar?: string | null;
+  };
 }
 
 export interface ListProjectResponse {
@@ -34,19 +39,24 @@ export interface RequiredRole {
 }
 
 export interface ProjectDetails {
-  _image: any;
-  _id: string;
-  _title: string;
-  _description: string;
-  _difficulty: string;
-  _startDate: string;
-  _endDate: string;
-  _status: string;
-  _visibility: string;
-  _githubRepo: string;
-  _techStack: string[];
-  _expectation: string;
-  _requiredRoles: RequiredRole[];
+  image: string | null;
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  visibility: string;
+  githubRepo: string;
+  techStack: string[];
+  expectation: string;
+  requiredRoles: RequiredRole[];
+  creator?: {
+    name: string;
+    email: string;
+    avatar?: string | null;
+  };
 }
 
 export interface PendingApplication {
@@ -112,7 +122,6 @@ export interface TaskListItem {
   status: TaskStatus;
   tags: string[];
   payment: number;
-  advancePaid: number;
   workDescription?: string;
   approval?: "approved" | "improvement-needed" | "under-review";
   feedback?: string;

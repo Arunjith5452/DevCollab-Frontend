@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import ContributorHeader from "@/shared/common/user-common/contributor-common/ContributorHeader";
 import ContributorSidebar from "@/shared/common/user-common/contributor-common/ContributorSidebar";
 import { TaskListItem } from "../../../projects/types/project.types";
 import { useAuthStore } from "@/store/useUserStore";
 import api from "@/lib/axios";
+import { projectDetails } from "../../../projects/services/project.api";
 import PageLoader from "@/shared/common/LoadingComponent"
 import { getAssignees } from "../../services/task.api"
 import toast from "react-hot-toast"
@@ -13,6 +15,7 @@ import TodoTab from "./dashboard-todo-tab"
 import InProgressTab from "./dashboard-inProgress-tab"
 import DoneTab from "./dashboard-done-tab"
 import SubmitWorkModal from "./submit-work-modal"
+import { useProjectStore } from "@/store/useProjectStore";
 
 import TaskDetailsPanel from "@/shared/common/user-common/task-details-panel";
 
@@ -29,6 +32,7 @@ export default function ContributorDashboardPage({
   initialTab?: TaskStatus;
   projectId: string;
 }) {
+  const router = useRouter();
   const [tasks, setTasks] = useState<TaskListItem[]>(initialTasks);
   const [activeTab, setActiveTab] = useState<TaskStatus>(initialTab);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,12 +47,18 @@ export default function ContributorDashboardPage({
   const user = useAuthStore((state) => state.user);
   const fetchUser = useAuthStore((state) => state.fetchUser);
 
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
     const loadUser = async () => {
-      try { await fetchUser(); } finally { setIsLoading(false); }
+      try {
+        if (!user) await fetchUser();
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadUser();
-  }, [fetchUser]);
+  }, [fetchUser, user]);
 
   useEffect(() => {
     if (!projectId) return;
@@ -59,6 +69,12 @@ export default function ContributorDashboardPage({
 
   useEffect(() => {
     if (!user || !projectId) return;
+
+    // Skip fetch on initial mount if tasks are already provided for the active tab
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
 
     const fetchTasks = async () => {
       try {
@@ -81,6 +97,23 @@ export default function ContributorDashboardPage({
       }
     }
   }, [tasks, selectedTask]);
+
+  const [projectData, setProjectData] = useState<any>(null);
+
+  const { setProject: setGlobalProject } = useProjectStore();
+
+  useEffect(() => {
+    if (projectId) {
+      console.log("Fetching project details for contributor ID:", projectId);
+      projectDetails(projectId)
+        .then(res => {
+          console.log("Received project data for contributor:", res.data);
+          setProjectData(res.data);
+          setGlobalProject({ id: res.data.id, title: res.data.title });
+        })
+        .catch(err => console.error("Failed to fetch project info", err));
+    }
+  }, [projectId, setGlobalProject]);
 
   if (isLoading || !user) {
     return <div className="flex items-center justify-center min-h-screen bg-[#f8fcfb]"><PageLoader /></div>;
@@ -150,7 +183,7 @@ export default function ContributorDashboardPage({
       <ContributorSidebar activeItem="tasks" />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <ContributorHeader projectName="OpenSourceHub" />
+        <ContributorHeader />
 
         {/* Tabs */}
         <div className="bg-white border-b border-[#cdeae5] px-8">
@@ -158,7 +191,10 @@ export default function ContributorDashboardPage({
             {(["todo", "in-progress", "done"] as const).map(tab => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => {
+                  setActiveTab(tab);
+                  router.push(`/contributor-dashboard?projectId=${projectId}&tab=${tab}`, { scroll: false });
+                }}
                 className={`py-4 px-2 font-semibold text-sm border-b-2 transition-colors capitalize ${activeTab === tab
                   ? "text-[#006b5b] border-[#006b5b]"
                   : "text-[#6b7280] border-transparent hover:text-[#0c1d1a]"

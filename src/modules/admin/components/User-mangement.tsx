@@ -21,7 +21,6 @@ export interface User {
 
 
 export default function UserManagement() {
-  const [activeTab, setActiveTab] = useState("users");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -136,7 +135,7 @@ export default function UserManagement() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar activeItem="users" />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header

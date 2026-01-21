@@ -1,8 +1,9 @@
 import api from "@/lib/axios"
 import { TASK_ROUTERS } from "@/shared/constant/routes"
+import { CreateTaskPayload } from "../types/task.types";
 
 
-export const createTask = async (data: any) => {
+export const createTask = async (data: CreateTaskPayload) => {
 
     try {
         const response = await api.post(TASK_ROUTERS.CREATE_TASK, data)

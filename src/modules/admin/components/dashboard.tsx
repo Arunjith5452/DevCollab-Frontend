@@ -2,140 +2,42 @@
 
 import { useEffect } from "react";
 import api from "@/lib/axios";
+import { Sidebar, Header } from "@/shared/common/admin-common";
 import { Activity, ArrowUpRight, Bell, Calendar, ChevronDown, Code, DollarSign, Download, Filter, Folder, FolderOpen, Home, Mail, MoreVertical, Search, Settings, Target, TrendingUp, User, UserCheck, Users } from "lucide-react";
 
 export function Dashboard() {
 
-//   useEffect(() => {
-//     const fetchAdminData = async () => {
-//       try {
-//         const { data } = await api.get("/api/profile/me", { withCredentials: true });
+  //   useEffect(() => {
+  //     const fetchAdminData = async () => {
+  //       try {
+  //         const { data } = await api.get("/api/profile/me", { withCredentials: true });
 
-//     }catch(error ){
-//       let err = error as Error
-//         console.log(err.message)
-//     }
-// }
+  //     }catch(error ){
+  //       let err = error as Error
+  //         console.log(err.message)
+  //     }
+  // }
 
-//     fetchAdminData();
-//   }, [])
+  //     fetchAdminData();
+  //   }, [])
 
   return (
-  <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-200 flex flex-col">
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Code className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <div>
-              <span className="text-xl font-bold text-gray-900">DevCollab</span>
-              <p className="text-xs text-gray-500 mt-0.5">Admin Dashboard</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="px-4 pt-5 pb-3">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Quick search..." 
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-all"
-            />
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-2 overflow-y-auto">
-          <div className="space-y-1 mb-6">
-            <a href="/admin/dashboard" className="group flex items-center justify-between px-4 py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-md hover:shadow-lg transition-all">
-              <div className="flex items-center space-x-3">
-                <Home className="w-5 h-5" />
-                <span className="font-semibold">Dashboard</span>
-              </div>
-            </a>
-            <a href="/admin/userManagement" className="group flex items-center justify-between px-4 py-3.5 rounded-xl text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-all">
-              <div className="flex items-center space-x-3">
-                <Users className="w-5 h-5" />
-                <span className="font-medium">Users</span>
-              </div>
-              <span className="text-xs bg-gray-200 text-gray-700 group-hover:bg-teal-200 group-hover:text-teal-700 px-2.5 py-1 rounded-lg font-semibold transition-all">1.2K</span>
-            </a>
-            <a href="#" className="group flex items-center justify-between px-4 py-3.5 rounded-xl text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-all">
-              <div className="flex items-center space-x-3">
-                <Folder className="w-5 h-5" />
-                <span className="font-medium">Projects</span>
-              </div>
-              <span className="text-xs bg-gray-200 text-gray-700 group-hover:bg-teal-200 group-hover:text-teal-700 px-2.5 py-1 rounded-lg font-semibold transition-all">567</span>
-            </a>
-            <a href="#" className="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-all">
-              <DollarSign className="w-5 h-5" />
-              <span className="font-medium">Revenue</span>
-            </a>
-            <a href="#" className="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-all">
-              <Activity className="w-5 h-5" />
-              <span className="font-medium">Analytics</span>
-            </a>
-            <a href="#" className="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-all">
-              <Settings className="w-5 h-5" />
-              <span className="font-medium">Settings</span>
-            </a>
-          </div>
-        </nav>
-
-        {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer transition-colors">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-pink-600 rounded-lg flex items-center justify-center shadow-md">
-              <User className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">John Admin</p>
-              <p className="text-xs text-gray-500 truncate">admin@devcollab.io</p>
-            </div>
-            <ChevronDown className="w-4 h-4 text-gray-400" />
-          </div>
-        </div>
-      </aside>
+      <Sidebar activeItem="dashboard" />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-              <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4 text-teal-600" />
-                  <span>Wednesday, October 22, 2025</span>
-                </div>
-                <span>•</span>
-                <span className="text-teal-600 font-medium">Real-time data</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button className="flex items-center space-x-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all font-medium text-gray-700">
-                <Download className="w-4 h-4" />
-                <span className="text-sm">Export</span>
-              </button>
-              <button className="relative p-2.5 text-gray-600 hover:bg-gray-100 rounded-xl transition-all">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white animate-pulse"></span>
-              </button>
-              <div className="w-11 h-11 bg-gradient-to-br from-orange-500 to-pink-600 rounded-xl flex items-center justify-center shadow-md cursor-pointer hover:shadow-lg transition-all">
-                <User className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </div>
-        </header>
+        <Header
+          title="Dashboard Overview"
+          subtitle={`Wednesday, ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
+          actions={
+            <button className="flex items-center space-x-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all font-medium text-gray-700">
+              <Download className="w-4 h-4" />
+              <span className="text-sm">Export</span>
+            </button>
+          }
+        />
 
         {/* Dashboard Content */}
         <main className="flex-1 p-8 overflow-auto">
@@ -222,7 +124,7 @@ export function Dashboard() {
                 </button>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Weekly User Registrations */}
               <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-lg transition-all">
@@ -247,7 +149,7 @@ export function Dashboard() {
                   ].map((bar, index) => (
                     <div key={index} className="flex-1 flex flex-col items-center group/bar cursor-pointer">
                       <div className="relative w-full">
-                        <div 
+                        <div
                           className="w-full bg-gradient-to-t from-teal-600 to-cyan-500 rounded-t-xl transition-all group-hover/bar:from-teal-700 group-hover/bar:to-cyan-600 shadow-lg"
                           style={{ height: bar.height }}
                         >
@@ -290,7 +192,7 @@ export function Dashboard() {
                         </div>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
-                        <div 
+                        <div
                           className={`bg-gradient-to-r ${tech.color} h-3 rounded-full transition-all duration-500 shadow-lg`}
                           style={{ width: `${tech.value}%` }}
                         ></div>
@@ -316,7 +218,7 @@ export function Dashboard() {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6">
               <div className="space-y-1">
                 {[
