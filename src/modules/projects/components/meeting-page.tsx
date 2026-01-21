@@ -19,6 +19,44 @@ interface Meeting {
   createdBy: string;
 }
 
+export const StatusBadge = ({ status }: { status: string }) => {
+  const getBadgeStyle = () => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'scheduled':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'ongoing':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getStatusText = () => {
+    switch (status) {
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      case 'scheduled':
+        return 'Scheduled';
+      case 'ongoing':
+        return 'Ongoing';
+      default:
+        return status;
+    }
+  };
+
+  return (
+    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getBadgeStyle()}`}>
+      {getStatusText()}
+    </span>
+  );
+};
+
 export default function MeetingsPage({
   forcedRole,
   initialMeetings = [],
@@ -33,8 +71,6 @@ export default function MeetingsPage({
   const { setProject } = useProjectStore();
   const [isStoreLoading, setIsStoreLoading] = useState(true);
 
-
-  /* Pagination States */
   const [upcomingPage, setUpcomingPage] = useState(1);
   const [pastPage, setPastPage] = useState(1);
   const [upcomingTotal, setUpcomingTotal] = useState(0);
@@ -103,11 +139,6 @@ export default function MeetingsPage({
     if (projectId) fetchMeetings('past', pastPage);
   }, [projectId, pastPage]);
 
-  // Initial load logic moved to effects above
-
-  // Save meetings to localStorage whenever they change - simplified or removed as it paginates now
-  // Leaving it out for now as paginated data in localstorage is tricky/less useful
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -146,38 +177,90 @@ export default function MeetingsPage({
     }
   }
 
-  const handleEditMeeting = (id: string) => {
-    console.log('Edit meeting:', id);
-  }
+  const handleFinishMeeting = async (meetingId: string) => {
+    if (!projectId) return;
+
+    if (!confirm("Are you sure you want to finish this meeting?")) return;
+
+    try {
+      const meetingToFinish = upcomingMeetings.find(m => m.id === meetingId);
+      if (!meetingToFinish) return;
+
+      setUpcomingMeetings(prev => prev.filter(m => m.id !== meetingId));
+      setUpcomingTotal(prev => prev - 1);
+
+      const finishedMeeting = { ...meetingToFinish, status: 'completed' };
+      setPastMeetings(prev => {
+        const exists = prev.some(m => m.id === meetingId);
+        if (exists) {
+          return prev.map(m => m.id === meetingId ? finishedMeeting : m);
+        } else {
+          return [finishedMeeting, ...prev];
+        }
+      });
+      setPastTotal(prev => {
+        const exists = pastMeetings.some(m => m.id === meetingId);
+        return exists ? prev : prev + 1;
+      });
+
+      await api.patch(`/api/meetings/${meetingId}/status`, { status: 'completed' });
+
+      console.log("Meeting marked as completed");
+
+      setTimeout(() => {
+        fetchMeetings('upcoming', upcomingPage);
+        fetchMeetings('past', pastPage);
+      }, 500)
+
+    } catch (err) {
+      console.error("Failed to finish meeting", err);
+      fetchMeetings('upcoming', upcomingPage);
+      fetchMeetings('past', pastPage);
+      alert("Failed to finish meeting. Please try again.");
+    }
+  };
 
   const handleCancelMeeting = async (meetingId: string) => {
     if (!projectId || !confirm("Are you sure you want to cancel this meeting?")) return;
-    try {
-      await api.patch(`/api/meetings/${meetingId}/status`, { status: 'cancelled' });
-      // Refresh meetings list
-      fetchMeetings('upcoming', upcomingPage);
-      fetchMeetings('past', pastPage);
 
-      alert("Meeting cancelled successfully");
+    try {
+      const meetingToCancel = upcomingMeetings.find(m => m.id === meetingId);
+      if (!meetingToCancel) return;
+
+      setUpcomingMeetings(prev => prev.filter(m => m.id !== meetingId));
+      setUpcomingTotal(prev => prev - 1);
+
+      const cancelledMeeting = { ...meetingToCancel, status: 'cancelled' };
+      setPastMeetings(prev => {
+        const exists = prev.some(m => m.id === meetingId);
+        if (exists) {
+          return prev.map(m => m.id === meetingId ? cancelledMeeting : m);
+        } else {
+          return [cancelledMeeting, ...prev];
+        }
+      });
+      setPastTotal(prev => {
+        const exists = pastMeetings.some(m => m.id === meetingId);
+        return exists ? prev : prev + 1;
+      });
+
+      await api.patch(`/api/meetings/${meetingId}/status`, { status: 'cancelled' });
+
+      console.log("Meeting cancelled successfully");
+
+      setTimeout(() => {
+        fetchMeetings('upcoming', upcomingPage);
+        fetchMeetings('past', pastPage);
+      }, 500)
+
     } catch (err) {
       console.error("Failed to cancel meeting", err);
-      alert("Failed to cancel meeting");
-    }
-  }
-
-  const handleFinishMeeting = async (meetingId: string) => {
-    if (!projectId) return;
-    try {
-      await api.patch(`/api/meetings/${meetingId}/status`, { status: 'completed' });
-      // Refresh meetings list
       fetchMeetings('upcoming', upcomingPage);
       fetchMeetings('past', pastPage);
-
-      alert("Meeting marked as completed");
-    } catch (err) {
-      console.error("Failed to finish meeting", err);
+      alert("Failed to cancel meeting. Please try again.");
     }
   };
+
 
   const [activeMeetingId, setActiveMeetingId] = useState<string | null>(null);
   const userId = user?.userId || `guest-${Math.random().toString(36).substr(2, 9)}`;
@@ -199,7 +282,7 @@ export default function MeetingsPage({
         handleInputChange={handleInputChange}
         handleScheduleMeeting={handleScheduleMeeting}
         handleJoinMeeting={handleJoinMeeting}
-        handleCancelMeeting={handleCancelMeeting as any}
+        handleCancelMeeting={handleCancelMeeting}
         handleFinishMeeting={handleFinishMeeting}
         activeMeetingId={activeMeetingId}
         userId={userId}
@@ -212,6 +295,7 @@ export default function MeetingsPage({
         setUpcomingPage={setUpcomingPage}
         setPastPage={setPastPage}
         itemsPerPage={ITEMS_PER_PAGE}
+        StatusBadge={StatusBadge}
       />
     );
   }
@@ -232,6 +316,7 @@ export default function MeetingsPage({
       setUpcomingPage={setUpcomingPage}
       setPastPage={setPastPage}
       itemsPerPage={ITEMS_PER_PAGE}
+      StatusBadge={StatusBadge}
     />
   );
 }
