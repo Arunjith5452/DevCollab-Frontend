@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react';
-import { Calendar as CalendarIcon, Copy } from 'lucide-react';
+import { Calendar as CalendarIcon, Check, Copy, X } from 'lucide-react';
 import { CreatorSidebar } from '@/shared/common/user-common/Creator-sidebar';
 import CreatorHeader from '@/shared/common/user-common/Creator-header';
 import { VideoCallComponent } from './video-call-component';
@@ -11,14 +11,17 @@ interface Meeting {
     id: string;
     title: string;
     date: string;
+    endTime: string;
     status: string;
     link?: string;
     createdBy: string;
+    createdByName: string;
 }
 
 interface MeetingFormData {
     date: string;
     time: string;
+    endTime: string;
     agenda: string;
 }
 
@@ -43,6 +46,7 @@ interface CreatorMeetingPageProps {
     setUpcomingPage: (page: number) => void;
     setPastPage: (page: number) => void;
     itemsPerPage: number;
+    StatusBadge: React.ComponentType<{ status: string }>;
 }
 
 export default function CreatorMeetingPage({
@@ -65,10 +69,12 @@ export default function CreatorMeetingPage({
     pastTotal,
     setUpcomingPage,
     setPastPage,
-    itemsPerPage
+    itemsPerPage,
+    StatusBadge
 }: CreatorMeetingPageProps) {
     const totalUpcomingPages = Math.ceil(upcomingTotal / itemsPerPage);
     const totalPastPages = Math.ceil(pastTotal / itemsPerPage);
+
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden relative">
             <CreatorSidebar activeItem="meetings" />
@@ -87,17 +93,34 @@ export default function CreatorMeetingPage({
                                         name="date"
                                         value={formData.date}
                                         onChange={handleInputChange}
+                                        min={new Date().toISOString().split('T')[0]}
                                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+                                        required={true}
+
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Time</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
                                     <input
                                         type="time"
                                         name="time"
                                         value={formData.time}
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+                                        required={true}
+
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                                    <input
+                                        type="time"
+                                        name="endTime"
+                                        value={formData.endTime}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+                                        required={true}
+
                                     />
                                 </div>
                             </div>
@@ -110,6 +133,7 @@ export default function CreatorMeetingPage({
                                     value={formData.agenda}
                                     onChange={handleInputChange}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+                                    required={true}
                                 />
                             </div>
                             <button
@@ -126,36 +150,49 @@ export default function CreatorMeetingPage({
                             <div className="space-y-4">
                                 {upcomingMeetings.length > 0 ? (
                                     upcomingMeetings.map((meeting) => (
-                                        <div key={meeting.id} className="border border-gray-200 rounded-lg p-6 hover:border-teal-300 transition-colors">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="text-lg font-bold text-gray-900 mb-2">{meeting.title}</h3>
+                                        <div
+                                            key={meeting.id}
+                                            className="border border-gray-200 rounded-lg p-6 hover:border-teal-300 transition-colors"
+                                        >
+                                            <div className="flex justify-between items-center gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <h3 className="text-lg font-bold text-gray-900 truncate">{meeting.title}</h3>
+                                                        <StatusBadge status={meeting.status} />
+                                                    </div>
                                                     <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />
-                                                        <span className="font-medium">Date & Time:</span> {new Date(meeting.date).toLocaleString()}
+                                                        <span className="font-medium">Time:</span> {new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(meeting.date).toLocaleDateString()})
                                                     </p>
                                                     <p className="text-sm text-gray-600 flex items-center gap-2">
-                                                        <span className="font-medium">Scheduler:</span> {meeting.createdBy}
+                                                        <span className="font-medium">Scheduled By:</span> {meeting.createdByName}
                                                     </p>
                                                 </div>
-                                                <div className="flex gap-3">
+
+                                                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                                                     <button
                                                         onClick={() => handleJoinMeeting(meeting.id)}
-                                                        className="px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors text-sm shadow-sm"
+                                                        className="px-5 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors text-sm shadow-sm whitespace-nowrap"
                                                     >
                                                         Join Call
                                                     </button>
+
                                                     <button
                                                         onClick={() => handleFinishMeeting(meeting.id)}
-                                                        className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-sm shadow-sm"
+                                                        className="p-2.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                                                        title="Finish / Mark as Completed"  // Tooltip shows full meaning
+                                                        aria-label="Finish meeting"
                                                     >
-                                                        Finish
+                                                        <Check size={18} />
                                                     </button>
+
                                                     <button
                                                         onClick={() => handleCancelMeeting(meeting.id)}
-                                                        className="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                                                        className="p-2.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
+                                                        title="Cancel Meeting"  // Clear tooltip
+                                                        aria-label="Cancel meeting"
                                                     >
-                                                        Cancel
+                                                        <X size={18} />
                                                     </button>
                                                 </div>
                                             </div>
@@ -181,15 +218,19 @@ export default function CreatorMeetingPage({
                             <div className="space-y-4">
                                 {pastMeetings.length > 0 ? (
                                     pastMeetings.map((meeting) => (
-                                        <div key={meeting.id} className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors opacity-75">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="text-lg font-bold text-gray-900 mb-2">{meeting.title}</h3>
-                                                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                                        <div
+                                            key={meeting.id}
+                                            className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors opacity-75"
+                                        >
+                                            <div className="flex justify-between items-center gap-4"> {/* items-center + gap */}
+                                                <div className="flex-1 min-w-0"> {/* min-w-0 prevents overflow on long titles */}
+                                                    <h3 className="text-lg font-bold text-gray-900 truncate">{meeting.title}</h3>
+                                                    <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />
-                                                        <span className="font-medium">Date & Time:</span> {new Date(meeting.date).toLocaleString()}
+                                                        <span className="font-medium">Time:</span> {new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(meeting.date).toLocaleDateString()})
                                                     </p>
                                                 </div>
+                                                <StatusBadge status={meeting.status} />
                                             </div>
                                         </div>
                                     ))

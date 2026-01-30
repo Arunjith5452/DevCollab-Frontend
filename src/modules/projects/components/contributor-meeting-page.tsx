@@ -5,17 +5,18 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import ContributorSidebar from '@/shared/common/user-common/contributor-common/ContributorSidebar';
 import ContributorHeader from '@/shared/common/user-common/contributor-common/ContributorHeader';
 import { VideoCallComponent } from './video-call-component';
+import { Pagination } from '@/shared/common/Pagination';
 
 interface Meeting {
     id: string;
     title: string;
     date: string;
+    endTime: string;
     status: string;
     link?: string;
     createdBy: string;
+    createdByName: string;
 }
-
-import { Pagination } from '@/shared/common/Pagination';
 
 interface ContributorMeetingPageProps {
     projectName?: string;
@@ -33,6 +34,7 @@ interface ContributorMeetingPageProps {
     setUpcomingPage: (page: number) => void;
     setPastPage: (page: number) => void;
     itemsPerPage: number;
+    StatusBadge: React.ComponentType<{ status: string }>;
 }
 
 export default function ContributorMeetingPage({
@@ -50,7 +52,8 @@ export default function ContributorMeetingPage({
     pastTotal,
     setUpcomingPage,
     setPastPage,
-    itemsPerPage
+    itemsPerPage,
+    StatusBadge
 }: ContributorMeetingPageProps) {
     const totalUpcomingPages = Math.ceil(upcomingTotal / itemsPerPage);
     const totalPastPages = Math.ceil(pastTotal / itemsPerPage);
@@ -74,25 +77,26 @@ export default function ContributorMeetingPage({
                                 {upcomingMeetings.length > 0 ? (
                                     upcomingMeetings.map((meeting) => (
                                         <div key={meeting.id} className="border border-gray-200 rounded-lg p-6 hover:border-teal-300 transition-colors">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="text-lg font-bold text-gray-900 mb-2">{meeting.title}</h3>
+                                            <div className="flex justify-between items-center"> {/* items-center for centering */}
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-3 mb-2"> {/* Group title and badge */}
+                                                        <h3 className="text-lg font-bold text-gray-900">{meeting.title}</h3>
+                                                        <StatusBadge status={meeting.status} />
+                                                    </div>
                                                     <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />
-                                                        <span className="font-medium">Date & Time:</span> {new Date(meeting.date).toLocaleString()}
+                                                        <span className="font-medium">Time:</span> {new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(meeting.date).toLocaleDateString()})
                                                     </p>
                                                     <p className="text-sm text-gray-600 flex items-center gap-2">
-                                                        <span className="font-medium">Scheduler:</span> {meeting.createdBy}
+                                                        <span className="font-medium">Scheduled By:</span> {meeting.createdByName}
                                                     </p>
                                                 </div>
-                                                <div className="flex gap-3">
-                                                    <button
-                                                        onClick={() => handleJoinMeeting(meeting.id)}
-                                                        className="px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors text-sm shadow-sm"
-                                                    >
-                                                        Join Call
-                                                    </button>
-                                                </div>
+                                                <button
+                                                    onClick={() => handleJoinMeeting(meeting.id)}
+                                                    className="px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors text-sm shadow-sm"
+                                                >
+                                                    Join Call
+                                                </button>
                                             </div>
                                         </div>
                                     ))
@@ -116,23 +120,19 @@ export default function ContributorMeetingPage({
                             <div className="space-y-4">
                                 {pastMeetings.length > 0 ? (
                                     pastMeetings.map((meeting) => (
-                                        <div key={meeting.id} className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors opacity-75">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="text-lg font-bold text-gray-900 mb-2">{meeting.title}</h3>
-                                                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                                        <div
+                                            key={meeting.id}
+                                            className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors opacity-75"
+                                        >
+                                            <div className="flex justify-between items-center gap-4"> {/* items-center + gap */}
+                                                <div className="flex-1 min-w-0"> {/* min-w-0 prevents overflow on long titles */}
+                                                    <h3 className="text-lg font-bold text-gray-900 truncate">{meeting.title}</h3>
+                                                    <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />
-                                                        <span className="font-medium">Date & Time:</span> {new Date(meeting.date).toLocaleString()}
+                                                        <span className="font-medium">Time:</span> {new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(meeting.date).toLocaleDateString()})
                                                     </p>
                                                 </div>
-                                                <div className="flex gap-3">
-                                                    <button
-                                                        className="px-4 py-2 bg-gray-100 text-gray-500 font-medium rounded-lg cursor-not-allowed text-sm"
-                                                        disabled
-                                                    >
-                                                        Meeting Ended
-                                                    </button>
-                                                </div>
+                                                <StatusBadge status={meeting.status} />
                                             </div>
                                         </div>
                                     ))
