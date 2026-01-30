@@ -14,9 +14,11 @@ interface Meeting {
   id: string;
   title: string;
   date: string;
+  endTime: string;
   status: string;
   link?: string;
   createdBy: string;
+  createdByName: string;
 }
 
 export const StatusBadge = ({ status }: { status: string }) => {
@@ -80,6 +82,7 @@ export default function MeetingsPage({
   const [formData, setFormData] = useState({
     date: '',
     time: '',
+    endTime: '',
     agenda: ''
   })
 
@@ -148,8 +151,22 @@ export default function MeetingsPage({
   }
 
   const handleScheduleMeeting = async () => {
-    if (!formData.date || !formData.time || !projectId) {
-      alert('Please select date, time and ensure project is loaded')
+    if (!formData.date || !formData.time || !formData.endTime || !projectId) {
+      alert('Please select date, start time, end time and ensure project is loaded')
+      return;
+    }
+
+    if (!formData.agenda.trim()) {
+      alert('Please enter a meeting agenda');
+      return;
+    }
+
+    // Validate that end time is after start time
+    const startDateTime = new Date(`${formData.date}T${formData.time}`);
+    const endDateTime = new Date(`${formData.date}T${formData.endTime}`);
+
+    if (endDateTime <= startDateTime) {
+      alert('End time must be after start time');
       return;
     }
 
@@ -158,6 +175,7 @@ export default function MeetingsPage({
         projectId,
         title: formData.agenda || 'New Meeting',
         date: `${formData.date}T${formData.time}`,
+        endTime: `${formData.date}T${formData.endTime}`,
         type: 'group'
       });
 
@@ -167,6 +185,7 @@ export default function MeetingsPage({
       setFormData({
         date: '',
         time: '',
+        endTime: '',
         agenda: ''
       });
 

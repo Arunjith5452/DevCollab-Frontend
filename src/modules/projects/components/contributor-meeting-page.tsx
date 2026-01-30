@@ -11,9 +11,11 @@ interface Meeting {
     id: string;
     title: string;
     date: string;
+    endTime: string;
     status: string;
     link?: string;
     createdBy: string;
+    createdByName: string;
 }
 
 interface ContributorMeetingPageProps {
@@ -83,10 +85,10 @@ export default function ContributorMeetingPage({
                                                     </div>
                                                     <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />
-                                                        <span className="font-medium">Date & Time:</span> {new Date(meeting.date).toLocaleString()}
+                                                        <span className="font-medium">Time:</span> {new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(meeting.date).toLocaleDateString()})
                                                     </p>
                                                     <p className="text-sm text-gray-600 flex items-center gap-2">
-                                                        <span className="font-medium">Scheduler:</span> {meeting.createdBy}
+                                                        <span className="font-medium">Scheduled By:</span> {meeting.createdByName}
                                                     </p>
                                                 </div>
                                                 <button
@@ -127,7 +129,7 @@ export default function ContributorMeetingPage({
                                                     <h3 className="text-lg font-bold text-gray-900 truncate">{meeting.title}</h3>
                                                     <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />
-                                                        <span className="font-medium">Date & Time:</span> {new Date(meeting.date).toLocaleString()}
+                                                        <span className="font-medium">Time:</span> {new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(meeting.date).toLocaleDateString()})
                                                     </p>
                                                 </div>
                                                 <StatusBadge status={meeting.status} />

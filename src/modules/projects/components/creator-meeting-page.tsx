@@ -11,14 +11,17 @@ interface Meeting {
     id: string;
     title: string;
     date: string;
+    endTime: string;
     status: string;
     link?: string;
     createdBy: string;
+    createdByName: string;
 }
 
 interface MeetingFormData {
     date: string;
     time: string;
+    endTime: string;
     agenda: string;
 }
 
@@ -97,11 +100,23 @@ export default function CreatorMeetingPage({
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Time</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
                                     <input
                                         type="time"
                                         name="time"
                                         value={formData.time}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+                                        required={true}
+
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                                    <input
+                                        type="time"
+                                        name="endTime"
+                                        value={formData.endTime}
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                                         required={true}
@@ -147,10 +162,10 @@ export default function CreatorMeetingPage({
                                                     </div>
                                                     <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />
-                                                        <span className="font-medium">Date & Time:</span> {new Date(meeting.date).toLocaleString()}
+                                                        <span className="font-medium">Time:</span> {new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(meeting.date).toLocaleDateString()})
                                                     </p>
                                                     <p className="text-sm text-gray-600 flex items-center gap-2">
-                                                        <span className="font-medium">Scheduler:</span> {meeting.createdBy}
+                                                        <span className="font-medium">Scheduled By:</span> {meeting.createdByName}
                                                     </p>
                                                 </div>
 
@@ -212,7 +227,7 @@ export default function CreatorMeetingPage({
                                                     <h3 className="text-lg font-bold text-gray-900 truncate">{meeting.title}</h3>
                                                     <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />
-                                                        <span className="font-medium">Date & Time:</span> {new Date(meeting.date).toLocaleString()}
+                                                        <span className="font-medium">Time:</span> {new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(meeting.date).toLocaleDateString()})
                                                     </p>
                                                 </div>
                                                 <StatusBadge status={meeting.status} />
