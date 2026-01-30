@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X, ExternalLink, FileText } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface SubmitWorkModalProps {
     isOpen: boolean;
@@ -18,6 +19,17 @@ export default function SubmitWorkModal({ isOpen, onClose, onSubmit, isSubmittin
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!prLink.trim()) {
+            toast.error("PR link is required");
+            return;
+        }
+
+        if (!workDescription.trim() || workDescription.trim().length < 10) {
+            toast.error("Please provide a more detailed description (min 10 characters)");
+            return;
+        }
+
         onSubmit({ prLink, workDescription });
     };
 

@@ -8,7 +8,7 @@ import { BaseProjectPayload } from "@/modules/projects/types/project.types"
 export const createProject = async (data: BaseProjectPayload) => {
 
     try {
-
+        
         const response = await api.post(PROJECT_ROUTES.CREATE_PROJECT, data)
         return response.data
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Clipboard, Home, MessageSquare, Bell, ArrowLeft } from 'lucide-react';
+import { Calendar, Clipboard, Home, MessageSquare, Bell, ArrowLeft, Code } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface SidebarProps {
@@ -32,7 +32,9 @@ export default function ContributorSidebar({ activeItem = 'dashboard' }: Sidebar
         <aside className="w-64 bg-white border-r border-[#e6f4f2] flex flex-col min-h-screen">
             {/* Logo */}
             <div className="flex items-center gap-3 px-6 py-4 border-b border-[#e6f4f2]">
-                <div className="w-4 h-4 bg-[#0c1d1a] rounded-sm"></div>
+                <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <Code className="w-6 h-6 text-white" />
+                </div>                
                 <span className="text-[#0c1d1a] font-bold text-lg">DevCollab</span>
             </div>
             {/* Navigation */}
