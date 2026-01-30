@@ -75,7 +75,9 @@ api.interceptors.response.use(
         console.error("Unexpected error occurred.");
       }
     } else if (status === 404) {
-      console.error("Requested resource not found.");
+      if (typeof window !== "undefined") {
+        window.location.href = "/404";   
+      }
     } else if (status === 500) {
       console.error("Server error! Please try again later.");
     } else if (!status) {

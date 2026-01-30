@@ -167,9 +167,7 @@ export default function UserManagement() {
                 >
                   <option value="all">All Roles</option>
                   <option value="user">User</option>
-                  <option value="creator">Creator</option>
-                  <option value="contributer">Contributer</option>
-                  <option value="maintainer">Maintainer</option>
+
                   <option value="admin">Admin</option>
                 </select>
                 <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />

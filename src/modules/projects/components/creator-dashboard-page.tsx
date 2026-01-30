@@ -19,7 +19,6 @@ export default function CreatorDashboardPage() {
 
     useEffect(() => {
         if (projectId) {
-            console.log("Fetching project details for ID:", projectId);
             projectDetails(projectId)
                 .then(res => {
                     console.log("Received project data:", res.data);
