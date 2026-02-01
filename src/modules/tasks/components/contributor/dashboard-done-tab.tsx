@@ -114,7 +114,7 @@ export default function DoneTab({ tasks, getAssigneeName, onViewDetails }: DoneT
 
                     {expandedFeedback === task.id && task.feedback && (
                       <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg space-y-2">
-                        <p className="text-sm font-semibold text-[#0c1d1a]">Creator's Feedback:</p>
+                        <p className="text-sm font-semibold text-[#0c1d1a]">Creator&apos;s Feedback:</p>
                         <p className="text-sm text-[#6b7280]">{task.feedback}</p>
                       </div>
                     )}

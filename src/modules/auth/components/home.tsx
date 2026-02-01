@@ -16,7 +16,7 @@ export function HomePage() {
       try {
         const { data } = await api.get('/api/profile/me', { withCredentials: true });
       } catch (error) {
-        let err = error as Error
+        const err = error as Error
         console.error(err.message);
       }
     };
@@ -25,7 +25,7 @@ export function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header/>
+      <Header />
 
       {/* Enhanced Hero Section - ONLY THIS CHANGED */}
       <section className="relative bg-gradient-to-br from-green-600 via-green-700 to-green-800 pt-32 pb-20 px-6 overflow-hidden">
@@ -125,9 +125,9 @@ export function HomePage() {
                   </div>
                   <div className="text-green-400 space-y-1">
                     <p>{'const devCollab = {'}</p>
-                    <p className="ml-4 text-blue-400">{'mission: '}<span className="text-orange-400">"collaborate"</span>,</p>
-                    <p className="ml-4 text-blue-400">{'status: '}<span className="text-orange-400">"active"</span>,</p>
-                    <p className="ml-4 text-blue-400">{'impact: '}<span className="text-orange-400">"worldwide"</span></p>
+                    <p className="ml-4 text-blue-400">{'mission: '}<span className="text-orange-400">&quot;collaborate&quot;</span>,</p>
+                    <p className="ml-4 text-blue-400">{'status: '}<span className="text-orange-400">&quot;active&quot;</span>,</p>
+                    <p className="ml-4 text-blue-400">{'impact: '}<span className="text-orange-400">&quot;worldwide&quot;</span></p>
                     <p>{'};'}</p>
                   </div>
                 </div>
@@ -177,7 +177,7 @@ export function HomePage() {
                 <div className="bg-gray-900 rounded-xl p-6 h-32 flex items-center justify-center">
                   <div className="text-green-400 font-mono text-sm">
                     <div>{'{ "ai": "assistant" }'}</div>
-                    <div className="text-gray-500">// Smart coding</div>
+                    <div className="text-gray-500">{'// Smart coding'}</div>
                   </div>
                 </div>
               </div>

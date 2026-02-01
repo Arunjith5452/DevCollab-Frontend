@@ -86,8 +86,8 @@ export default function MeetingsPage({
     agenda: ''
   })
 
-  const [upcomingMeetings, setUpcomingMeetings] = useState<any[]>([]);
-  const [pastMeetings, setPastMeetings] = useState<any[]>([]);
+  const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
+  const [pastMeetings, setPastMeetings] = useState<Meeting[]>([]);
 
   const isCreator = forcedRole ? forcedRole === 'creator' : user?.role === 'creator';
 

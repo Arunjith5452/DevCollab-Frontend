@@ -84,7 +84,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
               </div>
               <div className="text-left flex flex-col justify-center">
                 <p className="text-sm font-bold text-gray-900 leading-none mb-1">
-                  {user?.name || (user as any)?.username || user?.email?.split('@')[0] || "Admin"}
+                  {user?.name || user?.email?.split('@')[0] || "Admin"}
                 </p>
                 <p className="text-[10px] font-medium text-teal-600 uppercase tracking-wider leading-none">
                   {user?.role || "Administrator"}

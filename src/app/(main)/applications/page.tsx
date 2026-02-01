@@ -1,7 +1,10 @@
 import ApplicationsPage from '@/modules/projects/components/application-page'
+import { Suspense } from 'react'
 
-export default function ApplyProject(){
+export default function ApplyProject() {
     return (
-        <ApplicationsPage/>
+        <Suspense fallback={<div>Loading...</div>}>
+            <ApplicationsPage />
+        </Suspense>
     )
 }

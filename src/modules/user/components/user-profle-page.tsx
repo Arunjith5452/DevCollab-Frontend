@@ -17,6 +17,7 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import api from "@/lib/axios";
 import { MyProjectsTab } from "@/modules/projects/components/my-projects.page";
 import { AppliedProjectsTab } from "@/modules/projects/components/applied-project";
+import { BackButton } from "@/shared/common/BackButton";
 
 interface User {
   name: string;
@@ -65,6 +66,7 @@ export default function UserProfilePage() {
 
       <main className="flex-1 pt-20 px-4 md:px-8 lg:px-40">
         <div className="max-w-4xl mx-auto">
+          <BackButton />
           {user && !loading && (
             <>
               <div className="flex flex-col items-center mb-10">

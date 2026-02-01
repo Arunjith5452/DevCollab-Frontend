@@ -19,7 +19,7 @@ export function AuthLogin({
 }: {
   title: string;
   description?: string;
-  onLogin: (data: { email: string; password: string }) => Promise<any>;
+  onLogin: (data: { email: string; password: string }) => Promise<{ role: string }>;
   showSocialButtons?: boolean;
   showForgotPassword?: boolean;
   headerButtonText?: string;
@@ -160,7 +160,7 @@ export function AuthLogin({
                 </div>
 
                 <p className="text-[#45a193] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center underline cursor-pointer">
-                  Don't have an account? Sign Up
+                  Don&apos;t have an account? Sign Up
                 </p>
               </>
             )}

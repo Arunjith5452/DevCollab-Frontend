@@ -14,6 +14,8 @@ import { userProfile } from '@/modules/user/services/user.api';
 import { signIn } from 'next-auth/react';
 import { Github } from 'lucide-react';
 
+import { BaseProjectPayload } from "@/modules/projects/types/project.types";
+
 interface TeamRole {
     roleName: string;
     requiredCount: string;
@@ -44,7 +46,7 @@ export default function CreateProjectPage() {
     const [imageError, setImageError] = useState<string>('');
 
 
-    let router = useRouter()
+    const router = useRouter()
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -150,10 +152,11 @@ export default function CreateProjectPage() {
             return;
         }
 
-        const formattedPayload: any = {
+        const formattedPayload = {
             title: data.title,
             description: data.description,
             createGithubRepo: data.createGithubRepo,
+            githubRepo: data.createGithubRepo ? "" : (data.githubRepo || ""),
             techStack: data.techStack
                 .split(",")
                 .map(item => item.trim()),
@@ -168,7 +171,7 @@ export default function CreateProjectPage() {
                 experience: role.experienceLevel,
             })),
             image: uploadedImage
-        };
+        } as BaseProjectPayload & { createGithubRepo: boolean };
 
         // Only include githubRepo if not creating automatically and has a value
         if (!data.createGithubRepo && data.githubRepo && data.githubRepo.trim()) {
@@ -303,7 +306,7 @@ export default function CreateProjectPage() {
                                         Create a GitHub repository automatically
                                     </label>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        We'll create a new public repository in your GitHub account for this project.
+                                        We&apos;ll create a new public repository in your GitHub account for this project.
                                     </p>
 
                                     {watch('createGithubRepo') && !isGithubConnected && (

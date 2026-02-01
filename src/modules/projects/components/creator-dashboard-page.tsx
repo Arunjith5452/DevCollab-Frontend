@@ -9,11 +9,13 @@ import PageLoader from "@/shared/common/LoadingComponent";
 
 import { useProjectStore } from "@/store/useProjectStore";
 
+import { ProjectDetails } from "../types/project.types";
+
 export default function CreatorDashboardPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const projectId = searchParams.get('projectId');
-    const [project, setProjectData] = useState<any>(null);
+    const [project, setProjectData] = useState<ProjectDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const { setProject } = useProjectStore();
 

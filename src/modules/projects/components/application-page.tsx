@@ -19,7 +19,7 @@ export default function ApplicationsPage() {
             try {
                 const { data } = await api.get('/api/profile/me', { withCredentials: true });
             } catch (error) {
-                let err = error as Error
+                const err = error as Error
                 console.error(err.message);
             }
         };

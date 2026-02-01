@@ -47,7 +47,7 @@ export default function CreatorHeader({ projectName: propProjectName }: HeaderPr
             <div className="flex items-center gap-4">
                 <div className="text-right hidden sm:block">
                     <p className="text-sm font-bold text-gray-900 leading-none mb-1">
-                        {user?.name || (user as any)?.username || "Creator"}
+                        {user?.name || "Creator"}
                     </p>
                     <p className="text-[10px] font-medium text-[#006b5b] uppercase tracking-wider">
                         Project Creator

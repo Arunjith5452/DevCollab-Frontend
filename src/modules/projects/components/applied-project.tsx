@@ -50,7 +50,7 @@ export function AppliedProjectsTab() {
   }, []);
 
   const getStatusBadge = (status: string) => {
-    const configs: Record<string, any> = {
+    const configs: Record<string, { icon: React.ElementType; bg: string; text: string; label: string }> = {
       pending: { icon: Clock, bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
       approved: { icon: CheckCircle, bg: 'bg-green-100', text: 'text-green-800', label: 'Approved' },
       rejected: { icon: XCircle, bg: 'bg-red-100', text: 'text-red-800', label: 'Rejected' }

@@ -10,6 +10,9 @@ import { useRouter, useParams } from 'next/navigation';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 import { useS3Upload } from '@/shared/hooks/uses3Upload';
 import PageLoader from '@/shared/common/LoadingComponent';
+import { BackButton } from '@/shared/common/BackButton';
+
+import { BaseProjectPayload, RequiredRole } from '@/modules/projects/types/project.types';
 
 interface TeamRole {
     roleName: string;
@@ -79,7 +82,7 @@ export default function EditProjectPage() {
             try {
                 setIsLoading(true);
                 const response = await getProjectForEdit(projectId);
-                console.log("response",response)
+                console.log("response", response)
 
                 if (!response?.data) {
                     toast.error('Project not found');
@@ -103,7 +106,7 @@ export default function EditProjectPage() {
                         : '',
                     expectations: project.expectation || project._expectation || '',
                     isPublic: (project.visibility || project._visibility) === 'public',
-                    requiredRoles: (project.requiredRoles || project._requiredRoles || []).map((role: any) => ({
+                    requiredRoles: (project.requiredRoles || project._requiredRoles || []).map((role: RequiredRole & { roleName?: string, requiredCount?: number, experienceLevel?: string }) => ({
                         roleName: role.role || role.roleName || '',
                         requiredCount: (role.count || role.requiredCount || '').toString(),
                         experienceLevel: role.experience || role.experienceLevel || ''
@@ -200,6 +203,7 @@ export default function EditProjectPage() {
             <Header />
             <main className="pt-20 min-h-screen bg-gray-50">
                 <div className="max-w-3xl mx-auto px-6 py-12">
+                    <BackButton />
                     <h1 className="text-3xl font-bold text-gray-900 mb-8">Edit Project</h1>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
