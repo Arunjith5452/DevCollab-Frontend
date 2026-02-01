@@ -10,6 +10,10 @@ import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 import { useS3Upload } from '@/shared/hooks/uses3Upload';
 
 
+import { userProfile } from '@/modules/user/services/user.api';
+import { signIn } from 'next-auth/react';
+import { Github } from 'lucide-react';
+
 interface TeamRole {
     roleName: string;
     requiredCount: string;
@@ -20,6 +24,7 @@ interface ProjectFormData {
     title: string;
     description: string;
     githubRepo: string;
+    createGithubRepo: boolean;
     techStack: string;
     skillLevel: string;
     startDate: string;
@@ -34,21 +39,28 @@ export default function CreateProjectPage() {
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
     const [techStackItems, setTechStackItems] = useState<string[]>([]);
     const [techStackInput, setTechStackInput] = useState('');
+    const [isGithubConnected, setIsGithubConnected] = useState(false);
+    const [githubProfile, setGithubProfile] = useState<string | null>(null);
+    const [imageError, setImageError] = useState<string>('');
 
 
     let router = useRouter()
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-    //             const { data } = await api.get('/api/profile/me', { withCredentials: true });
-    //         } catch (error) {
-    //             let err = error as Error
-    //             console.error(err.message);
-    //         }
-    //     };
-    //     fetchData();
-    // }, [])
+    React.useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const { data } = await userProfile();
+                console.log("User Profile Data:", data);
+                if (data && data.isGithubConnected) {
+                    setIsGithubConnected(true);
+                    setGithubProfile(data.githubProfile);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchData();
+    }, [])
 
 
     const {
@@ -63,6 +75,7 @@ export default function CreateProjectPage() {
             title: '',
             description: '',
             githubRepo: '',
+            createGithubRepo: false,
             techStack: '',
             skillLevel: 'Beginner',
             startDate: '',
@@ -96,6 +109,7 @@ export default function CreateProjectPage() {
         if (url) {
             setUploadedImage(url);
             setValue("image", url);
+            setImageError(''); // Clear error when image is uploaded
         }
     };
 
@@ -130,10 +144,16 @@ export default function CreateProjectPage() {
     };
 
     const onSubmit = async (data: ProjectFormData) => {
-        const formattedPayload = {
+        // Validate image is uploaded
+        if (!uploadedImage) {
+            setImageError("Project image is required");
+            return;
+        }
+
+        const formattedPayload: any = {
             title: data.title,
             description: data.description,
-            githubRepo: data.githubRepo,
+            createGithubRepo: data.createGithubRepo,
             techStack: data.techStack
                 .split(",")
                 .map(item => item.trim()),
@@ -150,19 +170,24 @@ export default function CreateProjectPage() {
             image: uploadedImage
         };
 
+        // Only include githubRepo if not creating automatically and has a value
+        if (!data.createGithubRepo && data.githubRepo && data.githubRepo.trim()) {
+            formattedPayload.githubRepo = data.githubRepo;
+        }
+
         try {
             const response = await createProject(formattedPayload);
             toast.success("Project Created Successfully")
             router.push('/project-list')
         } catch (error) {
             const message = getErrorMessage(error);
-            console.log(message)
+            toast.error(message)
         }
     }
 
     return (
         <>
-            <Header  />
+            <Header />
 
             <main className="pt-20 min-h-screen bg-gray-50">
                 <div className="max-w-3xl mx-auto px-6 py-12">
@@ -217,6 +242,7 @@ export default function CreateProjectPage() {
                                 </label>
 
                                 {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                                {imageError && <p className="text-red-500 text-sm mt-2">{imageError}</p>}
                             </div>
                         </div>
 
@@ -263,21 +289,66 @@ export default function CreateProjectPage() {
                             <label className="block text-sm font-semibold text-gray-900 mb-2">
                                 GitHub Repository (Optional)
                             </label>
-                            <div className="relative">
+
+                            {/* Create Repo Toggle */}
+                            <div className="mb-4 flex items-start space-x-3 p-4 bg-gray-50 border border-gray-200 rounded-lg">
                                 <input
-                                    type="url"
-                                    {...register('githubRepo', {
-                                        pattern: {
-                                            value: /^https?:\/\/.+/,
-                                            message: 'Please enter a valid URL'
-                                        }
-                                    })}
-                                    placeholder="Link to your repository"
-                                    className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                                    type="checkbox"
+                                    id="createGithubRepo"
+                                    {...register('createGithubRepo')}
+                                    className="mt-1 w-4 h-4 text-teal-600 bg-white border-gray-300 rounded focus:ring-teal-500"
                                 />
-                                <LinkIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <div className="flex-1">
+                                    <label htmlFor="createGithubRepo" className="block text-sm font-medium text-gray-900">
+                                        Create a GitHub repository automatically
+                                    </label>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        We'll create a new public repository in your GitHub account for this project.
+                                    </p>
+
+                                    {watch('createGithubRepo') && !isGithubConnected && (
+                                        <div className="mt-3">
+                                            <p className="text-sm text-red-600 mb-2">
+                                                You are not connected to GitHub. Please connect your account to proceed.
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => signIn('github', { callbackUrl: `${window.location.origin}/connect-github` })}
+                                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800"
+                                            >
+                                                <Github className="w-4 h-4 mr-2" />
+                                                Connect GitHub
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {watch('createGithubRepo') && isGithubConnected && (
+                                        <p className="text-sm text-green-600 mt-2 flex items-center">
+                                            <Github className="w-4 h-4 mr-1" />
+                                            Connected to GitHub {githubProfile ? `(${githubProfile})` : ''}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                            {errors.githubRepo && (
+
+                            {!watch('createGithubRepo') && (
+                                <div className="relative">
+                                    <input
+                                        type="url"
+                                        {...register('githubRepo', {
+                                            pattern: {
+                                                value: /^https?:\/\/.+/,
+                                                message: 'Please enter a valid URL'
+                                            }
+                                        })}
+                                        placeholder="Link to your repository"
+                                        className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                                    />
+                                    <LinkIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                </div>
+                            )}
+
+                            {errors.githubRepo && !watch('createGithubRepo') && (
                                 <p className="text-red-500 text-sm mt-1">{errors.githubRepo.message}</p>
                             )}
                         </div>

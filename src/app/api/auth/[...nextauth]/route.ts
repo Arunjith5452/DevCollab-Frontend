@@ -11,6 +11,7 @@ interface CustomSessionUser {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    accessToken?: string;
 }
 
 interface CustomSession {
@@ -31,6 +32,11 @@ const handler = NextAuth({
         GithubProvider({
             clientId: process.env.GITHUB_ID as string,
             clientSecret: process.env.GITHUB_SECRET as string,
+            authorization: {
+                params: {
+                    scope: "read:user user:email repo",
+                },
+            },
         })
     ],
 
@@ -47,6 +53,7 @@ const handler = NextAuth({
                 token.id = user.id
 
                 token.provider = account.provider
+                token.accessToken = account.access_token
 
                 if (account.provider === 'github') {
                     const ghProfile = profile as GitHubProfile;
@@ -68,7 +75,8 @@ const handler = NextAuth({
             customSession.user.id = (token.id as string) ?? "";
             customSession.user.provider = token.provider as string;
 
-            customSession.user.githubUrl = token.githubUrl as string  || undefined
+            customSession.user.githubUrl = token.githubUrl as string || undefined
+            customSession.user.accessToken = token.accessToken as string || undefined
 
             return customSession;
         },
