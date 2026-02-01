@@ -22,7 +22,6 @@ export default function CreatorHeader({ projectName: propProjectName }: HeaderPr
     }, [fetchUser, user]);
 
     useEffect(() => {
-        // If we don't have a name yet, but we have a projectId, try to fetch it
         if (!propProjectName && projectId && (!currentProject || currentProject.id !== projectId)) {
             projectDetails(projectId)
                 .then(res => {

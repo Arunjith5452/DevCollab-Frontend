@@ -142,15 +142,6 @@ export default function TasksListingPage({
   }, [searchTerm, statusFilter, assigneeFilter, currentPage, projectId]);
 
 
-  const filteredTasks = initialData.tasks.filter(task => {
-    const matchesSearch =
-      task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.assignedId?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-    const matchesAssignee = assigneeFilter === 'all' || task.assignedId === assigneeFilter;
-    return matchesSearch && matchesStatus && matchesAssignee;
-  });
-
   const getAssigneeName = (assignedId: string | null | undefined) => {
     if (!assignedId) return 'Unassigned';
     const member = assignees.find(m => m.userId === assignedId);
@@ -161,6 +152,15 @@ export default function TasksListingPage({
     initialData.tasks.some(task => task.assignedId === member.userId)
   );
 
+  const statusLabels: Record<string, string> = {
+    'todo': 'To Do',
+    'in-progress': 'In Progress',
+    'done': 'Done',
+    'improvement-needed': 'Improvement Needed',
+  };
+
+  const getStatusLabel = (status: string) => statusLabels[status] || status;
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'done': return 'bg-green-100 text-green-700';
@@ -168,16 +168,6 @@ export default function TasksListingPage({
       case 'improvement-needed': return 'bg-orange-100 text-orange-700';
       default: return 'bg-gray-100 text-gray-700';
     }
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      'todo': 'To Do',
-      'in-progress': 'In Progress',
-      'done': 'Done',
-      'improvement-needed': 'Improvement Needed',
-    };
-    return labels[status] || status;
   };
 
   const safeFormatDate = (dateStr: string | null | undefined) => {
@@ -190,6 +180,17 @@ export default function TasksListingPage({
       return '—';
     }
   };
+
+  const filteredTasks = initialData.tasks.filter(task => {
+    const assigneeName = getAssigneeName(task.assignedId).toLowerCase();
+    const matchesSearch =
+      task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.assignedId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      assigneeName.includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
+    const matchesAssignee = assigneeFilter === 'all' || task.assignedId === assigneeFilter;
+    return matchesSearch && matchesStatus && matchesAssignee;
+  });
 
   const handleTaskClick = (task: ProjectTask) => {
     setSelectedTask(task);

@@ -15,6 +15,7 @@ interface CustomSession extends Session {
         name?: string | null;
         image?: string | null;
         githubUrl?: string | null
+        accessToken?: string | null;
     };
 }
 
@@ -64,7 +65,11 @@ export default function AuthCallbackPage() {
             ...commonPayload,
             [userIdFieldName]: providerId,
             ...(provider === 'github' && githubUrl && { githubUrl: githubUrl }),
+            ...(provider === 'github' && data.user.accessToken && { githubAccessToken: data.user.accessToken }),
         };
+
+        console.log("DEBUG: Frontend Callback Payload:", finalPayload);
+        console.log("DEBUG: Access Token in Session:", data.user.accessToken);
 
 
         async function sendToBackend() {

@@ -8,11 +8,14 @@ interface User {
   profileImage: string
   email: string;
   role: string;
+  createdProjectsCount?: number;
+  contributionsCount?: number;
+  recentActivities?: { type: string; title: string; timestamp: string }[];
 }
 
 interface AuthState {
   user: User | null;
-  fetchUser: () => Promise<void>;
+  fetchUser: (force?: boolean) => Promise<void>;
   logout: () => void;
 }
 
@@ -21,20 +24,30 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
 
-      fetchUser: async () => {
+      fetchUser: async (force = false) => {
         try {
-          if (get().user) return;
+          if (!force && get().user) return;
 
-          const { data } = await api.get("/api/profile/me");
+          const { data } = await api.get("/api/users/profile");
 
-          if (data?.success && data?.data) {
-            set({ user: data.data });
-          } else if (data?.userId && data?.name) {
-            set({ user: data });
-          } else {
-            set({ user: null });
+          const userData = data?.data || data;
+
+          if (userData && (userData.id || userData.userId || userData.name)) {
+            const updatedUser = {
+              userId: userData.id || userData.userId || get().user?.userId,
+              name: userData.name || userData.username || get().user?.name,
+              profileImage: userData.profileImage || get().user?.profileImage,
+              email: userData.email || get().user?.email,
+              role: userData.role || get().user?.role,
+              createdProjectsCount: userData.createdProjectsCount ?? get().user?.createdProjectsCount ?? 0,
+              contributionsCount: userData.contributionsCount ?? get().user?.contributionsCount ?? 0,
+              recentActivities: userData.recentActivities ?? get().user?.recentActivities ?? []
+            };
+
+            if (updatedUser.userId && updatedUser.name) {
+              set({ user: updatedUser as User });
+            }
           }
-
         } catch (error) {
           console.error("Error fetching user:", error);
           set({ user: null });

@@ -34,6 +34,7 @@ interface FormValues {
   tags: string[];
   acceptanceCriteria: { text: string; completed: boolean }[];
   payment?: { amount: number };
+  paymentConfirmed: boolean;
   documents?: string[];
 }
 
@@ -56,6 +57,7 @@ export default function CreateTaskPage() {
       tags: [],
       acceptanceCriteria: [],
       documents: [],
+      paymentConfirmed: false,
     },
   });
 
@@ -74,7 +76,6 @@ export default function CreateTaskPage() {
   const [tagInput, setTagInput] = useState('');
   const [criteriaInput, setCriteriaInput] = useState('');
 
-  // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
@@ -88,65 +89,16 @@ export default function CreateTaskPage() {
 
   // Handle successful payment return from Stripe Checkout
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
     const sessionId = searchParams.get('session_id');
 
     if (sessionId) {
-      // Retrieve pending task data from localStorage
-      const pendingDataStr = localStorage.getItem('pendingTaskData');
-
-      if (pendingDataStr) {
-        try {
-          const pendingData = JSON.parse(pendingDataStr);
-
-          // Robust resolution of projectId
-          const qProjId = searchParams.get('projectId');
-          const currentProjectId = (qProjId && qProjId !== 'undefined' && qProjId !== 'null')
-            ? qProjId
-            : (pendingData.projectId && pendingData.projectId !== 'undefined' && pendingData.projectId !== 'null' ? pendingData.projectId : null);
-
-          if (!currentProjectId) {
-            console.error('Project ID resolution failed:', { qProjId, pendingDataProj: pendingData.projectId });
-            toast.error('Project ID missing after payment');
-            return;
-          }
-
-          // Create task with session ID
-          const taskPayload = {
-            ...pendingData,
-            projectId: currentProjectId,
-            payment: {
-              ...pendingData.payment,
-              sessionId: sessionId,
-              amount: pendingData.payment.amount,
-              advancePaid: 0 // Explicitly set to 0 for backend consistency
-            }
-          };
-
-          console.log('Final task payload for creation:', taskPayload);
-
-          toast.loading('Creating task...', { id: 'create-task' });
-
-          createTask(taskPayload)
-            .then(() => {
-              localStorage.removeItem('pendingTaskData');
-              toast.dismiss('create-task');
-              toast.success('Task created successfully with payment!');
-              router.push(`/task-listing?projectId=${currentProjectId}`);
-            })
-            .catch((err) => {
-              toast.dismiss('create-task');
-              toast.error(getErrorMessage(err));
-              // Clear session_id from URL but keep projectId
-              window.history.replaceState({}, '', window.location.pathname + `?projectId=${currentProjectId}`);
-            });
-        } catch (err) {
-          console.error('Error handling post-payment task creation:', err);
-          toast.error('Failed to create task after payment');
-        }
-      }
+      toast.success('Payment successful! Your task is being processed.');
+      // Cleanup URL
+      window.history.replaceState({}, '', window.location.pathname + `?projectId=${projectId}`);
+      // Redirect to listing
+      router.push(`/task-listing?projectId=${projectId}`);
     }
-  }, [router, projectId, paymentAmount]);
+  }, [router, projectId, searchParams]);
 
   const predefinedTags = ['Frontend', 'React', 'UIUX', 'Backend'];
 
@@ -188,7 +140,6 @@ export default function CreateTaskPage() {
     );
   };
 
-  // S3 Upload Handler - Fixed Logic
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
 
@@ -218,7 +169,6 @@ export default function CreateTaskPage() {
       }
     }
 
-    // Only add successful URLs
     if (uploadedUrls.length > 0) {
       setValue('documents', [...watchDocuments, ...uploadedUrls], {
         shouldValidate: true,
@@ -236,7 +186,6 @@ export default function CreateTaskPage() {
       toast.error('All uploads failed');
     }
 
-    // Reset input
     e.target.value = '';
   };
 
@@ -274,56 +223,24 @@ export default function CreateTaskPage() {
       return;
     }
 
+    if (!data.assignedId) {
+      toast.error('Please select an assignee');
+      return;
+    }
+
+    if (data.tags.length === 0) {
+      toast.error('Please add at least one tag');
+      return;
+    }
+
+    if (data.acceptanceCriteria.length === 0) {
+      toast.error('Please add at least one acceptance criteria');
+      return;
+    }
+
     const paymentAmount = data.payment?.amount || 0;
 
 
-    if (paymentAmount > 0) {
-      if (!projectId || projectId === 'undefined') {
-        toast.error('Task cannot be created without a valid Project ID');
-        return;
-      }
-
-      try {
-        const amountInPaise = Math.round(paymentAmount * 100);
-        console.log("amountPisa:", amountInPaise)
-
-        const response = await createCheckoutSession({
-          amount: amountInPaise,
-          metadata: {
-            task_title: data.title,
-            project_id: projectId || '',
-            // Add more if needed for webhook identification
-          },
-        });
-
-        if (response.url) {
-          // Optional: Save form data to localStorage before redirect
-          // Ensure we save a valid projectId string or null, never 'undefined'
-          const safeProjectId = (projectId && projectId !== 'undefined' && projectId !== 'null') ? projectId : null;
-
-          const pendingData = {
-            ...data,
-            projectId: safeProjectId,
-            payment: {
-              ...data.payment,
-              amount: paymentAmount,
-              advancePaid: 0
-            }
-          };
-
-          console.log('Saving pending task data:', pendingData);
-          localStorage.setItem('pendingTaskData', JSON.stringify(pendingData));
-          window.location.href = response.url; // Redirect to Stripe Checkout
-        } else {
-          toast.error('Failed to start payment');
-        }
-      } catch (err) {
-        toast.error('Payment initiation failed');
-      }
-      return; // Always return after redirect attempt
-    }
-
-    // No advance → create task directly
     const payload: any = {
       ...data,
       projectId,
@@ -331,6 +248,47 @@ export default function CreateTaskPage() {
 
     if (!payload.documents?.length) delete payload.documents;
     if (payload.payment && !payload.payment.amount) delete payload.payment;
+
+    if (paymentAmount > 0) {
+      if (!data.paymentConfirmed) {
+        toast.error('Please confirm that you agree to escrow the payment amount');
+        return;
+      }
+      if (!projectId || projectId === 'undefined') {
+        toast.error('Task cannot be created without a valid Project ID');
+        return;
+      }
+
+      try {
+        toast.loading('Initializing task...', { id: 'create-task' });
+
+        // 1. Create the task first (with escrowStatus: 'not-paid')
+        const setupRes = await createTask(payload);
+        const taskId = setupRes.data.id;
+
+        // 2. Create Stripe Checkout Session with taskId in metadata
+        const amountInPaise = Math.round(paymentAmount * 100);
+        const response = await createCheckoutSession({
+          amount: amountInPaise,
+          metadata: {
+            task_id: taskId,
+            project_id: projectId || '',
+            task_title: data.title,
+          },
+        });
+
+        if (response.url) {
+          window.location.href = response.url; // Redirect to Stripe Checkout
+        } else {
+          toast.dismiss('create-task');
+          toast.error('Failed to start payment');
+        }
+      } catch (err) {
+        toast.dismiss('create-task');
+        toast.error(getErrorMessage(err));
+      }
+      return;
+    }
 
     try {
       await createTask(payload);
@@ -504,6 +462,20 @@ export default function CreateTaskPage() {
                 </div>
                 <p className="text-xs text-gray-500 mt-1">This amount will be held in escrow until completion.</p>
               </div>
+
+              {paymentAmount > 0 && (
+                <div className="flex items-start gap-3 mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="paymentConfirmed"
+                    {...register('paymentConfirmed')}
+                    className="mt-1 w-4 h-4 text-[#006b5b] rounded border-[#cdeae5] focus:ring-[#006b5b]"
+                  />
+                  <label htmlFor="paymentConfirmed" className="text-sm text-orange-800">
+                    I understand that <strong>${paymentAmount}</strong> will be immediately charged and held in escrow. This amount will only be released to the contributor upon my approval of the completed task.
+                  </label>
+                </div>
+              )}
             </div>
 
             {/* Assignee */}

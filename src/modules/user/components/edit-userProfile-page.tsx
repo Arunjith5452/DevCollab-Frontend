@@ -9,6 +9,7 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import { editProfile } from "../services/user.api";
 import { getErrorMessage } from "@/shared/utils/ErrorMessage";
 import { Camera, User } from "lucide-react";
+import { useAuthStore } from "@/store/useUserStore";
 
 export default function ProfileEditPage() {
   const router = useRouter();
@@ -99,8 +100,11 @@ export default function ProfileEditPage() {
       });
 
       toast.success("Profile updated successfully!");
-      await refetch()
-      router.push("/user-profile")
+      await refetch();
+      // Force refresh the global header state
+      const { fetchUser } = useAuthStore.getState();
+      await fetchUser(true);
+      router.push("/user-profile");
     } catch (err) {
       getErrorMessage(err)
     } finally {

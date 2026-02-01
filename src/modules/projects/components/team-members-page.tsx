@@ -6,8 +6,6 @@ import CreatorHeader from "@/shared/common/user-common/Creator-header";
 import { CreatorSidebar } from "@/shared/common/user-common/Creator-sidebar";
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-
 import { Member } from "@/modules/projects/types/project.types";
 import api from '@/lib/axios';
 import { SearchInput } from '@/shared/common/Searching';
