@@ -57,6 +57,12 @@ export interface ProjectDetails {
     email: string;
     avatar?: string | null;
   };
+  members?: {
+    userId: string;
+    role: string;
+    joinedAt: string;
+    status: string;
+  }[];
 }
 
 export interface PendingApplication {

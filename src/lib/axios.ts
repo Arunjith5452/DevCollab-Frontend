@@ -53,8 +53,8 @@ api.interceptors.response.use(
 
         originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
         return api(originalRequest);
-      } catch (refreshError: any) {
-        if (refreshError.response?.status === 401) {
+      } catch (refreshError: unknown) {
+        if (axios.isAxiosError(refreshError) && refreshError.response?.status === 401) {
           if (typeof window !== "undefined") {
             setTimeout(() => {
               window.location.href = "/login";
@@ -76,7 +76,7 @@ api.interceptors.response.use(
       }
     } else if (status === 404) {
       if (typeof window !== "undefined") {
-        window.location.href = "/404";   
+        window.location.href = "/404";
       }
     } else if (status === 500) {
       console.error("Server error! Please try again later.");

@@ -12,6 +12,112 @@ import { SearchInput } from '@/shared/common/Searching';
 import { DataTable } from '@/shared/common/DataTable';
 import { Pagination } from '@/shared/common/Pagination';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
+import { BackButton } from '@/shared/common/BackButton';
+
+const RoleCell = ({ member, onRoleChange }: { member: Member, onRoleChange: (id: string, role: 'contributor' | 'maintainer') => Promise<void> }) => {
+    const [open, setOpen] = useState(false);
+    const [pending, setPending] = useState<'contributor' | 'maintainer' | null>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    const toggle = () => setOpen(prev => !prev);
+
+    const selectRole = (role: 'contributor' | 'maintainer') => {
+        if (role === member.role) {
+            setOpen(false);
+            return;
+        }
+        setPending(role);
+    };
+
+    const confirm = async () => {
+        if (!pending) return;
+        await onRoleChange(member.id, pending);
+        setPending(null);
+        setOpen(false);
+    };
+
+    const cancel = () => {
+        setPending(null);
+        setOpen(false);
+    };
+
+    return (
+        <>
+            <div className="relative inline-block">
+                <button
+                    ref={buttonRef}
+                    onClick={toggle}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 capitalize shadow-sm transition-all"
+                >
+                    {member.role}
+                    <svg
+                        className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
+            {open && (
+                <>
+                    <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setOpen(false)}
+                    />
+                    <div
+                        className="fixed z-50 min-w-56 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+                        style={{
+                            top: buttonRef.current ? buttonRef.current.getBoundingClientRect().bottom + 8 + window.scrollY : 0,
+                            left: buttonRef.current
+                                ? buttonRef.current.getBoundingClientRect().left + window.scrollX
+                                : 0,
+                            transform: 'translateX(-50%) translateX(50%)',
+                        }}
+                    >
+                        <div className="p-2">
+                            {!pending ? (
+                                <div className="py-2">
+                                    {(['contributor', 'maintainer'] as const).map((role) => (
+                                        <button
+                                            key={role}
+                                            onClick={() => selectRole(role)}
+                                            className="w-full px-4 py-2.5 text-left text-sm rounded-lg hover:bg-gray-100 flex items-center justify-between capitalize transition"
+                                        >
+                                            <span>{role}</span>
+                                            {role === member.role && <span className="text-emerald-600 font-bold">Current</span>}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-4 pb-3">
+                                    <p className="text-sm text-gray-700 mb-4">
+                                        Change role to <span className="font-semibold capitalize">{pending}</span>?
+                                    </p>
+                                    <div className="flex justify-end gap-3">
+                                        <button
+                                            onClick={cancel}
+                                            className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={confirm}
+                                            className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
+                                        >
+                                            Confirm
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
+        </>
+    );
+};
 
 type InitialData = {
     users: Member[];
@@ -36,7 +142,7 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
             try {
                 const { data } = await api.get('/api/profile/me', { withCredentials: true });
             } catch (error) {
-                let err = error as Error
+                const err = error as Error
                 console.error(err.message);
             }
         };
@@ -68,7 +174,7 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
                 setTotalPages(data.data?.totalPages || 1);
                 setCurrentPage(data.data?.currentPage || newPage);
             } catch (err) {
-                let message = getErrorMessage(err)
+                const message = getErrorMessage(err)
                 toast.error(message)
             } finally {
                 setLoading(false);
@@ -85,7 +191,7 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
             setSearch(urlSearch);
             setCurrentPage(urlPage);
         }
-    }, [searchParams]);
+    }, [searchParams, search, currentPage]);
 
     useEffect(() => {
         if (search !== initialData.currentSearch || currentPage !== initialData.currentPage) {
@@ -97,18 +203,16 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
         updateUrlAndFetch(search, page);
     };
 
-
     const handleRoleChange = async (memberId: string, newRole: 'contributor' | 'maintainer') => {
         try {
             await api.patch(`/projects/${projectId}/members/${memberId}/role`, { role: newRole });
             setMembers(prev => prev.map(m => m.id === memberId ? { ...m, role: newRole } : m));
             toast.success("Role updated");
         } catch (err) {
-            let message = getErrorMessage(err)
+            const message = getErrorMessage(err)
             toast.error("Failed to update role");
         }
     };
-
 
     const handleRemove = async (memberId: string, name: string) => {
         if (!confirm(`Remove ${name} from the team?`)) return;
@@ -127,114 +231,7 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
 
         {
             label: 'Role',
-            render: (m: Member) => {
-                const [open, setOpen] = useState(false);
-                const [pending, setPending] = useState<'contributor' | 'maintainer' | null>(null);
-
-                const toggle = () => setOpen(prev => !prev);
-
-                const selectRole = (role: 'contributor' | 'maintainer') => {
-                    if (role === m.role) {
-                        setOpen(false);
-                        return;
-                    }
-                    setPending(role);
-                };
-
-                const confirm = async () => {
-                    if (!pending) return;
-                    await handleRoleChange(m.id, pending);
-                    setPending(null);
-                    setOpen(false);
-                };
-
-                const cancel = () => {
-                    setPending(null);
-                    setOpen(false);
-                };
-
-                const buttonRef = useRef<HTMLButtonElement>(null);
-
-                return (
-                    <>
-                        <div className="relative inline-block">
-                            <button
-                                ref={buttonRef}
-                                onClick={toggle}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 capitalize shadow-sm transition-all"
-                            >
-                                {m.role}
-                                <svg
-                                    className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                        </div>
-                        {open && (
-                            <>
-                                {/* Backdrop */}
-                                <div
-                                    className="fixed inset-0 z-40"
-                                    onClick={() => setOpen(false)}
-                                />
-
-                                {/* Floating Card */}
-                                <div
-                                    className="fixed z-50 min-w-56 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
-                                    style={{
-                                        top: buttonRef.current ? buttonRef.current.getBoundingClientRect().bottom + 8 + window.scrollY : 0,
-                                        left: buttonRef.current
-                                            ? buttonRef.current.getBoundingClientRect().left + window.scrollX
-                                            : 0,
-                                        transform: 'translateX(-50%) translateX(50%)',
-                                    }}
-                                >
-                                    <div className="p-2">
-                                        {!pending ? (
-                                            <div className="py-2">
-                                                {(['contributor', 'maintainer'] as const).map((role) => (
-                                                    <button
-                                                        key={role}
-                                                        onClick={() => selectRole(role)}
-                                                        className="w-full px-4 py-2.5 text-left text-sm rounded-lg hover:bg-gray-100 flex items-center justify-between capitalize transition"
-                                                    >
-                                                        <span>{role}</span>
-                                                        {role === m.role && <span className="text-emerald-600 font-bold">Current</span>}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="p-4 pb-3">
-                                                <p className="text-sm text-gray-700 mb-4">
-                                                    Change role to <span className="font-semibold capitalize">{pending}</span>?
-                                                </p>
-                                                <div className="flex justify-end gap-3">
-                                                    <button
-                                                        onClick={cancel}
-                                                        className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                    <button
-                                                        onClick={confirm}
-                                                        className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
-                                                    >
-                                                        Confirm
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </>
-                );
-            },
+            render: (m: Member) => <RoleCell member={m} onRoleChange={handleRoleChange} />
         },
 
         {
@@ -259,6 +256,7 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
 
                 <main className="flex-1 overflow-y-auto p-6">
                     <div className="max-w-6xl mx-auto space-y-8">
+                        <BackButton />
 
                         <div className="flex justify-between items-center">
                             <h1 className="text-2xl font-bold text-gray-900">Team Members</h1>

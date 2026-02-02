@@ -6,23 +6,23 @@ import { useRouter } from 'next/navigation';
 
 
 
-interface NotFoundButtonProps{
-  homeLink:string;
+interface NotFoundButtonProps {
+  homeLink: string;
 }
 
-export default function NotFoundPage({homeLink}:NotFoundButtonProps) {
+export default function NotFoundPage({ homeLink }: NotFoundButtonProps) {
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [particles, setParticles] = useState<{ left: string; top: string; animationDelay: string; animationDuration: string }[]>([]);
 
-      const router = useRouter()
+  const router = useRouter()
 
 
   // Track mouse movement
   useEffect(() => {
     const handleMouseMove = (e: { clientX: number; clientY: number }) => {
-      setMousePosition({ 
+      setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 20,
         y: (e.clientY / window.innerHeight - 0.5) * 20
       });
@@ -47,15 +47,15 @@ export default function NotFoundPage({homeLink}:NotFoundButtonProps) {
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Floating Orbs */}
-        <div 
+        <div
           className="absolute top-20 left-20 w-96 h-96 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"
           style={{ transform: `translate(${mousePosition.x}px, ${mousePosition.y}px)` }}
         />
-        <div 
+        <div
           className="absolute top-40 right-20 w-96 h-96 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"
           style={{ transform: `translate(${-mousePosition.x}px, ${mousePosition.y}px)` }}
         />
-        <div 
+        <div
           className="absolute -bottom-20 left-1/2 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"
           style={{ transform: `translate(${mousePosition.y}px, ${-mousePosition.x}px)` }}
         />
@@ -82,14 +82,13 @@ export default function NotFoundPage({homeLink}:NotFoundButtonProps) {
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
         {/* Animated Logo */}
         <div className="mb-8 flex justify-center">
-          <div 
+          <div
             className="relative"
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
-            <div className={`w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-500 ${
-              isHovering ? 'scale-110 rotate-12' : 'scale-100 rotate-0'
-            }`}>
+            <div className={`w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-500 ${isHovering ? 'scale-110 rotate-12' : 'scale-100 rotate-0'
+              }`}>
               <Code className="w-12 h-12 text-white" />
             </div>
             {/* Glow Effect */}
@@ -106,7 +105,7 @@ export default function NotFoundPage({homeLink}:NotFoundButtonProps) {
 
         {/* Animated 404 */}
         <div className="mb-8 relative">
-          <h1 
+          <h1
             className="text-[180px] md:text-[250px] font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 leading-none select-none animate-gradient"
             style={{
               transform: `perspective(1000px) rotateX(${mousePosition.y * 0.5}deg) rotateY(${mousePosition.x * 0.5}deg)`,
@@ -128,14 +127,14 @@ export default function NotFoundPage({homeLink}:NotFoundButtonProps) {
             Page Not Found
           </h2>
           <p className="text-xl text-green-100 max-w-2xl mx-auto leading-relaxed animate-fade-in animation-delay-300">
-            Oops! Looks like you've ventured into uncharted territory. 
-            The page you're looking for has disappeared into the digital void.
+            Oops! Looks like you&apos;ve ventured into uncharted territory.
+            The page you&apos;re looking for has disappeared into the digital void.
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 animate-fade-in animation-delay-600">
-          <button 
+          <button
             onClick={() => router.push(homeLink)}
             className="group relative px-10 py-5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl font-bold text-white text-lg overflow-hidden hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-green-500/50"
           >
@@ -148,8 +147,8 @@ export default function NotFoundPage({homeLink}:NotFoundButtonProps) {
             {/* Button Glow */}
             <div className="absolute inset-0 bg-green-500 blur-xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => window.history.back()}
             className="group relative px-10 py-5 bg-white/10 backdrop-blur-lg border-2 border-white/30 rounded-2xl font-bold text-white text-lg hover:bg-white/20 hover:border-white/50 hover:scale-105 transition-all duration-300"
           >
@@ -162,7 +161,7 @@ export default function NotFoundPage({homeLink}:NotFoundButtonProps) {
 
         {/* Quick Links */}
         <div className="flex flex-wrap justify-center gap-6 animate-fade-in animation-delay-900">
-          {['Projects','Community','Documentation','Help'].map((link) => (
+          {['Projects', 'Community', 'Documentation', 'Help'].map((link) => (
             <a key={link} href={`/${link.toLowerCase()}`} className="group flex items-center space-x-2 text-green-300 hover:text-green-100 transition-colors">
               <div className="w-2 h-2 bg-green-400 rounded-full group-hover:scale-150 transition-transform"></div>
               <span className="font-medium">{link}</span>

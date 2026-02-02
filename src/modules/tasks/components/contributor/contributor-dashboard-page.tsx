@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import ContributorHeader from "@/shared/common/user-common/contributor-common/ContributorHeader";
 import ContributorSidebar from "@/shared/common/user-common/contributor-common/ContributorSidebar";
-import { TaskListItem } from "../../../projects/types/project.types";
+import { TaskListItem, ProjectDetails } from "../../../projects/types/project.types";
 import { useAuthStore } from "@/store/useUserStore";
 import api from "@/lib/axios";
 import { projectDetails } from "../../../projects/services/project.api";
@@ -98,7 +98,7 @@ export default function ContributorDashboardPage({
     }
   }, [tasks, selectedTask]);
 
-  const [projectData, setProjectData] = useState<any>(null);
+  const [projectData, setProjectData] = useState<ProjectDetails | null>(null);
 
   const { setProject: setGlobalProject } = useProjectStore();
 

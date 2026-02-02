@@ -20,7 +20,7 @@ export const signup = async (data: {
 
 export const verifyOTP = async (data: {
     token: string,
-    otp: Number
+    otp: number
 
 }) => {
     try {
@@ -37,7 +37,7 @@ export const verifyOTP = async (data: {
 
 export const verifyForgotOTP = async (data: {
     email: string,
-    otp: Number
+    otp: number
 
 }) => {
     try {

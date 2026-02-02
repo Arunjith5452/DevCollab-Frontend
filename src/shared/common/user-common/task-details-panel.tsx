@@ -351,7 +351,7 @@ export default function TaskDetailsPanel({
                           </span>
                         </div>
                         <p className="text-sm text-teal-700 mt-1">
-                          Review and approve the contributor's submission
+                          Review and approve the contributor&apos;s submission
                         </p>
                       </div>
                     </div>

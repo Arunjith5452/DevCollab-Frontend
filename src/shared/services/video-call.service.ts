@@ -56,7 +56,7 @@ export class VideoCallService {
             this.closePeerConnection(payload.userId);
         });
 
-        this.socket.on('offer', async (payload: { caller: string; sdp: any; userName: string }) => {
+        this.socket.on('offer', async (payload: { caller: string; sdp: RTCSessionDescriptionInit; userName: string }) => {
             console.log('Received offer from:', payload.userName);
             if (payload.userName) {
                 this.peerUserNames.set(payload.caller, payload.userName);
@@ -64,7 +64,7 @@ export class VideoCallService {
             await this.handleOffer(payload.caller, payload.sdp, payload.userName);
         });
 
-        this.socket.on('answer', async (payload: { caller: string; sdp: any; userName: string }) => {
+        this.socket.on('answer', async (payload: { caller: string; sdp: RTCSessionDescriptionInit; userName: string }) => {
             console.log('Received answer from:', payload.userName);
             if (payload.userName) {
                 this.peerUserNames.set(payload.caller, payload.userName);
@@ -72,7 +72,7 @@ export class VideoCallService {
             await this.handleAnswer(payload.caller, payload.sdp);
         });
 
-        this.socket.on('ice-candidate', async (payload: { candidate: any; caller: string }) => {
+        this.socket.on('ice-candidate', async (payload: { candidate: RTCIceCandidateInit; caller: string }) => {
             console.log('Received ICE candidate from:', payload.caller);
             this.handleIceCandidate(payload.caller, payload.candidate);
         });
@@ -298,7 +298,7 @@ export class VideoCallService {
         }
     }
 
-    private async handleOffer(callerId: string, sdp: any, userName?: string) {
+    private async handleOffer(callerId: string, sdp: RTCSessionDescriptionInit, userName?: string) {
         if (userName) {
             this.peerUserNames.set(callerId, userName);
         }
@@ -322,7 +322,7 @@ export class VideoCallService {
         }
     }
 
-    private async handleAnswer(callerId: string, sdp: any) {
+    private async handleAnswer(callerId: string, sdp: RTCSessionDescriptionInit) {
         const peer = this.peers.get(callerId);
         if (peer) {
             await peer.setRemoteDescription(new RTCSessionDescription(sdp));
@@ -330,7 +330,7 @@ export class VideoCallService {
         }
     }
 
-    private async handleIceCandidate(callerId: string, candidate: any) {
+    private async handleIceCandidate(callerId: string, candidate: RTCIceCandidateInit) {
         const peer = this.peers.get(callerId);
         const iceCandidate = new RTCIceCandidate(candidate);
 

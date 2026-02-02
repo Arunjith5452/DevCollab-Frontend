@@ -126,7 +126,7 @@ export default function InProgressTab({
                                         {/* Expanded Feedback */}
                                         {expandedFeedback === task.id && hasFeedback && (
                                             <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                                                <p className="text-sm font-semibold text-[#0c1d1a] mb-2">Creator's Feedback:</p>
+                                                <p className="text-sm font-semibold text-[#0c1d1a] mb-2">Creator&apos;s Feedback:</p>
                                                 <p className="text-sm text-[#6b7280] whitespace-pre-wrap">{task.feedback}</p>
                                             </div>
                                         )}

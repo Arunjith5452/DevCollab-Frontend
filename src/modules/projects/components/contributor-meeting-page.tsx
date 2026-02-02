@@ -6,6 +6,7 @@ import ContributorSidebar from '@/shared/common/user-common/contributor-common/C
 import ContributorHeader from '@/shared/common/user-common/contributor-common/ContributorHeader';
 import { VideoCallComponent } from './video-call-component';
 import { Pagination } from '@/shared/common/Pagination';
+import { BackButton } from '@/shared/common/BackButton';
 
 interface Meeting {
     id: string;
@@ -65,6 +66,7 @@ export default function ContributorMeetingPage({
                 <ContributorHeader />
                 <main className="flex-1 overflow-y-auto p-8">
                     <div className="max-w-6xl mx-auto">
+                        <BackButton />
                         <div className="mb-8">
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">Meetings</h1>
                             <p className="text-gray-600">View and join scheduled team meetings.</p>

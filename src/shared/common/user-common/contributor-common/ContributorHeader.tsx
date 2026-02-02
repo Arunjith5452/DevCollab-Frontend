@@ -48,7 +48,7 @@ export default function ContributorHeader({ projectName: propProjectName }: Head
             <div className="flex items-center gap-4">
                 <div className="text-right hidden sm:block">
                     <p className="text-sm font-bold text-gray-900 leading-none mb-1">
-                        {user?.name || (user as any)?.username || "Contributor"}
+                        {user?.name || "Contributor"}
                     </p>
                     <p className="text-[10px] font-medium text-[#006b5b] uppercase tracking-wider">
                         Project Contributor

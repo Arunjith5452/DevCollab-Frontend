@@ -17,6 +17,7 @@ import { createCheckoutSession, createTask, getAssignees } from '../services/tas
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 import { useS3Upload } from '@/shared/hooks/uses3Upload';
+import { CreateTaskPayload } from '../types/task.types';
 
 type TaskStatus = 'todo' | 'in-progress' | 'done' | 'improvement-needed';
 
@@ -240,14 +241,33 @@ export default function CreateTaskPage() {
 
     const paymentAmount = data.payment?.amount || 0;
 
+    if (!projectId) {
+      toast.error('Project ID is required');
+      return;
+    }
 
-    const payload: any = {
-      ...data,
+
+    // Construct payload safely
+    const payload: CreateTaskPayload = {
+      title: data.title,
+      description: data.description,
       projectId,
+      assignedId: data.assignedId,
+      deadline: data.deadline,
+      tags: data.tags,
+      acceptanceCriteria: data.acceptanceCriteria,
+      status: data.status,
     };
 
-    if (!payload.documents?.length) delete payload.documents;
-    if (payload.payment && !payload.payment.amount) delete payload.payment;
+    if (data.documents && data.documents.length > 0) {
+      payload.documents = data.documents;
+    }
+
+    if (data.payment && data.payment.amount) {
+      payload.payment = {
+        amount: data.payment.amount
+      };
+    }
 
     if (paymentAmount > 0) {
       if (!data.paymentConfirmed) {

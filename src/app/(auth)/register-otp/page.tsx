@@ -1,10 +1,13 @@
 import OtpVerificationForm from "@/modules/auth/components/otp-page";
+import { Suspense } from "react";
 
 
-export default function otpVerification(){
+export default function otpVerification() {
 
     return (
-        <OtpVerificationForm type="register" />
+        <Suspense fallback={<div>Loading...</div>}>
+            <OtpVerificationForm type="register" />
+        </Suspense>
     )
 
 }

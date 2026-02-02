@@ -9,6 +9,8 @@ import PageLoader from "@/shared/common/LoadingComponent";
 import { ProjectDetails } from "../types/project.types";
 
 import { useProjectStore } from "@/store/useProjectStore";
+import { RequiredRole } from "../types/project.types";
+import { BackButton } from "@/shared/common/BackButton";
 
 export default function ProjectDetailsPage() {
 
@@ -30,7 +32,7 @@ export default function ProjectDetailsPage() {
           setProject({ id: res.data.id, title: res.data.title });
         }
       } catch (error) {
-        let message = getErrorMessage(error)
+        const message = getErrorMessage(error)
         console.error(message)
       } finally {
         setLoading(false);
@@ -61,6 +63,7 @@ export default function ProjectDetailsPage() {
       {/* Main Content */}
       <main className="flex-1 px-4 sm:px-8 md:px-12 lg:px-24 xl:px-40 py-8 mt-20">
         <div className="max-w-5xl mx-auto">
+          <BackButton />
           {/* Hero Image */}
           <div className="w-full h-56 sm:h-64 rounded-lg overflow-hidden mb-6">
             {project.image ? (
@@ -136,7 +139,7 @@ export default function ProjectDetailsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 p-6 bg-[#f8fcfb] rounded-lg border border-[#e6f4f2]">
             {(() => {
               const totalTeamSize = project.requiredRoles?.reduce(
-                (sum: number, role: any) => sum + Number(role.count || 0),
+                (sum: number, role: RequiredRole) => sum + Number(role.count || 0),
                 0
               );
 
@@ -193,9 +196,9 @@ export default function ProjectDetailsPage() {
               Required Roles
             </h3>
             <div className="space-y-3">
-              {project.requiredRoles?.map((role: any, index: number) => (
+              {project.requiredRoles?.map((role: RequiredRole, index: number) => (
                 <div
-                  key={role.id || index}
+                  key={role._id || index}
                   className="p-4 bg-white border border-[#e6f4f2] rounded-lg"
                 >
                   <div className="flex justify-between items-start mb-2">
