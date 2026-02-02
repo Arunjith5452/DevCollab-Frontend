@@ -3,6 +3,7 @@
 import OtpVerificationForm from "@/modules/auth/components/otp-page";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import PageLoader from "@/shared/common/LoadingComponent";
 
 function ForgotOtpContent() {
   const params = useSearchParams();
@@ -13,7 +14,7 @@ function ForgotOtpContent() {
 
 export default function ForgotOtpPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<PageLoader />}>
       <ForgotOtpContent />
     </Suspense>
   );

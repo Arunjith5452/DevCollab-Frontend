@@ -10,7 +10,6 @@ import { ProjectDetails } from "../types/project.types";
 
 import { useProjectStore } from "@/store/useProjectStore";
 import { RequiredRole } from "../types/project.types";
-import { BackButton } from "@/shared/common/BackButton";
 
 export default function ProjectDetailsPage() {
 
@@ -63,7 +62,6 @@ export default function ProjectDetailsPage() {
       {/* Main Content */}
       <main className="flex-1 px-4 sm:px-8 md:px-12 lg:px-24 xl:px-40 py-8 mt-20">
         <div className="max-w-5xl mx-auto">
-          <BackButton />
           {/* Hero Image */}
           <div className="w-full h-56 sm:h-64 rounded-lg overflow-hidden mb-6">
             {project.image ? (

@@ -64,9 +64,11 @@ export default function UserProfilePage() {
     <div className="relative flex size-full min-h-screen flex-col bg-white overflow-x-hidden">
       <Header />
 
-      <main className="flex-1 pt-20 px-4 md:px-8 lg:px-40">
-        <div className="max-w-4xl mx-auto">
+      <main className="flex-1 pt-20">
+        <div className="px-4 md:px-8 lg:px-24 xl:px-40 py-6">
           <BackButton />
+        </div>
+        <div className="max-w-4xl mx-auto px-4 md:px-8">
           {user && !loading && (
             <>
               <div className="flex flex-col items-center mb-10">

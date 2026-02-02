@@ -12,7 +12,6 @@ import { SearchInput } from '@/shared/common/Searching';
 import { DataTable } from '@/shared/common/DataTable';
 import { Pagination } from '@/shared/common/Pagination';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
-import { BackButton } from '@/shared/common/BackButton';
 
 const RoleCell = ({ member, onRoleChange }: { member: Member, onRoleChange: (id: string, role: 'contributor' | 'maintainer') => Promise<void> }) => {
     const [open, setOpen] = useState(false);
@@ -256,7 +255,6 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
 
                 <main className="flex-1 overflow-y-auto p-6">
                     <div className="max-w-6xl mx-auto space-y-8">
-                        <BackButton />
 
                         <div className="flex justify-between items-center">
                             <h1 className="text-2xl font-bold text-gray-900">Team Members</h1>
