@@ -112,7 +112,7 @@ export default function ProjectManagement() {
                             ? "success"
                             : row.status === "completed"
                                 ? "info"
-                                : "default" 
+                                : "default"
                     }
                 >
                     {row.status === "disabled"
@@ -129,17 +129,7 @@ export default function ProjectManagement() {
                 </span>
             ),
         },
-        {
-            label: "Actions",
-            render: (row: Project) => (
-                <div className="flex items-center gap-3">
-                    {/* Only view button remains */}
-                    <button className="p-1.5 text-gray-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors">
-                        <Eye size={18} />
-                    </button>
-                </div>
-            ),
-        },
+
     ];
 
     return (

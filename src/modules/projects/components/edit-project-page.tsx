@@ -202,8 +202,10 @@ export default function EditProjectPage() {
         <>
             <Header />
             <main className="pt-20 min-h-screen bg-gray-50">
-                <div className="max-w-3xl mx-auto px-6 py-12">
+                <div className="px-6 lg:px-24 xl:px-40 py-6">
                     <BackButton />
+                </div>
+                <div className="max-w-3xl mx-auto px-6 pb-12">
                     <h1 className="text-3xl font-bold text-gray-900 mb-8">Edit Project</h1>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">

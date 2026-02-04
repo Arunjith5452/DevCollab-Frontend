@@ -48,8 +48,11 @@ export const useAuthStore = create<AuthState>()(
               set({ user: updatedUser as User });
             }
           }
-        } catch (error) {
-          console.error("Error fetching user:", error);
+        } catch (error: any) {
+          // Silently handle 401 errors (user not authenticated) - this is expected on landing page
+          if (error?.response?.status !== 401) {
+            console.error("Error fetching user:", error);
+          }
           set({ user: null });
         }
       },

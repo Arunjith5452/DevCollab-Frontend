@@ -9,7 +9,7 @@ export function middleware(req: NextRequest) {
 
   if (
     pathname.startsWith("/api/auth") ||
-    pathname === "/callback" ||         
+    pathname === "/callback" ||
     pathname.includes("callback")
   ) {
     return NextResponse.next();
@@ -18,6 +18,7 @@ export function middleware(req: NextRequest) {
   console.log("this is working")
 
   const publicRoutes = [
+    '/',
     '/login',
     '/register',
     '/register-otp',
@@ -33,6 +34,11 @@ export function middleware(req: NextRequest) {
   };
 
   const isAdmin = pathname.startsWith('/admin')
+
+  // Redirect authenticated users from root to /home
+  if (pathname === '/' && (accessToken || refreshToken)) {
+    return NextResponse.redirect(new URL('/home', req.url));
+  }
 
   if (pathname === '/home') {
     if (!accessToken && !refreshToken) {

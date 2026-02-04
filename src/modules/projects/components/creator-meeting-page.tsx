@@ -6,7 +6,6 @@ import { CreatorSidebar } from '@/shared/common/user-common/Creator-sidebar';
 import CreatorHeader from '@/shared/common/user-common/Creator-header';
 import { VideoCallComponent } from './video-call-component';
 import { Pagination } from '@/shared/common/Pagination';
-import { BackButton } from '@/shared/common/BackButton';
 
 interface Meeting {
     id: string;
@@ -83,7 +82,6 @@ export default function CreatorMeetingPage({
                 <CreatorHeader />
                 <main className="flex-1 overflow-y-auto p-8">
                     <div className="max-w-6xl mx-auto">
-                        <BackButton />
                         {/* Schedule New Meeting Section */}
                         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
                             <h2 className="text-2xl font-bold text-gray-900 mb-6">Schedule New Meeting</h2>

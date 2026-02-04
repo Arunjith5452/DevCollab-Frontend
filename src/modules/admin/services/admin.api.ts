@@ -54,3 +54,21 @@ export const updateProjectStatus = async (data: {
     }
 
 }
+
+export const getDashboardStats = async (params: { startDate?: string, endDate?: string } = {}) => {
+    try {
+        const response = await api.get(ADMIN_ROUTES.GET_DASHBOARD_STATS, { params })
+        return response.data
+    } catch (error) {
+        throw error
+    }
+}
+
+export const getActivities = async ({ page = 1, limit = 10 } = {}) => {
+    try {
+        const response = await api.get(ADMIN_ROUTES.GET_ACTIVITIES, { params: { page, limit } })
+        return response.data
+    } catch (error) {
+        throw error
+    }
+}

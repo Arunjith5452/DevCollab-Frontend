@@ -2,7 +2,7 @@ export interface Project {
   id: string;
   title: string;
   description: string;
-  featured: boolean;
+  featured?: boolean;
   image?: string | null;
   techStack: string[];
   difficulty: string;
@@ -62,6 +62,11 @@ export interface ProjectDetails {
     role: string;
     joinedAt: string;
     status: string;
+    user?: {
+      name: string;
+      email: string;
+      avatar?: string | null;
+    };
   }[];
 }
 

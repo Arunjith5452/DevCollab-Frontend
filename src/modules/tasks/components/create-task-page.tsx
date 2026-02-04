@@ -18,6 +18,7 @@ import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 import { useS3Upload } from '@/shared/hooks/uses3Upload';
 import { CreateTaskPayload } from '../types/task.types';
+import { BackButton } from '@/shared/common/BackButton';
 
 type TaskStatus = 'todo' | 'in-progress' | 'done' | 'improvement-needed';
 
@@ -322,8 +323,11 @@ export default function CreateTaskPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main className="pt-20 px-4 md:px-8 lg:px-40 pb-12">
-        <div className="max-w-2xl mx-auto">
+      <main className="pt-20 pb-12">
+        <div className="px-4 md:px-8 lg:px-24 xl:px-40 py-6">
+          <BackButton />
+        </div>
+        <div className="max-w-2xl mx-auto px-4 md:px-8">
           <h1 className="text-3xl font-bold text-[#0c1d1a] mb-8">
             Create New Task
           </h1>

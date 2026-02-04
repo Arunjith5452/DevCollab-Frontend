@@ -8,7 +8,7 @@ import { BaseProjectPayload } from "@/modules/projects/types/project.types"
 export const createProject = async (data: BaseProjectPayload) => {
 
     try {
-        
+
         const response = await api.post(PROJECT_ROUTES.CREATE_PROJECT, data)
         return response.data
 
@@ -18,11 +18,11 @@ export const createProject = async (data: BaseProjectPayload) => {
 
 }
 
-export const listProject = async ({ search = '', techStack = '', difficulty = '', roleNeeded = '', page = 1, limit = 7 } = {}) => {
+export const listProject = async ({ search = '', techStack = '', difficulty = '', roleNeeded = '', page = 1, limit = 7, sort = '' } = {}) => {
     try {
 
         const response = await api.get(PROJECT_ROUTES.PROJECT_LISTING, {
-            params: { search, techStack, difficulty, roleNeeded, page, limit }
+            params: { search, techStack, difficulty, roleNeeded, page, limit, sort }
         })
 
         return response.data
@@ -175,6 +175,44 @@ export const disableProject = async (projectId: string) => {
 
         return response
 
+    } catch (error) {
+        throw error
+    }
+}
+
+export const getProjectStats = async (projectId: string) => {
+    try {
+        const response = await api.get(`${PROJECT_ROUTES.PROJECT_DETAILS}/${projectId}/stats`)
+        return response.data
+    } catch (error) {
+        throw error
+    }
+}
+
+export const getContributorStats = async (projectId: string, page: number = 1, limit: number = 10) => {
+    try {
+        const response = await api.get(`${PROJECT_ROUTES.PROJECT_DETAILS}/${projectId}/contributor-stats`, {
+            params: { page, limit }
+        })
+        return response.data
+    } catch (error) {
+        throw error
+    }
+}
+
+export const getPlatformStats = async () => {
+    try {
+        const response = await api.get('/api/platform/stats')
+        return response.data
+    } catch (error) {
+        throw error
+    }
+}
+
+export const getFeaturedProjects = async () => {
+    try {
+        const response = await api.get('/api/projects/featured')
+        return response.data
     } catch (error) {
         throw error
     }
