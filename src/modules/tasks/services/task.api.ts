@@ -48,3 +48,12 @@ export const createCheckoutSession = async (data: { amount: number; metadata: Re
     const response = await api.post(TASK_ROUTERS.CREATE_CHECKOUT_SESSION, data);
     return response.data;
 };
+
+export const getCreatorTasks = async (params: { projectId: string; page?: number; limit?: number; search?: string; status?: string; assignee?: string }) => {
+    try {
+        const response = await api.get(TASK_ROUTERS.CREATE_TASK, { params });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

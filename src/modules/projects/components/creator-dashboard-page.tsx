@@ -1,45 +1,111 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import CreatorHeader from "@/shared/common/user-common/Creator-header";
 import { CreatorSidebar } from "@/shared/common/user-common/Creator-sidebar";
 import { useRouter, useSearchParams } from "next/navigation";
-import { projectDetails } from "../services/project.api";
+import { projectDetails, getProjectStats } from "../services/project.api";
 import PageLoader from "@/shared/common/LoadingComponent";
 
 import { useProjectStore } from "@/store/useProjectStore";
 
 import { ProjectDetails } from "../types/project.types";
+import { ProjectStats } from "../types/project-stats.types";
+import { getCreatorTasks } from "@/modules/tasks/services/task.api";
+import { Pagination } from "@/shared/common/Pagination"; // Added import
+
+
+interface Task {
+    _id: string;
+    title: string;
+    status: string;
+    deadline?: string;
+    assignedId?: string;
+}
 
 export default function CreatorDashboardPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const projectId = searchParams.get('projectId');
     const [project, setProjectData] = useState<ProjectDetails | null>(null);
+    const [stats, setStats] = useState<ProjectStats | null>(null);
+    const [tasks, setTasks] = useState<any[]>([]); // Using any for tasks to avoid type mismatch issues for now
     const [loading, setLoading] = useState(true);
+    const [taskLoading, setTaskLoading] = useState(false);
     const { setProject } = useProjectStore();
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0); // Added state
+    const pageSize = 10;
+
+    const fetchTasks = useCallback(async (page: number) => {
+        if (!projectId) return;
+        setTaskLoading(true);
+        try {
+            const res = await getCreatorTasks({
+                projectId,
+                page,
+                limit: pageSize
+            });
+            console.log("Tasks response:", res);
+            setTasks(res.tasks || []);
+            const total = res.total || 0;
+            setTotalItems(total); // Set total items
+            setTotalPages(Math.ceil(total / pageSize));
+        } catch (error) {
+            console.error("Failed to fetch tasks:", error);
+        } finally {
+            setTaskLoading(false);
+        }
+    }, [projectId]);
 
     useEffect(() => {
         if (projectId) {
-            projectDetails(projectId)
-                .then(res => {
-                    console.log("Received project data:", res.data);
-                    setProjectData(res.data);
-                    setProject({ id: res.data.id, title: res.data.title });
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.error("Failed to fetch project details:", err);
-                    setLoading(false);
-                });
+            setLoading(true);
+            Promise.all([
+                projectDetails(projectId),
+                getProjectStats(projectId)
+            ]).then(([resDetails, resStats]) => {
+                console.log("Project data:", resDetails.data);
+                console.log("Project stats:", resStats);
+                setProjectData(resDetails.data);
+                setStats(resStats);
+                setProject({ id: resDetails.data.id, title: resDetails.data.title });
+
+                // Initial task fetch
+                fetchTasks(1);
+
+                setLoading(false);
+            }).catch(err => {
+                console.error("Failed to fetch dashboard data:", err);
+                setLoading(false);
+            });
         } else {
             setLoading(false);
         }
-    }, [projectId, setProject]);
+    }, [projectId, setProject, fetchTasks]);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+            fetchTasks(newPage);
+        }
+    };
 
     if (loading) return <div className="flex h-screen items-center justify-center"><PageLoader /></div>;
 
     const projectName = project?.title || "Project";
+    const memberCount = project?.members?.length || 0;
+
+    // Helper to find assignee name from project members
+    const getAssigneeName = (assignedId: string) => {
+        if (!assignedId) return "Unassigned";
+        const member = project?.members?.find(m => m.userId === assignedId);
+        return member?.user?.name || "Unknown";
+    };
+
 
     return (
         <div className="flex h-screen overflow-hidden bg-white">
@@ -54,7 +120,7 @@ export default function CreatorDashboardPage() {
                             <div>
                                 <h3 className="text-[#0c1d1a] font-semibold mb-1">{projectName}</h3>
                                 <p className="text-[#6b7280] text-sm">
-                                    {project?.status === 'active' ? 'Active Project' : 'Project Dashboard'} | {project?.members?.length || 0} Members
+                                    {project?.status === 'active' ? 'Active Project' : 'Project Dashboard'} | {memberCount} Members
                                 </p>
                             </div>
                             <div className="w-32 h-32 rounded-lg overflow-hidden bg-[#f5e6d3] border border-[#e6f4f2]">
@@ -74,18 +140,28 @@ export default function CreatorDashboardPage() {
                         {/* Completion Rate */}
                         <div className="bg-white p-6 rounded-lg border border-[#e6f4f2]">
                             <h3 className="text-[#0c1d1a] font-semibold mb-2">Completion Rate</h3>
-                            <p className="text-3xl font-bold text-[#0c1d1a] mb-1">+5%</p>
-                            <p className="text-[#22c55e] text-sm mb-4">Last 30 Days +5%</p>
+                            <p className="text-3xl font-bold text-[#0c1d1a] mb-1">
+                                {stats?.completionRate || 0}%
+                            </p>
+                            <p className="text-[#22c55e] text-sm mb-4">
+                                {stats?.completedTasks || 0} / {stats?.totalTasks || 0} Tasks Completed
+                            </p>
                             <div className="flex gap-4">
                                 <div className="flex-1">
-                                    <div className="h-20 bg-[#e6f4f2] rounded flex items-end">
-                                        <div className="w-full h-16 bg-[#006b5b] rounded"></div>
+                                    <div className="h-20 bg-[#e6f4f2] rounded flex items-end relative overflow-hidden">
+                                        <div
+                                            className="w-full bg-[#006b5b] rounded absolute bottom-0 transition-all duration-1000"
+                                            style={{ height: `${stats?.completionRate || 0}%` }}
+                                        ></div>
                                     </div>
                                     <p className="text-[#6b7280] text-xs text-center mt-2">Completed</p>
                                 </div>
                                 <div className="flex-1">
-                                    <div className="h-20 bg-[#e6f4f2] rounded flex items-end">
-                                        <div className="w-full h-12 bg-[#cdeae5] rounded"></div>
+                                    <div className="h-20 bg-[#e6f4f2] rounded flex items-end relative overflow-hidden">
+                                        <div
+                                            className="w-full bg-[#cdeae5] rounded absolute bottom-0 transition-all duration-1000"
+                                            style={{ height: `${100 - (stats?.completionRate || 0)}%` }}
+                                        ></div>
                                     </div>
                                     <p className="text-[#6b7280] text-xs text-center mt-2">Pending</p>
                                 </div>
@@ -95,38 +171,35 @@ export default function CreatorDashboardPage() {
                         {/* Contributor Performance */}
                         <div className="bg-white p-6 rounded-lg border border-[#e6f4f2]">
                             <h3 className="text-[#0c1d1a] font-semibold mb-2">Contributor Performance Overview</h3>
-                            <p className="text-3xl font-bold text-[#0c1d1a] mb-1">+15%</p>
-                            <p className="text-[#22c55e] text-sm mb-4">Last 30 Days +15%</p>
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-[#6b7280] text-xs w-24">Contributor 1</span>
-                                    <div className="flex-1 h-2 bg-[#e6f4f2] rounded overflow-hidden">
-                                        <div className="h-full w-3/4 bg-[#006b5b]"></div>
+                            <p className="text-3xl font-bold text-[#0c1d1a] mb-1">{stats?.contributorPerformance.length || 0}</p>
+                            <p className="text-[#6b7280] text-sm mb-4">Active Contributors</p>
+                            <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                                {stats?.contributorPerformance.map((contributor) => (
+                                    <div key={contributor.userId} className="flex items-center gap-3">
+                                        <span className="text-[#6b7280] text-xs w-24 truncate" title={contributor.name}>
+                                            {contributor.name}
+                                        </span>
+                                        <div className="flex-1 h-2 bg-[#e6f4f2] rounded overflow-hidden">
+                                            <div
+                                                className="h-full bg-[#006b5b]"
+                                                style={{
+                                                    width: `${contributor.totalAssigned > 0
+                                                        ? (contributor.completedTasks / contributor.totalAssigned) * 100
+                                                        : 0}%`
+                                                }}
+                                            ></div>
+                                        </div>
+                                        <span className="text-xs text-[#6b7280]">
+                                            {contributor.completedTasks}/{contributor.totalAssigned}
+                                        </span>
                                     </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-[#6b7280] text-xs w-24">Contributor 2</span>
-                                    <div className="flex-1 h-2 bg-[#e6f4f2] rounded overflow-hidden">
-                                        <div className="h-full w-1/4 bg-[#006b5b]"></div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-[#6b7280] text-xs w-24">Contributor 3</span>
-                                    <div className="flex-1 h-2 bg-[#e6f4f2] rounded overflow-hidden">
-                                        <div className="h-full w-2/3 bg-[#006b5b]"></div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-[#6b7280] text-xs w-24">Contributor 4</span>
-                                    <div className="flex-1 h-2 bg-[#e6f4f2] rounded overflow-hidden">
-                                        <div className="h-full w-1/2 bg-[#006b5b]"></div>
-                                    </div>
-                                </div>
+                                ))}
+                                {(!stats?.contributorPerformance || stats.contributorPerformance.length === 0) && (
+                                    <p className="text-sm text-gray-400">No contributor data yet.</p>
+                                )}
                             </div>
                         </div>
                     </div>
-
-
 
                     {/* Task Management */}
                     <div className="mb-8">
@@ -137,67 +210,67 @@ export default function CreatorDashboardPage() {
                             </button>
                         </div>
                         <div className="bg-white rounded-lg border border-[#e6f4f2] overflow-hidden">
-                            <table className="w-full">
-                                <thead className="bg-[#f8fcfb] border-b border-[#e6f4f2]">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Task</th>
-                                        <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Assignee</th>
-                                        <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Status</th>
-                                        <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Deadline</th>
-                                        <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Reminder</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr className="border-b border-[#e6f4f2]">
-                                        <td className="px-6 py-4 text-[#0c1d1a] text-sm">Implement user authentication</td>
-                                        <td className="px-6 py-4 text-[#6b7280] text-sm">Ethan Harper</td>
-                                        <td className="px-6 py-4">
-                                            <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">In Progress</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-[#6b7280] text-sm">2024-08-15</td>
-                                        <td className="px-6 py-4 text-[#6b7280] text-sm">true</td>
-                                    </tr>
-                                    <tr className="border-b border-[#e6f4f2]">
-                                        <td className="px-6 py-4 text-[#0c1d1a] text-sm">Design landing page</td>
-                                        <td className="px-6 py-4 text-[#6b7280] text-sm">Olivia Bennett</td>
-                                        <td className="px-6 py-4">
-                                            <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Completed</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-[#6b7280] text-sm">2024-08-10</td>
-                                        <td className="px-6 py-4 text-[#6b7280] text-sm">false</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-6 py-4 text-[#0c1d1a] text-sm">Test user authentication</td>
-                                        <td className="px-6 py-4 text-[#6b7280] text-sm">Noah Carter</td>
-                                        <td className="px-6 py-4">
-                                            <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">Pending</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-[#6b7280] text-sm">2024-08-20</td>
-                                        <td className="px-6 py-4 text-[#6b7280] text-sm">true</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead className="bg-[#f8fcfb] border-b border-[#e6f4f2]">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Task</th>
+                                            <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Assignee</th>
+                                            <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Status</th>
+                                            <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Deadline</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {taskLoading ? (
+                                            <tr>
+                                                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                                                    Loading tasks...
+                                                </td>
+                                            </tr>
+                                        ) : tasks.length > 0 ? (
+                                            tasks.map((task, index) => (
+                                                <tr key={task._id || index} className="border-b border-[#e6f4f2] hover:bg-gray-50">
+                                                    <td className="px-6 py-4 text-[#0c1d1a] text-sm">{task.title}</td>
+                                                    <td className="px-6 py-4 text-[#6b7280] text-sm">
+                                                        {getAssigneeName(task.assignedId)}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`px-3 py-1 text-xs font-medium rounded-full 
+                                                            ${task.status === 'done' ? 'bg-green-100 text-green-700' :
+                                                                task.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
+                                                                    'bg-yellow-100 text-yellow-700'}`}>
+                                                            {task.status === 'done' ? 'Completed' :
+                                                                task.status === 'in-progress' ? 'In Progress' : 'Pending'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-[#6b7280] text-sm">
+                                                        {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                                                    No tasks found for this project.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
 
                             {/* Pagination */}
-                            <div className="flex items-center justify-center gap-2 py-4 border-t border-[#e6f4f2]">
-                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] rounded">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                </button>
-                                <button className="w-8 h-8 flex items-center justify-center bg-[#006b5b] text-white text-sm font-medium rounded">1</button>
-                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">2</button>
-                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">3</button>
-                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">4</button>
-                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">5</button>
-                                <span className="text-[#6b7280] text-sm">...</span>
-                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] text-sm rounded">10</button>
-                                <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8fcfb] rounded">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                </button>
-                            </div>
+                            {totalPages > 1 && (
+                                <div className="border-t border-[#e6f4f2]">
+                                    <Pagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={handlePageChange}
+                                        totalItems={totalItems}
+                                        itemsPerPage={pageSize}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </main>

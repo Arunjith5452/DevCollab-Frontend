@@ -120,26 +120,7 @@ export default function TasksListingPage({
     fetchTasks();
   }, [searchTerm, statusFilter, assigneeFilter, currentPage, projectId, router])
 
-  useEffect(() => {
-    if (!projectId) return;
 
-    const load = async () => {
-      try {
-        const res = await api.get('/api/task', {
-          params: {
-            projectId,
-            search: searchTerm || undefined,
-            status: statusFilter === 'all' ? undefined : statusFilter,
-            assignee: assigneeFilter === 'all' ? undefined : assigneeFilter,
-            page: currentPage,
-            limit: 10,
-          },
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    };
-  }, [searchTerm, statusFilter, assigneeFilter, currentPage, projectId]);
 
 
   const getAssigneeName = (assignedId: string | null | undefined) => {

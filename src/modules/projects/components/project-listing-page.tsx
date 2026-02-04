@@ -42,18 +42,7 @@ export default function ExploreProjectsPage() {
   // }, [])
 
 
-  const featuredProjects: Project[] = [
-    {
-      id: '1',
-      title: 'AI-Powered Chatbot for Customer Support',
-      description: 'Develop an intelligent chatbot using natural language processing to handle customer inquiries and provide instant support.',
-      featured: true,
-      image: '🤖',
-      techStack: ['Python', 'NLP', 'AI'],
-      difficulty: 'Advanced',
-      roleNeeded: 'UI && UX Designer'
-    }
-  ];
+  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     if (showTechInput && techInputRef.current) techInputRef.current.focus();
@@ -62,6 +51,19 @@ export default function ExploreProjectsPage() {
   useEffect(() => {
     if (showRoleInput && roleInputRef.current) roleInputRef.current.focus();
   }, [showRoleInput]);
+
+  // Fetch Featured Projects - only show 1 project with highest applications
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const data = await listProject({ sort: 'featured', limit: 1 });
+        setFeaturedProjects(data.projects ?? []);
+      } catch (error) {
+        console.error("Failed to fetch featured projects", error);
+      }
+    };
+    fetchFeatured();
+  }, []);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -388,9 +390,9 @@ export default function ExploreProjectsPage() {
             </div>
           </div>
 
-          {/* Featured Projects */}
+          {/* Featured Project */}
           <section className="mb-12">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5">Featured Projects</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5">Featured Project</h2>
             {featuredProjects.map((project) => (
               <div key={project.id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-center">
@@ -408,8 +410,18 @@ export default function ExploreProjectsPage() {
                       View Project
                     </button>
                   </div>
-                  <div className="flex justify-center items-center bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 h-32 sm:h-40 order-1 md:order-2">
-                    <div className="text-6xl sm:text-8xl">{project.image}</div>
+                  <div className="flex justify-center items-center rounded-xl h-32 sm:h-40 order-1 md:order-2 overflow-hidden">
+                    {project.image ? (
+                      <img
+                        src={project.image}
+                        alt={project.title}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl flex items-center justify-center">
+                        <Code2 className="w-12 h-12 text-orange-400" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -457,7 +469,7 @@ export default function ExploreProjectsPage() {
                           <img
                             src={project.image}
                             alt={`Image for ${project.title}`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                           />
                         ) : (
                           <div className="text-4xl text-gray-500 flex justify-center items-center h-full w-full bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl">

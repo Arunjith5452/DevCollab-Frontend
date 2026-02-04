@@ -10,7 +10,7 @@ import { useAuthStore, useUser } from '@/store/useUserStore';
 import { logout } from "@/modules/auth/services/auth.api"
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
-  
+
 interface NavLink { label: string; href: string; }
 interface HeaderProps {
   navLinks?: NavLink[];
@@ -184,7 +184,7 @@ export function Header({
                   Sign In
                 </button>
                 <button
-                  onClick={() => router.push('/signup')}
+                  onClick={() => router.push('/register')}
                   className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:scale-105 transition-all"
                 >
                   Sign Up
@@ -270,7 +270,7 @@ export function Header({
                     Sign In
                   </button>
                   <button
-                    onClick={() => { router.push('/signup'); setMobileOpen(false); }}
+                    onClick={() => { router.push('/register'); setMobileOpen(false); }}
                     className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
                   >
                     Sign Up

@@ -4,24 +4,69 @@ import { Users, GitBranch, Star, ArrowRight, TrendingUp, Award } from 'lucide-re
 import { Header } from "@/shared/common/user-common/Header";
 import { Footer } from "@/shared/common/user-common/Footer";
 import { useRouter } from "next/navigation";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import api from '@/lib/axios';
+import { getPlatformStats, getFeaturedProjects } from '@/modules/projects/services/project.api';
+import PageLoader from '@/shared/common/LoadingComponent';
+
+interface PlatformStats {
+  totalUsers: number;
+  totalProjects: number;
+  activeProjects: number;
+  averageRating: number;
+  usersThisWeek: number;
+  projectsThisWeek: number;
+}
+
+interface FeaturedProject {
+  id: string;
+  title: string;
+  description: string;
+  techStack: string[];
+  creatorName: string;
+  applicationCount: number;
+  status: string;
+  image?: string;
+}
 
 export function HomePage() {
-
-  const router = useRouter()
+  const router = useRouter();
+  const [stats, setStats] = useState<PlatformStats | null>(null);
+  const [featuredProjects, setFeaturedProjects] = useState<FeaturedProject[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await api.get('/api/profile/me', { withCredentials: true });
+        // Try to fetch user profile (optional - only for authenticated users)
+        try {
+          await api.get('/api/profile/me', { withCredentials: true });
+        } catch (error) {
+          // User not authenticated - this is fine for landing page
+          console.log('User not authenticated');
+        }
+
+        // Fetch platform stats and featured projects (public data)
+        const [statsRes, projectsRes] = await Promise.all([
+          getPlatformStats(),
+          getFeaturedProjects()
+        ]);
+
+        setStats(statsRes.data || statsRes);
+        setFeaturedProjects(projectsRes.data || projectsRes);
       } catch (error) {
-        const err = error as Error
+        const err = error as Error;
         console.error(err.message);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
-  }, [])
+  }, []);
+
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center"><PageLoader /></div>;
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -54,14 +99,14 @@ export function HomePage() {
                 Contribute your skills, learn new technologies, and make an impact on the world.
               </p>
 
-              {/* Stats Row */}
+              {/* Stats Row - Dynamic */}
               <div className="flex flex-wrap gap-8 py-4">
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-white/10 backdrop-blur rounded-lg">
                     <Users className="w-5 h-5 text-green-200" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">10K+</p>
+                    <p className="text-2xl font-bold">{stats?.totalUsers || 0}+</p>
                     <p className="text-sm text-green-200">Developers</p>
                   </div>
                 </div>
@@ -70,7 +115,7 @@ export function HomePage() {
                     <GitBranch className="w-5 h-5 text-green-200" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">5K+</p>
+                    <p className="text-2xl font-bold">{stats?.totalProjects || 0}+</p>
                     <p className="text-sm text-green-200">Projects</p>
                   </div>
                 </div>
@@ -79,7 +124,7 @@ export function HomePage() {
                     <Star className="w-5 h-5 text-yellow-300" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">4.9</p>
+                    <p className="text-2xl font-bold">{stats?.averageRating || 0}</p>
                     <p className="text-sm text-green-200">Rating</p>
                   </div>
                 </div>
@@ -96,7 +141,7 @@ export function HomePage() {
                 </button>
               </div>
 
-              {/* Social Proof */}
+              {/* Social Proof - Dynamic */}
               <div className="flex items-center space-x-4 pt-4">
                 <div className="flex -space-x-3">
                   {[1, 2, 3, 4, 5].map((i) => (
@@ -107,7 +152,7 @@ export function HomePage() {
                   ))}
                 </div>
                 <div className="text-sm">
-                  <p className="font-semibold text-white">2,000+ developers</p>
+                  <p className="font-semibold text-white">{stats?.usersThisWeek || 0}+ developers</p>
                   <p className="text-green-200">joined this week</p>
                 </div>
               </div>
@@ -151,142 +196,61 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* YOUR ORIGINAL Featured Projects Section - UNCHANGED */}
+      {/* Featured Projects Section - Dynamic */}
       <section className="px-6 py-16">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">Featured Projects</h2>
 
           <div className="space-y-8">
-            {/* Project 1 - AI Assistant */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-                <div className="lg:col-span-2 space-y-3">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <span>AI, Python, Machine Learning</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    AI-Powered Code Assistant
-                  </h3>
-                  <p className="text-gray-600">
-                    An intelligent code assistant that helps developers write better code by providing real-time suggestions and automated testing capabilities.
-                  </p>
-                  <button className="bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors">
-                    Apply to Join
-                  </button>
-                </div>
-                <div className="bg-gray-900 rounded-xl p-6 h-32 flex items-center justify-center">
-                  <div className="text-green-400 font-mono text-sm">
-                    <div>{'{ "ai": "assistant" }'}</div>
-                    <div className="text-gray-500">{'// Smart coding'}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Project 2 - Social Network */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-                <div className="lg:col-span-2 space-y-3">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <span>Next.js, React, Node.js</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    Decentralized Social Network
-                  </h3>
-                  <p className="text-gray-600">
-                    A privacy-focused social platform that puts users in control of their data while enabling meaningful connections and communities.
-                  </p>
-                  <button className="bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors">
-                    Apply to Join
-                  </button>
-                </div>
-                <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-6 h-32 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                    <div className="w-6 h-6 bg-teal-500 rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Project 3 - E-commerce */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-                <div className="lg:col-span-2 space-y-3">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <span>Vue.js, Django, PostgreSQL</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    Open Source E-commerce Platform
-                  </h3>
-                  <p className="text-gray-600">
-                    A comprehensive e-commerce solution with modern features like inventory management, payment processing, and analytics.
-                  </p>
-                  <button className="bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors">
-                    Apply to Join
-                  </button>
-                </div>
-                <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-xl p-6 h-32 flex items-center justify-center">
-                  <div className="bg-white p-3 rounded-lg shadow-lg">
-                    <div className="w-8 h-6 bg-orange-500 rounded-t-md"></div>
-                    <div className="w-8 h-2 bg-gray-300 rounded-b-md"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Project 4 - Educational Kit */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-                <div className="lg:col-span-2 space-y-3">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <span>React, TypeScript, WebGL</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    Educational Game Development Kit
-                  </h3>
-                  <p className="text-gray-600">
-                    Interactive learning platform for teaching programming concepts through gamification, making coding fun and accessible for students.
-                  </p>
-                  <button className="bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors">
-                    Apply to Join
-                  </button>
-                </div>
-                <div className="bg-gradient-to-br from-green-400 to-blue-500 rounded-xl p-6 h-32 flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full mx-auto mb-2 flex items-center justify-center">
-                      <div className="w-6 h-6 bg-white rounded"></div>
+            {featuredProjects.length > 0 ? (
+              featuredProjects.map((project, index) => (
+                <div key={project.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                    <div className="lg:col-span-2 space-y-3">
+                      <div className="flex items-center space-x-2 text-sm text-gray-600">
+                        <span>{project.techStack.join(', ') || 'Various Technologies'}</span>
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        {project.title}
+                      </h3>
+                      <p className="text-gray-600">
+                        {project.description}
+                      </p>
+                      <button
+                        onClick={() => router.push(`/apply-project?projectId=${project.id}`)}
+                        className="bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors"
+                      >
+                        Apply to Join
+                      </button>
+                    </div>
+                    <div className={`bg-gradient-to-br ${index === 0 ? 'from-gray-800 to-gray-900' :
+                      index === 1 ? 'from-teal-500 to-teal-600' :
+                        index === 2 ? 'from-orange-400 to-red-500' :
+                          index === 3 ? 'from-green-400 to-blue-500' :
+                            'from-blue-500 to-teal-500'
+                      } rounded-xl p-6 h-32 flex items-center justify-center`}>
+                      {project.image ? (
+                        <img src={project.image} alt={project.title} className="w-full h-full object-cover rounded-lg" />
+                      ) : (
+                        <div className="text-white font-mono text-sm">
+                          <div>{'{ "project": "' + project.title.substring(0, 10) + '..." }'}</div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-12 text-gray-500">
+                <p>No featured projects available at the moment.</p>
+                <button
+                  onClick={() => router.push('/create-project')}
+                  className="mt-4 bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors"
+                >
+                  Create the First Project
+                </button>
               </div>
-            </div>
-
-            {/* Project 5 - Home Automation */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-                <div className="lg:col-span-2 space-y-3">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <span>IoT, React Native, Arduino</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    Smart Home Automation System
-                  </h3>
-                  <p className="text-gray-600">
-                    Complete IoT solution for home automation with mobile apps, device integration, and energy monitoring capabilities.
-                  </p>
-                  <button className="bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors">
-                    Apply to Join
-                  </button>
-                </div>
-                <div className="bg-gradient-to-br from-blue-500 to-teal-500 rounded-xl p-6 h-32 flex items-center justify-center">
-                  <div className="bg-white p-4 rounded-xl shadow-lg relative">
-                    <div className="w-8 h-6 bg-blue-500 rounded-t-lg"></div>
-                    <div className="w-8 h-4 bg-gray-200 rounded-b-lg"></div>
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
