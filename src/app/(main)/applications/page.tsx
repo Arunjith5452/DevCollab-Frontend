@@ -4,7 +4,7 @@ import PageLoader from '@/shared/common/LoadingComponent'
 
 export default function ApplyProject() {
     return (
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={null}>
             <ApplicationsPage />
         </Suspense>
     )

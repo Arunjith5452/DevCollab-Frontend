@@ -22,7 +22,7 @@ export default function CreatorHeader({ projectName: propProjectName }: HeaderPr
     }, [fetchUser, user]);
 
     useEffect(() => {
-        if (!propProjectName && projectId && (!currentProject || currentProject.id !== projectId)) {
+        if (!propProjectName && projectId && projectId !== 'null' && (!currentProject || currentProject.id !== projectId)) {
             projectDetails(projectId)
                 .then(res => {
                     setProject({ id: res.data.id, title: res.data.title });

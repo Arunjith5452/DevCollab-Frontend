@@ -94,11 +94,32 @@ export default function CreateTaskPage() {
     const sessionId = searchParams.get('session_id');
 
     if (sessionId) {
-      toast.success('Payment successful! Your task is being processed.');
-      // Cleanup URL
-      window.history.replaceState({}, '', window.location.pathname + `?projectId=${projectId}`);
-      // Redirect to listing
-      router.push(`/task-listing?projectId=${projectId}`);
+      console.log('Payment return debug:', {
+        sessionId,
+        projectIdFromState: projectId,
+        currentUrl: window.location.href,
+        searchParams: searchParams.toString()
+      });
+
+      if (projectId) {
+        toast.success('Payment successful! Your task is being processed.');
+        // Cleanup URL
+        window.history.replaceState({}, '', window.location.pathname + `?projectId=${projectId}`);
+        // Redirect to listing
+        router.push(`/task-listing?projectId=${projectId}`);
+      } else {
+        // Fallback: try to get plain projectId from URL if searchParams failed or was sanitized to null
+        const urlParams = new URLSearchParams(window.location.search);
+        const pid = urlParams.get('projectId');
+        if (pid && pid !== 'null' && pid !== 'undefined') {
+          toast.success('Payment successful! Your task is being processed.');
+          router.push(`/task-listing?projectId=${pid}`);
+        } else {
+          // Worst case: redirect to listing without ID, let it handle it or stay here
+          toast.error('Payment successful, but lost project context.');
+          router.push('/task-listing');
+        }
+      }
     }
   }, [router, projectId, searchParams]);
 
@@ -242,6 +263,11 @@ export default function CreateTaskPage() {
 
     const paymentAmount = data.payment?.amount || 0;
 
+    if (paymentAmount <= 0) {
+      toast.error('Payment amount is required');
+      return;
+    }
+
     if (!projectId) {
       toast.error('Project ID is required');
       return;
@@ -285,16 +311,19 @@ export default function CreateTaskPage() {
 
         // 1. Create the task first (with escrowStatus: 'not-paid')
         const setupRes = await createTask(payload);
-        const taskId = setupRes.data.id;
+
+        const taskId = setupRes?.id;
+
+        if (!taskId) throw new Error("Task creation failed: No ID returned");
 
         // 2. Create Stripe Checkout Session with taskId in metadata
         const amountInPaise = Math.round(paymentAmount * 100);
         const response = await createCheckoutSession({
           amount: amountInPaise,
           metadata: {
-            task_id: taskId,
-            project_id: projectId || '',
-            task_title: data.title,
+            task_id: String(taskId),
+            project_id: String(projectId || ''),
+            task_title: String(data.title),
           },
         });
 

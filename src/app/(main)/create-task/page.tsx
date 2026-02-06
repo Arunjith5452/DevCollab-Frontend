@@ -5,7 +5,7 @@ import PageLoader from "@/shared/common/LoadingComponent";
 
 export default function CreateTask() {
     return (
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={null}>
             <CreateTaskPage />
         </Suspense>
     )

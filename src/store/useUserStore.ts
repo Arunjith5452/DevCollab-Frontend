@@ -48,9 +48,14 @@ export const useAuthStore = create<AuthState>()(
               set({ user: updatedUser as User });
             }
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           // Silently handle 401 errors (user not authenticated) - this is expected on landing page
-          if (error?.response?.status !== 401) {
+          if (error && typeof error === 'object' && 'response' in error) {
+            const axiosError = error as { response?: { status?: number } };
+            if (axiosError.response?.status !== 401) {
+              console.error("Error fetching user:", error);
+            }
+          } else {
             console.error("Error fetching user:", error);
           }
           set({ user: null });

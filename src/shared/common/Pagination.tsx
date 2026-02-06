@@ -46,7 +46,6 @@ export function Pagination({
         <div className="hidden sm:flex items-center">
           {[...Array(totalPages || 0)].map((_, index) => {
             const page = index + 1;
-            // Simple logic to show limited pages if too many - can be expanded later
             if (totalPages > 7 && (page !== 1 && page !== totalPages && Math.abs(currentPage - page) > 1)) {
               if (page === 2 || page === totalPages - 1) return <span key={page} className="px-1 text-gray-400">...</span>;
               return null;

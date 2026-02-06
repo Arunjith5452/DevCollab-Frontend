@@ -1,3 +1,4 @@
+import { Code } from 'lucide-react';
 // import { ThemeToggle } from "../ThemeToggle";
 
 
@@ -5,11 +6,11 @@ export function AuthHeader({ text, showButton = true, onButtonClick }) {
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e6f4f2] px-10 py-3">
       {/* Left section */}
-      <div className="flex items-center gap-4 text-[#0c1d1a]">
-        <div className="size-4">
-          <div className="w-4 h-4 bg-[#0c1d1a] rounded-sm"></div>
+      <div className="flex items-center gap-4 text-[#0c1d1a]" onClick={() => window.location.href = '/home'} style={{ cursor: 'pointer' }}>
+        <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+          <Code className="w-6 h-6 text-white" />
         </div>
-        <h2 className="text-[#0c1d1a] text-lg font-bold leading-tight tracking-[-0.015em]">
+        <h2 className="text-[#0c1d1a] text-xl font-bold leading-tight tracking-[-0.015em]">
           DevCollab
         </h2>
       </div>

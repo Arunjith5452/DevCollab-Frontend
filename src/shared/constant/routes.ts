@@ -24,7 +24,8 @@ export const PROJECT_ROUTES = {
   GET_PROJECT_FOR_EDIT: "/api/projects",
   EDIT_PROJECT: "/api/projects",
   GET_PROJECT_MEMBERS: "/api/projects",
-  DISABLE_PROJECT: '/api/projects'
+  DISABLE_PROJECT: '/api/projects',
+  GET_AI_SUGGESTIONS: "/api/projects"
 
 };
 
