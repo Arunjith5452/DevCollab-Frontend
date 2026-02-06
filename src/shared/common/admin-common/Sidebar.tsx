@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Activity, Code, DollarSign, Folder, Home, Settings, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSidebar } from "@/shared/hooks/useSidebar";
 import { MobileMenuButton } from "@/shared/common/MobileMenuButton";
 import { SidebarOverlay } from "@/shared/common/SidebarOverlay";
+import { getDashboardStats } from "@/modules/admin/services/admin.api";
 
 interface SidebarProps {
   activeItem?: string;
@@ -13,11 +15,30 @@ interface SidebarProps {
 export function Sidebar({ activeItem }: SidebarProps) {
   const router = useRouter();
   const { isOpen, isMobile, toggle, close } = useSidebar();
+  const [counts, setCounts] = useState({ users: 0, projects: 0 });
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const response = await getDashboardStats();
+        // Handle different response structures gracefully
+        const data = response?.data?.stats || response?.stats || response?.data || response;
+
+        setCounts({
+          users: data?.totalUsers || 0,
+          projects: data?.totalProjects || 0
+        });
+      } catch (error) {
+        console.error("Failed to fetch sidebar counts", error);
+      }
+    };
+    fetchCounts();
+  }, []);
 
   const menuItems = [
     { id: 'dashboard', icon: Home, label: 'Dashboard', badge: null, href: '/admin/dashboard' },
-    { id: 'users', icon: Users, label: 'Users', badge: '1.2K', href: '/admin/userManagement' },
-    { id: 'projects', icon: Folder, label: 'Projects', badge: '567', href: '/admin/projectManagement' },
+    { id: 'users', icon: Users, label: 'Users', badge: counts.users > 0 ? counts.users.toString() : null, href: '/admin/userManagement' },
+    { id: 'projects', icon: Folder, label: 'Projects', badge: counts.projects > 0 ? counts.projects.toString() : null, href: '/admin/projectManagement' },
     { id: 'revenue', icon: DollarSign, label: 'Revenue', badge: null, href: '#' },
     { id: 'analytics', icon: Activity, label: 'Analytics', badge: null, href: '#' },
     { id: 'settings', icon: Settings, label: 'Settings', badge: null, href: '#' },
