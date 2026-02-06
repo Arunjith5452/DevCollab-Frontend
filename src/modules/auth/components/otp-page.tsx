@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthHeader, OTPInputFields } from "@/shared/common/auth-common";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useTimer } from "react-timer-hook";
@@ -23,12 +23,41 @@ export default function OtpVerificationForm({ type, email }: Props) {
 
   const forgotEmail = email || searchParams.get("email") || "";
 
-  const time = new Date();
-  time.setSeconds(time.getSeconds() + 30);
+  const getExpiryTime = () => {
+    const savedTime = localStorage.getItem("otp_expiry_time");
+    if (savedTime) {
+      const expiryDate = new Date(savedTime);
+      if (expiryDate.getTime() > new Date().getTime()) {
+        return expiryDate;
+      }
+    }
+    const newTime = new Date();
+    newTime.setSeconds(newTime.getSeconds() + 30);
+    localStorage.setItem("otp_expiry_time", newTime.toISOString());
+    return newTime;
+  };
+
   const { seconds, restart, isRunning } = useTimer({
-    expiryTimestamp: time,
-    onExpire: () => toast.success("Resend available now "),
+    expiryTimestamp: getExpiryTime(),
+    onExpire: () => {
+      toast.success("Resend available now ");
+      localStorage.removeItem("otp_expiry_time");
+    },
   });
+
+  // Ensure timer starts correctly on mount if valid time exists
+  useEffect(() => {
+    const savedTime = localStorage.getItem("otp_expiry_time");
+    if (savedTime) {
+      const expiryDate = new Date(savedTime);
+      if (expiryDate.getTime() > new Date().getTime()) {
+        restart(expiryDate);
+      } else {
+        localStorage.removeItem("otp_expiry_time");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleVerify = async () => {
     if (otp.length !== 6) {
@@ -52,6 +81,7 @@ export default function OtpVerificationForm({ type, email }: Props) {
         if (!forgotEmail) throw new Error("Session expired. Please try again.");
         await verifyForgotOTP({ email: forgotEmail, otp: Number(otp) });
         toast.success("OTP verified successfully ");
+        localStorage.removeItem("otp_expiry_time");
         router.push(`/reset-password?email=${encodeURIComponent(forgotEmail)}`);
       }
     } catch (error) {
@@ -78,6 +108,7 @@ export default function OtpVerificationForm({ type, email }: Props) {
 
       const newTime = new Date();
       newTime.setSeconds(newTime.getSeconds() + 30);
+      localStorage.setItem("otp_expiry_time", newTime.toISOString());
       restart(newTime);
       toast.success("OTP resent successfully ✅");
     } catch (error) {

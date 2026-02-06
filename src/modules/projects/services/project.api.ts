@@ -1,6 +1,6 @@
 import api from "@/lib/axios"
 import { PROJECT_ROUTES } from "@/shared/constant/routes"
-import { BaseProjectPayload } from "@/modules/projects/types/project.types"
+import { BaseProjectPayload, GetAiSuggestionsResponse } from "@/modules/projects/types/project.types"
 
 
 
@@ -212,6 +212,15 @@ export const getPlatformStats = async () => {
 export const getFeaturedProjects = async () => {
     try {
         const response = await api.get('/api/projects/featured')
+        return response.data
+    } catch (error) {
+        throw error
+    }
+}
+
+export const getAiSuggestions = async (projectId: string): Promise<GetAiSuggestionsResponse> => {
+    try {
+        const response = await api.get<GetAiSuggestionsResponse>(`${PROJECT_ROUTES.GET_AI_SUGGESTIONS}/${projectId}/ai-suggestions`)
         return response.data
     } catch (error) {
         throw error

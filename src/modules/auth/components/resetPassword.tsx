@@ -1,16 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { resetPassword } from "../services/auth.api";
 import { getErrorMessage } from "@/shared/utils/ErrorMessage";
+import { AuthHeader } from "@/shared/common/auth-common/authHeader";
 
 export function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const email = searchParams.get("email") || ""
@@ -44,16 +48,8 @@ export function ResetPasswordPage() {
     <div className="relative flex size-full min-h-screen flex-col bg-white overflow-x-hidden">
       <div className="layout-container flex h-full grow flex-col">
         {/* Header */}
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e6f4f2] px-10 py-3">
-          <div className="flex items-center gap-4 text-[#0c1d1a]">
-            <div className="size-4">
-              <div className="w-4 h-4 bg-[#0c1d1a] rounded-sm"></div>
-            </div>
-            <h2 className="text-[#0c1d1a] text-lg font-bold leading-tight tracking-[-0.015em]">
-              DevCollab
-            </h2>
-          </div>
-        </header>
+        {/* Header */}
+        <AuthHeader text="" showButton={false} onButtonClick={() => { }} />
 
         {/* Main Content */}
         <div className="px-40 flex flex-1 justify-center py-5">
@@ -67,27 +63,43 @@ export function ResetPasswordPage() {
 
             {/* New Password */}
             <div className="flex justify-center">
-              <div className="flex max-w-[480px] w-full flex-wrap gap-4 px-4 py-3">
+              <div className="flex max-w-[480px] w-full flex-wrap gap-4 px-4 py-3 relative">
                 <input
-                  type="password"
+                  type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="New Password"
-                  className="form-input flex w-full rounded border border-[#cdeae5] bg-white h-14 placeholder:text-[#45a193] p-[15px] text-base"
+                  className="form-input flex w-full rounded border border-[#cdeae5] bg-white h-14 placeholder:text-[#45a193] p-[15px] pr-10 text-base"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-7 top-1/2 -translate-y-1/2 text-[#45a193] hover:text-[#006b5b] transition-colors"
+                  aria-label={showNewPassword ? "Hide password" : "Show password"}
+                >
+                  {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 
             {/* Confirm Password */}
             <div className="flex justify-center">
-              <div className="flex max-w-[480px] w-full flex-wrap gap-4 px-4 py-3">
+              <div className="flex max-w-[480px] w-full flex-wrap gap-4 px-4 py-3 relative">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm New Password"
-                  className="form-input flex w-full rounded border border-[#cdeae5] bg-white h-14 placeholder:text-[#45a193] p-[15px] text-base"
+                  className="form-input flex w-full rounded border border-[#cdeae5] bg-white h-14 placeholder:text-[#45a193] p-[15px] pr-10 text-base"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-7 top-1/2 -translate-y-1/2 text-[#45a193] hover:text-[#006b5b] transition-colors"
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 

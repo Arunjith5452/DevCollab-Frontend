@@ -12,16 +12,8 @@ import { useProjectStore } from "@/store/useProjectStore";
 import { ProjectDetails } from "../types/project.types";
 import { ProjectStats } from "../types/project-stats.types";
 import { getCreatorTasks } from "@/modules/tasks/services/task.api";
-import { Pagination } from "@/shared/common/Pagination"; // Added import
-
-
-interface Task {
-    _id: string;
-    title: string;
-    status: string;
-    deadline?: string;
-    assignedId?: string;
-}
+import { Pagination } from "@/shared/common/Pagination";
+import { Task } from "@/types/tasks/task.types";
 
 export default function CreatorDashboardPage() {
     const router = useRouter();
@@ -29,10 +21,21 @@ export default function CreatorDashboardPage() {
     const projectId = searchParams.get('projectId');
     const [project, setProjectData] = useState<ProjectDetails | null>(null);
     const [stats, setStats] = useState<ProjectStats | null>(null);
-    const [tasks, setTasks] = useState<any[]>([]); // Using any for tasks to avoid type mismatch issues for now
+    const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [taskLoading, setTaskLoading] = useState(false);
     const { setProject } = useProjectStore();
+
+    // Helper variables
+    const projectName = project?.title || "Project";
+    const memberCount = project?.members?.length || 0;
+
+    // Helper to find assignee name from project members
+    const getAssigneeName = (assignedId: string) => {
+        if (!assignedId) return "Unassigned";
+        const member = project?.members?.find(m => m.userId === assignedId);
+        return member?.user?.name || "Unknown";
+    };
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -94,19 +97,6 @@ export default function CreatorDashboardPage() {
         }
     };
 
-    if (loading) return <div className="flex h-screen items-center justify-center"><PageLoader /></div>;
-
-    const projectName = project?.title || "Project";
-    const memberCount = project?.members?.length || 0;
-
-    // Helper to find assignee name from project members
-    const getAssigneeName = (assignedId: string) => {
-        if (!assignedId) return "Unassigned";
-        const member = project?.members?.find(m => m.userId === assignedId);
-        return member?.user?.name || "Unknown";
-    };
-
-
     return (
         <div className="flex h-screen overflow-hidden bg-white">
             <CreatorSidebar activeItem="dashboard" />
@@ -114,165 +104,174 @@ export default function CreatorDashboardPage() {
             <div className="flex-1 flex flex-col overflow-hidden">
                 <CreatorHeader />
                 <main className="flex-1 overflow-y-auto p-8">
-                    <div className="mb-8">
-                        <h2 className="text-[#0c1d1a] text-xl font-bold mb-4">Project Overview</h2>
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <h3 className="text-[#0c1d1a] font-semibold mb-1">{projectName}</h3>
-                                <p className="text-[#6b7280] text-sm">
-                                    {project?.status === 'active' ? 'Active Project' : 'Project Dashboard'} | {memberCount} Members
-                                </p>
-                            </div>
-                            <div className="w-32 h-32 rounded-lg overflow-hidden bg-[#f5e6d3] border border-[#e6f4f2]">
-                                {project?.image ? (
-                                    <img src={project.image} alt={projectName} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-[#f5e6d3]">
-                                        <div className="w-12 h-12 bg-[#0c1d1a] rounded-sm opacity-10"></div>
-                                    </div>
-                                )}
-                            </div>
+                    {loading ? (
+                        <div className="flex h-full items-center justify-center">
+                            <PageLoader />
                         </div>
-                    </div>
-
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-2 gap-6 mb-8">
-                        {/* Completion Rate */}
-                        <div className="bg-white p-6 rounded-lg border border-[#e6f4f2]">
-                            <h3 className="text-[#0c1d1a] font-semibold mb-2">Completion Rate</h3>
-                            <p className="text-3xl font-bold text-[#0c1d1a] mb-1">
-                                {stats?.completionRate || 0}%
-                            </p>
-                            <p className="text-[#22c55e] text-sm mb-4">
-                                {stats?.completedTasks || 0} / {stats?.totalTasks || 0} Tasks Completed
-                            </p>
-                            <div className="flex gap-4">
-                                <div className="flex-1">
-                                    <div className="h-20 bg-[#e6f4f2] rounded flex items-end relative overflow-hidden">
-                                        <div
-                                            className="w-full bg-[#006b5b] rounded absolute bottom-0 transition-all duration-1000"
-                                            style={{ height: `${stats?.completionRate || 0}%` }}
-                                        ></div>
+                    ) : (
+                        <>
+                            <div className="mb-8">
+                                <h2 className="text-[#0c1d1a] text-xl font-bold mb-4">Project Overview</h2>
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <h3 className="text-[#0c1d1a] font-semibold mb-1">{projectName}</h3>
+                                        <p className="text-[#6b7280] text-sm">
+                                            {project?.status === 'active' ? 'Active Project' : 'Project Dashboard'} | {memberCount} Members
+                                        </p>
                                     </div>
-                                    <p className="text-[#6b7280] text-xs text-center mt-2">Completed</p>
-                                </div>
-                                <div className="flex-1">
-                                    <div className="h-20 bg-[#e6f4f2] rounded flex items-end relative overflow-hidden">
-                                        <div
-                                            className="w-full bg-[#cdeae5] rounded absolute bottom-0 transition-all duration-1000"
-                                            style={{ height: `${100 - (stats?.completionRate || 0)}%` }}
-                                        ></div>
-                                    </div>
-                                    <p className="text-[#6b7280] text-xs text-center mt-2">Pending</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Contributor Performance */}
-                        <div className="bg-white p-6 rounded-lg border border-[#e6f4f2]">
-                            <h3 className="text-[#0c1d1a] font-semibold mb-2">Contributor Performance Overview</h3>
-                            <p className="text-3xl font-bold text-[#0c1d1a] mb-1">{stats?.contributorPerformance.length || 0}</p>
-                            <p className="text-[#6b7280] text-sm mb-4">Active Contributors</p>
-                            <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                                {stats?.contributorPerformance.map((contributor) => (
-                                    <div key={contributor.userId} className="flex items-center gap-3">
-                                        <span className="text-[#6b7280] text-xs w-24 truncate" title={contributor.name}>
-                                            {contributor.name}
-                                        </span>
-                                        <div className="flex-1 h-2 bg-[#e6f4f2] rounded overflow-hidden">
-                                            <div
-                                                className="h-full bg-[#006b5b]"
-                                                style={{
-                                                    width: `${contributor.totalAssigned > 0
-                                                        ? (contributor.completedTasks / contributor.totalAssigned) * 100
-                                                        : 0}%`
-                                                }}
-                                            ></div>
-                                        </div>
-                                        <span className="text-xs text-[#6b7280]">
-                                            {contributor.completedTasks}/{contributor.totalAssigned}
-                                        </span>
-                                    </div>
-                                ))}
-                                {(!stats?.contributorPerformance || stats.contributorPerformance.length === 0) && (
-                                    <p className="text-sm text-gray-400">No contributor data yet.</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Task Management */}
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-[#0c1d1a] text-xl font-bold">Task Management</h2>
-                            <button onClick={() => router.push(`/create-task?projectId=${projectId}`)} className="px-4 py-2 bg-[#006b5b] text-white text-sm font-medium rounded hover:bg-[#005a4d]">
-                                Create Task
-                            </button>
-                        </div>
-                        <div className="bg-white rounded-lg border border-[#e6f4f2] overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-[#f8fcfb] border-b border-[#e6f4f2]">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Task</th>
-                                            <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Assignee</th>
-                                            <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Status</th>
-                                            <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Deadline</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {taskLoading ? (
-                                            <tr>
-                                                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                                    Loading tasks...
-                                                </td>
-                                            </tr>
-                                        ) : tasks.length > 0 ? (
-                                            tasks.map((task, index) => (
-                                                <tr key={task._id || index} className="border-b border-[#e6f4f2] hover:bg-gray-50">
-                                                    <td className="px-6 py-4 text-[#0c1d1a] text-sm">{task.title}</td>
-                                                    <td className="px-6 py-4 text-[#6b7280] text-sm">
-                                                        {getAssigneeName(task.assignedId)}
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`px-3 py-1 text-xs font-medium rounded-full 
-                                                            ${task.status === 'done' ? 'bg-green-100 text-green-700' :
-                                                                task.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                                                                    'bg-yellow-100 text-yellow-700'}`}>
-                                                            {task.status === 'done' ? 'Completed' :
-                                                                task.status === 'in-progress' ? 'In Progress' : 'Pending'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-[#6b7280] text-sm">
-                                                        {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}
-                                                    </td>
-                                                </tr>
-                                            ))
+                                    <div className="w-32 h-32 rounded-lg overflow-hidden bg-[#f5e6d3] border border-[#e6f4f2]">
+                                        {project?.image ? (
+                                            <img src={project.image} alt={projectName} className="w-full h-full object-cover" />
                                         ) : (
-                                            <tr>
-                                                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                                    No tasks found for this project.
-                                                </td>
-                                            </tr>
+                                            <div className="w-full h-full flex items-center justify-center bg-[#f5e6d3]">
+                                                <div className="w-12 h-12 bg-[#0c1d1a] rounded-sm opacity-10"></div>
+                                            </div>
                                         )}
-                                    </tbody>
-                                </table>
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Pagination */}
-                            {totalPages > 1 && (
-                                <div className="border-t border-[#e6f4f2]">
-                                    <Pagination
-                                        currentPage={currentPage}
-                                        totalPages={totalPages}
-                                        onPageChange={handlePageChange}
-                                        totalItems={totalItems}
-                                        itemsPerPage={pageSize}
-                                    />
+                            {/* Stats Cards */}
+                            <div className="grid grid-cols-2 gap-6 mb-8">
+                                {/* Completion Rate */}
+                                <div className="bg-white p-6 rounded-lg border border-[#e6f4f2]">
+                                    <h3 className="text-[#0c1d1a] font-semibold mb-2">Completion Rate</h3>
+                                    <p className="text-3xl font-bold text-[#0c1d1a] mb-1">
+                                        {stats?.completionRate || 0}%
+                                    </p>
+                                    <p className="text-[#22c55e] text-sm mb-4">
+                                        {stats?.completedTasks || 0} / {stats?.totalTasks || 0} Tasks Completed
+                                    </p>
+                                    <div className="flex gap-4">
+                                        <div className="flex-1">
+                                            <div className="h-20 bg-[#e6f4f2] rounded flex items-end relative overflow-hidden">
+                                                <div
+                                                    className="w-full bg-[#006b5b] rounded absolute bottom-0 transition-all duration-1000"
+                                                    style={{ height: `${stats?.completionRate || 0}%` }}
+                                                ></div>
+                                            </div>
+                                            <p className="text-[#6b7280] text-xs text-center mt-2">Completed</p>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="h-20 bg-[#e6f4f2] rounded flex items-end relative overflow-hidden">
+                                                <div
+                                                    className="w-full bg-[#cdeae5] rounded absolute bottom-0 transition-all duration-1000"
+                                                    style={{ height: `${100 - (stats?.completionRate || 0)}%` }}
+                                                ></div>
+                                            </div>
+                                            <p className="text-[#6b7280] text-xs text-center mt-2">Pending</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    </div>
+
+                                {/* Contributor Performance */}
+                                <div className="bg-white p-6 rounded-lg border border-[#e6f4f2]">
+                                    <h3 className="text-[#0c1d1a] font-semibold mb-2">Contributor Performance Overview</h3>
+                                    <p className="text-3xl font-bold text-[#0c1d1a] mb-1">{stats?.contributorPerformance.length || 0}</p>
+                                    <p className="text-[#6b7280] text-sm mb-4">Active Contributors</p>
+                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                                        {stats?.contributorPerformance.map((contributor) => (
+                                            <div key={contributor.userId} className="flex items-center gap-3">
+                                                <span className="text-[#6b7280] text-xs w-24 truncate" title={contributor.name}>
+                                                    {contributor.name}
+                                                </span>
+                                                <div className="flex-1 h-2 bg-[#e6f4f2] rounded overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-[#006b5b]"
+                                                        style={{
+                                                            width: `${contributor.totalAssigned > 0
+                                                                ? (contributor.completedTasks / contributor.totalAssigned) * 100
+                                                                : 0}%`
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                                <span className="text-xs text-[#6b7280]">
+                                                    {contributor.completedTasks}/{contributor.totalAssigned}
+                                                </span>
+                                            </div>
+                                        ))}
+                                        {(!stats?.contributorPerformance || stats.contributorPerformance.length === 0) && (
+                                            <p className="text-sm text-gray-400">No contributor data yet.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Task Management */}
+                            <div className="mb-8">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-[#0c1d1a] text-xl font-bold">Task Management</h2>
+                                    <button onClick={() => router.push(`/create-task?projectId=${projectId}`)} className="px-4 py-2 bg-[#006b5b] text-white text-sm font-medium rounded hover:bg-[#005a4d]">
+                                        Create Task
+                                    </button>
+                                </div>
+                                <div className="bg-white rounded-lg border border-[#e6f4f2] overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-[#f8fcfb] border-b border-[#e6f4f2]">
+                                                <tr>
+                                                    <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Task</th>
+                                                    <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Assignee</th>
+                                                    <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Status</th>
+                                                    <th className="px-6 py-3 text-left text-[#6b7280] text-xs font-medium">Deadline</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {taskLoading ? (
+                                                    <tr>
+                                                        <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                                                            Loading tasks...
+                                                        </td>
+                                                    </tr>
+                                                ) : tasks.length > 0 ? (
+                                                    tasks.map((task, index) => (
+                                                        <tr key={task._id || index} className="border-b border-[#e6f4f2] hover:bg-gray-50">
+                                                            <td className="px-6 py-4 text-[#0c1d1a] text-sm">{task.title}</td>
+                                                            <td className="px-6 py-4 text-[#6b7280] text-sm">
+                                                                {getAssigneeName(task.assignedId || "")}
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <span className={`px-3 py-1 text-xs font-medium rounded-full 
+                                                            ${task.status === 'done' ? 'bg-green-100 text-green-700' :
+                                                                        task.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
+                                                                            'bg-yellow-100 text-yellow-700'}`}>
+                                                                    {task.status === 'done' ? 'Completed' :
+                                                                        task.status === 'in-progress' ? 'In Progress' : 'Pending'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-[#6b7280] text-sm">
+                                                                {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                                                            No tasks found for this project.
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* Pagination */}
+                                    {totalPages > 1 && (
+                                        <div className="border-t border-[#e6f4f2]">
+                                            <Pagination
+                                                currentPage={currentPage}
+                                                totalPages={totalPages}
+                                                onPageChange={handlePageChange}
+                                                totalItems={totalItems}
+                                                itemsPerPage={pageSize}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                        </>
+                    )}
                 </main>
             </div >
         </div >

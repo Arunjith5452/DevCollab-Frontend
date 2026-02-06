@@ -176,7 +176,10 @@ export function RegisterPage() {
             </div>
 
             {/* Login Link */}
-            <p className="text-[#45a193] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center underline cursor-pointer">
+            <p
+              onClick={() => router.push("/login")}
+              className="text-[#45a193] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center underline cursor-pointer hover:text-[#006b5b]"
+            >
               Already have an account? Log in
             </p>
           </div>

@@ -6,7 +6,7 @@ import PageLoader from "@/shared/common/LoadingComponent";
 export default function CreatorDasboard() {
 
     return (
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={null}>
             <CreatorDashboardPage />
         </Suspense>
     )

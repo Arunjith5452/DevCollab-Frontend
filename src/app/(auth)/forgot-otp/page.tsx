@@ -14,7 +14,7 @@ function ForgotOtpContent() {
 
 export default function ForgotOtpPage() {
   return (
-    <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={null}>
       <ForgotOtpContent />
     </Suspense>
   );

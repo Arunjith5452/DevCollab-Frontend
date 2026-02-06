@@ -141,3 +141,14 @@ export interface TaskListItem {
   documents?: string[];
   comments?: { createdAt: Date | string; message: string; userId: string }[];
 }
+
+export interface AiSuggestion {
+  id: string;
+  score: number;
+  reason: string;
+}
+
+export interface GetAiSuggestionsResponse {
+  suggestions: AiSuggestion[];
+  source: 'ai' | 'heuristic';
+}

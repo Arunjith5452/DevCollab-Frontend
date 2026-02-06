@@ -6,7 +6,7 @@ import PageLoader from "@/shared/common/LoadingComponent";
 export default function otpVerification() {
 
     return (
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={null}>
             <OtpVerificationForm type="register" />
         </Suspense>
     )

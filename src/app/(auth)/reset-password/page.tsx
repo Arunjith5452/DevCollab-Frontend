@@ -4,7 +4,7 @@ import PageLoader from '@/shared/common/LoadingComponent'
 
 export default function ResetPassword() {
     return (
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={null}>
             <ResetPasswordPage />
         </Suspense>
     )
