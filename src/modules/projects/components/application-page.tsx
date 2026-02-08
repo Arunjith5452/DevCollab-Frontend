@@ -50,7 +50,6 @@ export default function ApplicationsPage() {
     const openModal = (app: PendingApplication) => setSelectedApplicant(app);
     const closeModal = () => setSelectedApplicant(null);
 
-    // Approve handler
     const handleApprove = async () => {
         if (!selectedApplicant || !projectId) return;
 
@@ -76,7 +75,6 @@ export default function ApplicationsPage() {
         }
     };
 
-    // AI Suggested Contributors State
     const [aiSuggestions, setAiSuggestions] = useState<AiSuggestion[]>([]);
     const [aiLoading, setAiLoading] = useState(false);
 
@@ -85,8 +83,6 @@ export default function ApplicationsPage() {
             if (!projectId) return;
             setAiLoading(true);
             try {
-                // Determine if we should fetch based on applicant count (client-side check optional, but good for UI)
-                // But backend handles the logic. We just fetch.
                 const { suggestions } = await import("../services/project.api").then(mod => mod.getAiSuggestions(projectId));
                 setAiSuggestions(suggestions || []);
             } catch (err) {
@@ -99,7 +95,7 @@ export default function ApplicationsPage() {
         if (applications.length > 0) {
             fetchAISuggestions();
         }
-    }, [projectId, applications.length]); // Re-run if applications change
+    }, [projectId, applications.length]);
 
     const getScoreColor = (score: number) => {
         if (score >= 80) return "bg-emerald-100 text-emerald-700 border-emerald-200";
@@ -129,7 +125,6 @@ export default function ApplicationsPage() {
                                 {aiSuggestions.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         {aiSuggestions.map((suggestion, idx) => {
-                                            // Find full applicant details to display details like role/name
                                             const applicant = applications.find(a => a.id === suggestion.id);
                                             if (!applicant) return null;
 

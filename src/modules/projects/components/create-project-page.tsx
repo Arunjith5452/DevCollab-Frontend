@@ -147,7 +147,6 @@ export default function CreateProjectPage() {
     };
 
     const onSubmit = async (data: ProjectFormData) => {
-        // Validate image is uploaded
         if (!uploadedImage) {
             setImageError("Project image is required");
             return;
@@ -174,7 +173,6 @@ export default function CreateProjectPage() {
             image: uploadedImage
         } as BaseProjectPayload & { createGithubRepo: boolean };
 
-        // Only include githubRepo if not creating automatically and has a value
         if (!data.createGithubRepo && data.githubRepo && data.githubRepo.trim()) {
             formattedPayload.githubRepo = data.githubRepo;
         }

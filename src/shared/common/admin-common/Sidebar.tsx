@@ -21,7 +21,6 @@ export function Sidebar({ activeItem }: SidebarProps) {
     const fetchCounts = async () => {
       try {
         const response = await getDashboardStats();
-        // Handle different response structures gracefully
         const data = response?.data?.stats || response?.stats || response?.data || response;
 
         setCounts({
@@ -39,9 +38,9 @@ export function Sidebar({ activeItem }: SidebarProps) {
     { id: 'dashboard', icon: Home, label: 'Dashboard', badge: null, href: '/admin/dashboard' },
     { id: 'users', icon: Users, label: 'Users', badge: counts.users > 0 ? counts.users.toString() : null, href: '/admin/userManagement' },
     { id: 'projects', icon: Folder, label: 'Projects', badge: counts.projects > 0 ? counts.projects.toString() : null, href: '/admin/projectManagement' },
-    { id: 'revenue', icon: DollarSign, label: 'Revenue', badge: null, href: '#' },
-    { id: 'analytics', icon: Activity, label: 'Analytics', badge: null, href: '#' },
-    { id: 'settings', icon: Settings, label: 'Settings', badge: null, href: '#' },
+    // { id: 'revenue', icon: DollarSign, label: 'Revenue', badge: null, href: '#' },
+    // { id: 'analytics', icon: Activity, label: 'Analytics', badge: null, href: '#' },
+    // { id: 'settings', icon: Settings, label: 'Settings', badge: null, href: '#' },
   ];
 
   const handleNavigation = (href: string) => {

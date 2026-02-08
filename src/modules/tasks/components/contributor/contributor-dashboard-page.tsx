@@ -6,11 +6,10 @@ import ContributorHeader from "@/shared/common/user-common/contributor-common/Co
 import ContributorSidebar from "@/shared/common/user-common/contributor-common/ContributorSidebar";
 import { TaskListItem, ProjectDetails } from "../../../projects/types/project.types";
 import { useAuthStore } from "@/store/useUserStore";
-import api from "@/lib/axios";
+import { startTask, submitTaskWork, updateTaskCriteria, getProjectTasks, getAssignees } from "@/modules/tasks/services/task.api";
 import { projectDetails } from "../../../projects/services/project.api";
-import PageLoader from "@/shared/common/LoadingComponent"
-import { getAssignees } from "../../services/task.api"
-import toast from "react-hot-toast"
+import PageLoader from "@/shared/common/LoadingComponent";
+import toast from "react-hot-toast";
 import TodoTab from "./dashboard-todo-tab"
 import InProgressTab from "./dashboard-inProgress-tab"
 import DoneTab from "./dashboard-done-tab"
@@ -69,7 +68,6 @@ export default function ContributorTasksPage({
   useEffect(() => {
     if (!user || !projectId) return;
 
-    // Skip fetch on initial mount if tasks are already provided for the active tab
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
@@ -77,7 +75,7 @@ export default function ContributorTasksPage({
 
     const fetchTasks = async () => {
       try {
-        const { data } = await api.get(`/api/project/${projectId}/tasks/${activeTab}`);
+        const { data } = await getProjectTasks(projectId, activeTab);
         const taskList = data.success ? data.data : Array.isArray(data) ? data : [];
         setTasks(taskList || []);
       } catch (err) {
@@ -128,7 +126,7 @@ export default function ContributorTasksPage({
 
   const handleStartTask = async (taskId: string) => {
     try {
-      await api.patch(`/api/tasks/${taskId}/start`);
+      await startTask(taskId);
       toast.success("Task started!");
       setSelectedTask(null);
       setActiveTab("in-progress");
@@ -148,7 +146,7 @@ export default function ContributorTasksPage({
 
     setIsSubmitting(true);
     try {
-      await api.patch(`/api/tasks/${submittingTaskId}/done`, {
+      await submitTaskWork(submittingTaskId, {
         prLink: data.prLink,
         workDescription: data.workDescription,
       });
@@ -166,7 +164,7 @@ export default function ContributorTasksPage({
 
   const handleUpdateCriteria = async (taskId: string, criteria: { text: string; completed: boolean }[]) => {
     try {
-      await api.patch(`/api/tasks/${taskId}/criteria`, { acceptanceCriteria: criteria });
+      await updateTaskCriteria(taskId, criteria);
       setTasks(prev => prev.map(t => t.id === taskId ? { ...t, acceptanceCriteria: criteria } : t));
     } catch {
       throw new Error("Failed to update criteria");

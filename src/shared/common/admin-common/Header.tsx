@@ -54,16 +54,16 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-3">
-          {actions}
+          {/* {actions} */}
 
           {/* Notification Button */}
-          <button
+          {/* <button
             type="button"
             className="relative p-2.5 text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
           >
             <Bell className="w-5 h-5" />
             <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white animate-pulse" />
-          </button>
+          </button> */}
 
           {/* User Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>

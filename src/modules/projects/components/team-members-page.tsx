@@ -7,7 +7,8 @@ import { CreatorSidebar } from "@/shared/common/user-common/Creator-sidebar";
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Member } from "@/modules/projects/types/project.types";
-import api from '@/lib/axios';
+import { getProjectMembers, removeMember, updateMemberRole } from '@/modules/projects/services/project.api';
+import { userProfile } from '@/modules/user/services/user.api';
 import { SearchInput } from '@/shared/common/Searching';
 import { DataTable } from '@/shared/common/DataTable';
 import { Pagination } from '@/shared/common/Pagination';
@@ -139,7 +140,7 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const { data } = await api.get('/api/profile/me', { withCredentials: true });
+                const { data } = await userProfile();
             } catch (error) {
                 const err = error as Error
                 console.error(err.message);
@@ -164,8 +165,10 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
 
             setLoading(true);
             try {
-                const res = await api.get(`/api/projects/${projectId}/members`, {
-                    params: { search: newSearch, page: newPage, limit: 10 },
+                const res = await getProjectMembers(projectId, {
+                    search: newSearch,
+                    page: newPage,
+                    limit: 10
                 });
 
                 const data = res.data;
@@ -204,7 +207,7 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
 
     const handleRoleChange = async (memberId: string, newRole: 'contributor' | 'maintainer') => {
         try {
-            await api.patch(`/projects/${projectId}/members/${memberId}/role`, { role: newRole });
+            await updateMemberRole(projectId, memberId, newRole);
             setMembers(prev => prev.map(m => m.id === memberId ? { ...m, role: newRole } : m));
             toast.success("Role updated");
         } catch (err) {
@@ -216,7 +219,7 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
     const handleRemove = async (memberId: string, name: string) => {
         if (!confirm(`Remove ${name} from the team?`)) return;
         try {
-            await api.delete(`/projects/${projectId}/members/${memberId}`);
+            await removeMember(projectId, memberId);
             setMembers(prev => prev.filter(m => m.id !== memberId));
             toast.success("Member removed");
         } catch (err) {

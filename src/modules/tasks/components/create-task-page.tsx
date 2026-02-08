@@ -89,7 +89,6 @@ export default function CreateTaskPage() {
       .catch(() => toast.error('Failed to load team members'));
   }, [projectId]);
 
-  // Handle successful payment return from Stripe Checkout
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
 
@@ -103,19 +102,15 @@ export default function CreateTaskPage() {
 
       if (projectId) {
         toast.success('Payment successful! Your task is being processed.');
-        // Cleanup URL
         window.history.replaceState({}, '', window.location.pathname + `?projectId=${projectId}`);
-        // Redirect to listing
         router.push(`/task-listing?projectId=${projectId}`);
       } else {
-        // Fallback: try to get plain projectId from URL if searchParams failed or was sanitized to null
         const urlParams = new URLSearchParams(window.location.search);
         const pid = urlParams.get('projectId');
         if (pid && pid !== 'null' && pid !== 'undefined') {
           toast.success('Payment successful! Your task is being processed.');
           router.push(`/task-listing?projectId=${pid}`);
         } else {
-          // Worst case: redirect to listing without ID, let it handle it or stay here
           toast.error('Payment successful, but lost project context.');
           router.push('/task-listing');
         }

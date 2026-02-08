@@ -45,7 +45,6 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
             }  ,
             onUserConnected: (peerId, peerUserName) => {
                 console.log(`User connected: ${peerUserName}`);
-                // Initial video state assumed true - can be improved later with server broadcast
                 setRemoteVideoStates(prev => new Map(prev).set(peerId, true));
             },
             onUserDisconnected: (peerId) => {

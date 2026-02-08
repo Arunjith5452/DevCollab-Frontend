@@ -26,21 +26,18 @@ export default function CreatorDashboardPage() {
     const [taskLoading, setTaskLoading] = useState(false);
     const { setProject } = useProjectStore();
 
-    // Helper variables
     const projectName = project?.title || "Project";
     const memberCount = project?.members?.length || 0;
 
-    // Helper to find assignee name from project members
     const getAssigneeName = (assignedId: string) => {
         if (!assignedId) return "Unassigned";
         const member = project?.members?.find(m => m.userId === assignedId);
         return member?.user?.name || "Unknown";
     };
 
-    // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalItems, setTotalItems] = useState(0); // Added state
+    const [totalItems, setTotalItems] = useState(0); 
     const pageSize = 10;
 
     const fetchTasks = useCallback(async (page: number) => {
@@ -55,7 +52,7 @@ export default function CreatorDashboardPage() {
             console.log("Tasks response:", res);
             setTasks(res.tasks || []);
             const total = res.total || 0;
-            setTotalItems(total); // Set total items
+            setTotalItems(total); 
             setTotalPages(Math.ceil(total / pageSize));
         } catch (error) {
             console.error("Failed to fetch tasks:", error);
@@ -71,13 +68,10 @@ export default function CreatorDashboardPage() {
                 projectDetails(projectId),
                 getProjectStats(projectId)
             ]).then(([resDetails, resStats]) => {
-                console.log("Project data:", resDetails.data);
-                console.log("Project stats:", resStats);
                 setProjectData(resDetails.data);
                 setStats(resStats);
                 setProject({ id: resDetails.data.id, title: resDetails.data.title });
 
-                // Initial task fetch
                 fetchTasks(1);
 
                 setLoading(false);

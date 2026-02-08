@@ -52,7 +52,6 @@ export default function ExploreProjectsPage() {
     if (showRoleInput && roleInputRef.current) roleInputRef.current.focus();
   }, [showRoleInput]);
 
-  // Fetch Featured Projects - only show 1 project with highest applications
   useEffect(() => {
     const fetchFeatured = async () => {
       try {

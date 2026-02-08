@@ -25,7 +25,6 @@ export default function ContributorDashboardPage({
     const [loading, setLoading] = useState(true);
     const { setProject } = useProjectStore();
 
-    // Pagination for task table
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
 
@@ -58,10 +57,9 @@ export default function ContributorDashboardPage({
 
     const projectName = project?.title || "Project";
 
-    // Pagination logic - now using backend pagination
     const totalTasks = stats?.totalTasksInBreakdown || 0;
     const totalPages = Math.ceil(totalTasks / pageSize);
-    const paginatedTasks = stats?.taskBreakdown || []; // Already paginated by backend
+    const paginatedTasks = stats?.taskBreakdown || []; 
 
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= totalPages) {

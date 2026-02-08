@@ -1,0 +1,21 @@
+src/modules/auth/components/home.tsx:          await api.get('/api/profile/me', { withCredentials: true });
+src/modules/projects/components/project-listing-page.tsx:  //       const { data } = await api.get('/api/profile/me', { withCredentials: true });
+src/modules/projects/components/team-members-page.tsx:                const { data } = await api.get('/api/profile/me', { withCredentials: true });
+src/modules/projects/components/team-members-page.tsx:                const res = await api.get(`/api/projects/${projectId}/members`, {
+src/modules/projects/components/team-members-page.tsx:            await api.patch(`/projects/${projectId}/members/${memberId}/role`, { role: newRole });
+src/modules/projects/components/team-members-page.tsx:            await api.delete(`/projects/${projectId}/members/${memberId}`);
+src/modules/projects/components/application-page.tsx:                const { data } = await api.get('/api/profile/me', { withCredentials: true });
+src/modules/tasks/components/contributor/contributor-tasks-page.tsx:        const { data } = await api.get(`/api/project/${projectId}/tasks/${activeTab}`);
+src/modules/tasks/components/contributor/contributor-tasks-page.tsx:      await api.patch(`/api/tasks/${taskId}/start`);
+src/modules/tasks/components/contributor/contributor-tasks-page.tsx:      await api.patch(`/api/tasks/${submittingTaskId}/done`, {
+src/modules/tasks/components/contributor/contributor-tasks-page.tsx:      await api.patch(`/api/tasks/${taskId}/criteria`, { acceptanceCriteria: criteria });
+src/modules/tasks/components/contributor/contributor-dashboard-page.tsx:        const { data } = await api.get(`/api/project/${projectId}/tasks/${activeTab}`);
+src/modules/tasks/components/contributor/contributor-dashboard-page.tsx:      await api.patch(`/api/tasks/${taskId}/start`);
+src/modules/tasks/components/contributor/contributor-dashboard-page.tsx:      await api.patch(`/api/tasks/${submittingTaskId}/done`, {
+src/modules/tasks/components/contributor/contributor-dashboard-page.tsx:      await api.patch(`/api/tasks/${taskId}/criteria`, { acceptanceCriteria: criteria });
+src/modules/tasks/components/task-listing-page.tsx:        const { data } = await api.get('/api/profile/me', { withCredentials: true });
+src/modules/tasks/components/task-listing-page.tsx:      await api.patch(`/api/tasks/${taskId}/assign`, { userId: newAssigneeId });
+src/modules/user/components/user-profle-page.tsx:  //       const { data } = await api.get('/api/profile/me', { withCredentials: true });
+src/shared/common/user-common/task-details-panel.tsx:      await api.patch(`/api/tasks/${taskId}/approve`);
+src/shared/common/user-common/task-details-panel.tsx:      await api.patch(`/api/tasks/${task!.id}/request-improvement`, {
+src/shared/hooks/uses3Upload.ts:            const { data } = await api.post("/api/signed-url", {

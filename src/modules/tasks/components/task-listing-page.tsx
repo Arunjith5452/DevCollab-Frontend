@@ -9,8 +9,8 @@ import { SearchInput } from '@/shared/common/Searching';
 import { Pagination } from '@/shared/common/Pagination';
 import { format } from 'date-fns';
 import { ProjectTask } from '@/modules/tasks/types/task.types';
-import api from '@/lib/axios';
-import { getAssignees } from '../services/task.api';
+import { getAssignees, assignTask } from '../services/task.api';
+import { userProfile } from '@/modules/user/services/user.api';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/useUserStore';
 import TaskDetailsPanel from '@/shared/common/user-common/task-details-panel';
@@ -48,7 +48,7 @@ export default function TasksListingPage({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await api.get('/api/profile/me', { withCredentials: true });
+        const { data } = await userProfile();
         console.log("check data", data)
       } catch (error) {
         getErrorMessage(error)
@@ -181,7 +181,7 @@ export default function TasksListingPage({
 
   const handleReassignTask = async (taskId: string, newAssigneeId: string) => {
     try {
-      await api.patch(`/api/tasks/${taskId}/assign`, { userId: newAssigneeId });
+      await assignTask(taskId, newAssigneeId);
 
       if (selectedTask && selectedTask.id === taskId) {
         setSelectedTask({ ...selectedTask, assignedId: newAssigneeId });
