@@ -20,8 +20,7 @@ import {
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { ProjectTask, TaskComment } from "@/modules/tasks/types/task.types";
-import { addComment } from "@/modules/tasks/services/task.api";
-import api from '@/lib/axios';
+import { addComment, approveTask, requestTaskImprovement } from "@/modules/tasks/services/task.api";
 import ConfirmModal from '../ConfirmModal';
 
 interface Assignee {
@@ -86,7 +85,7 @@ export default function TaskDetailsPanel({
   const handleApprove = async (taskId: string) => {
     setIsSubmittingApproval(true);
     try {
-      await api.patch(`/api/tasks/${taskId}/approve`);
+      await approveTask(taskId);
       toast.success("Task approved and payment completed!");
       onTaskUpdated?.();
     } catch {
@@ -104,9 +103,7 @@ export default function TaskDetailsPanel({
     console.log("feedbackText:", feedbackText)
     setIsSubmittingApproval(true);
     try {
-      await api.patch(`/api/tasks/${task!.id}/request-improvement`, {
-        feedBack: feedbackText.trim(),
-      });
+      await requestTaskImprovement(task!.id, feedbackText.trim());
       toast.success("Feedback sent — task moved back to In Progress");
       setShowFeedbackModal(false);
       setFeedbackText('');
@@ -125,7 +122,7 @@ export default function TaskDetailsPanel({
     }
   }, [task?.id, task?.acceptanceCriteria, task?.comments]);
 
-  // Lock body scroll when modal is open
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';

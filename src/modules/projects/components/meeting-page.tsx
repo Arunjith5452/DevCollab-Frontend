@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/useUserStore';
 import PageLoader from '@/shared/common/LoadingComponent';
-import api from '@/lib/axios';
+import { getProjectMeetings, createMeeting, updateMeetingStatus, projectDetails } from '../services/project.api';
 
 
 import CreatorMeetingPage from './creator-meeting-page';
@@ -95,12 +95,10 @@ export default function MeetingsPage({
     if (!projectId) return;
     try {
       const statusParam = type === 'upcoming' ? 'scheduled,ongoing' : 'completed,cancelled';
-      const res = await api.get(`/api/projects/${projectId}/meetings`, {
-        params: {
-          page,
-          limit: ITEMS_PER_PAGE,
-          status: statusParam
-        }
+      const res = await getProjectMeetings(projectId, {
+        page,
+        limit: ITEMS_PER_PAGE,
+        status: statusParam
       });
 
       const meetings = res.data;
@@ -123,7 +121,7 @@ export default function MeetingsPage({
       try {
         await fetchUser();
         if (projectId) {
-          const projectRes = await api.get(`/api/projects/${projectId}`);
+          const projectRes = await projectDetails(projectId);
           if (projectRes.data) {
             setProject({ id: projectRes.data.id, title: projectRes.data.title });
           }
@@ -171,7 +169,7 @@ export default function MeetingsPage({
     }
 
     try {
-      await api.post('/api/meetings', {
+      await createMeeting({
         projectId,
         title: formData.agenda || 'New Meeting',
         date: `${formData.date}T${formData.time}`,
@@ -222,7 +220,7 @@ export default function MeetingsPage({
         return exists ? prev : prev + 1;
       });
 
-      await api.patch(`/api/meetings/${meetingId}/status`, { status: 'completed' });
+      await updateMeetingStatus(meetingId, 'completed');
 
       console.log("Meeting marked as completed");
 
@@ -263,7 +261,7 @@ export default function MeetingsPage({
         return exists ? prev : prev + 1;
       });
 
-      await api.patch(`/api/meetings/${meetingId}/status`, { status: 'cancelled' });
+      await updateMeetingStatus(meetingId, 'cancelled');
 
       console.log("Meeting cancelled successfully");
 

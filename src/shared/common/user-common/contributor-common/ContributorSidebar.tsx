@@ -20,7 +20,7 @@ export default function ContributorSidebar({ activeItem = 'dashboard' }: Sidebar
         { id: 'dashboard', label: 'Dashboard', icon: <Home size={20} />, href: '/contributor-dashboard', includeTab: false },
         { id: 'tasks', label: 'Tasks', icon: <Clipboard size={20} />, href: '/contributor-tasks', includeTab: true },
         { id: 'meetings', label: 'Meetings', icon: <Calendar size={20} />, href: '/contributor-meetings', includeTab: false },
-        { id: 'chat', label: 'Chat', icon: <MessageSquare size={20} />, href: '/contributor-chat', includeTab: false },
+        // { id: 'chat', label: 'Chat', icon: <MessageSquare size={20} />, href: '/contributor-chat', includeTab: false },
     ];
 
     const handleNavigation = (href: string, includeTab: boolean = false) => {

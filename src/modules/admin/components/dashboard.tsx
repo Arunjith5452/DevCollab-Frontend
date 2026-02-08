@@ -11,7 +11,6 @@ import { DashboardStats, ActivityItem, DateRangeQuery, ChartDataPoint, TechDataP
 export function Dashboard() {
   const router = useRouter();
 
-  // Stats State
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     totalProjects: 0,
@@ -23,12 +22,10 @@ export function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
 
-  // Activities State
   const [activitiesData, setActivitiesData] = useState<{ activities: ActivityItem[], total: number }>({ activities: [], total: 0 });
   const [page, setPage] = useState(1);
   const LIMIT = 5;
 
-  // Filter State
   const [dateRange, setDateRange] = useState<{ startDate: Date | undefined, endDate: Date | undefined }>(() => {
     const end = new Date();
     const start = new Date();
@@ -38,10 +35,6 @@ export function Dashboard() {
   const [activeFilter, setActiveFilter] = useState<'7d' | '28d' | 'custom'>('7d');
   const [showCustomDate, setShowCustomDate] = useState(false);
 
-  // Fetch Stats
-
-
-  // Modify fetchStats to stop loading
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -67,7 +60,6 @@ export function Dashboard() {
     fetchStats();
   }, [dateRange]);
 
-  // Fetch Activities
   useEffect(() => {
     const fetchActivities = async () => {
       try {
@@ -86,7 +78,6 @@ export function Dashboard() {
   }, [page]);
 
 
-  // Handlers
   const handleFilterChange = (filter: '7d' | '28d') => {
     setActiveFilter(filter);
     const end = new Date();
@@ -101,12 +92,10 @@ export function Dashboard() {
     setDateRange(prev => ({ ...prev, [type === 'start' ? 'startDate' : 'endDate']: date }));
   };
 
-  // Process Weekly Registrations (Graph)
-  // Dynamic graph mapping based on dailyRegistrations data
+
   const chartData: ChartDataPoint[] = (() => {
     if (!dateRange.startDate || !dateRange.endDate) return [];
 
-    // Clone to reset time to midnight for consistency
     const current = new Date(dateRange.startDate);
     current.setHours(0, 0, 0, 0);
     const end = new Date(dateRange.endDate);
@@ -134,7 +123,6 @@ export function Dashboard() {
   chartData.forEach(d => d.height = Math.max((d.value / maxVal) * 100, 5) + '%');
 
 
-  // Process Tech Stack
   const totalTechCount = stats.techStackDistribution?.reduce((acc, curr) => acc + curr.count, 0) || 1;
   const techColors = [
     'from-blue-600 to-blue-700',
@@ -152,7 +140,6 @@ export function Dashboard() {
   })) || [];
 
 
-  // Process Activities
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'user': return { icon: UserCheck, bg: 'from-blue-600 to-blue-700' };

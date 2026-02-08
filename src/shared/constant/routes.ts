@@ -25,8 +25,10 @@ export const PROJECT_ROUTES = {
   EDIT_PROJECT: "/api/projects",
   GET_PROJECT_MEMBERS: "/api/projects",
   DISABLE_PROJECT: '/api/projects',
-  GET_AI_SUGGESTIONS: "/api/projects"
-
+  GET_AI_SUGGESTIONS: "/api/projects",
+  GET_MEETINGS: "/api/projects",
+  CREATE_MEETING: "/api/meetings",
+  UPDATE_MEETING_STATUS: "/api/meetings"
 };
 
 export const TASK_ROUTERS = {
@@ -34,12 +36,20 @@ export const TASK_ROUTERS = {
   GET_ASSIGNEES: "/api/task/assignees",
   ADD_COMMENT: "/api/tasks",
   CREATE_PAYMENT: "/api/payment/create-intent",
-  CREATE_CHECKOUT_SESSION: "/api/payment/checkout-session"
+  CREATE_CHECKOUT_SESSION: "/api/payment/checkout-session",
+  ASSIGN_TASK: "/api/tasks",
+  GET_PROJECT_TASKS: "/api/project",
+  START_TASK: "/api/tasks",
+  SUBMIT_TASK_WORK: "/api/tasks",
+  UPDATE_TASK_CRITERIA: "/api/tasks",
+  APPROVE_TASK: "/api/tasks",
+  REQUEST_TASK_IMPROVEMENT: "/api/tasks"
 }
 
 export const USER_ROUTERS = {
   USER_PROFILE: "/api/users/profile",
-  EDIT_PROFILE: "/api/users/profile"
+  EDIT_PROFILE: "/api/users/profile",
+  MY_PROFILE: "/api/profile/me" // This might be legacy or need verification, keeping for safety
 }
 
 export const ADMIN_ROUTES = {

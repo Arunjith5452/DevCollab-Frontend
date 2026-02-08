@@ -120,7 +120,7 @@ export function Header({
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
 
-            {showSearch && (
+            {/* {showSearch && (
               <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <Search className="w-5 h-5" />
               </button>
@@ -131,7 +131,7 @@ export function Header({
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-green-600 rounded-full" />
               </button>
-            )}
+            )} */}
 
             {isLoading ? (
               <div className="w-9 h-9 bg-gray-200 rounded-full animate-pulse" />

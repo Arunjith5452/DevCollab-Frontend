@@ -225,4 +225,63 @@ export const getAiSuggestions = async (projectId: string): Promise<GetAiSuggesti
     } catch (error) {
         throw error
     }
+
+}
+
+export const getProjectMeetings = async (projectId: string, params: { page: number; limit: number; status: string }) => {
+    try {
+        const response = await api.get(`${PROJECT_ROUTES.GET_MEETINGS}/${projectId}/meetings`, {
+            params
+        });
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const createMeeting = async (data: { projectId: string; title: string; date: string; endTime: string; type: string }) => {
+    try {
+        const response = await api.post(PROJECT_ROUTES.CREATE_MEETING, data);
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const updateMeetingStatus = async (meetingId: string, status: string) => {
+    try {
+        const response = await api.patch(`${PROJECT_ROUTES.UPDATE_MEETING_STATUS}/${meetingId}/status`, { status });
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const getProjectMembers = async (projectId: string, params: { search: string; page: number; limit: number }) => {
+    try {
+        const response = await api.get(`${PROJECT_ROUTES.GET_PROJECT_MEMBERS}/${projectId}/members`, {
+            params
+        });
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const updateMemberRole = async (projectId: string, memberId: string, role: string) => {
+    try {
+        const response = await api.patch(`${PROJECT_ROUTES.PROJECT_DETAILS}/${projectId}/members/${memberId}/role`, { role });
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const removeMember = async (projectId: string, memberId: string) => {
+    try {
+        const response = await api.delete(`${PROJECT_ROUTES.PROJECT_DETAILS}/${projectId}/members/${memberId}`);
+        return response;
+    } catch (error) {
+        throw error;
+    }
 }

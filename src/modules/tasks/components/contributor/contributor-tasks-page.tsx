@@ -69,7 +69,6 @@ export default function ContributorTasksPage({
   useEffect(() => {
     if (!user || !projectId) return;
 
-    // Skip fetch on initial mount if tasks are already provided for the active tab
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
@@ -87,7 +86,6 @@ export default function ContributorTasksPage({
     fetchTasks();
   }, [activeTab, user, projectId, refreshKey]);
 
-  // Sync selectedTask with tasks when data refreshes
   useEffect(() => {
     if (selectedTask) {
       const updatedTask = tasks.find(t => t.id === selectedTask.id);
