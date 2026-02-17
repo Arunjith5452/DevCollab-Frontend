@@ -405,9 +405,9 @@ export default function ExploreProjectsPage() {
                     <p className="text-sm sm:text-base text-gray-600 line-clamp-3">
                       {project.description}
                     </p>
-                    <button type="button" className="mt-3 px-5 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-lg hover:bg-teal-100 transition-colors">
+                    <Link href={`/project-details/${project.id}`} className="mt-3 inline-block px-5 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-lg hover:bg-teal-100 transition-colors">
                       View Project
-                    </button>
+                    </Link>
                   </div>
                   <div className="flex justify-center items-center rounded-xl h-32 sm:h-40 order-1 md:order-2 overflow-hidden">
                     {project.image ? (

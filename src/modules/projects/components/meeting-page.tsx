@@ -4,11 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/useUserStore';
 import PageLoader from '@/shared/common/LoadingComponent';
 import { getProjectMeetings, createMeeting, updateMeetingStatus, projectDetails } from '../services/project.api';
+import toast from 'react-hot-toast';
+import ConfirmModal from '@/shared/common/ConfirmModal';
 
 
 import CreatorMeetingPage from './creator-meeting-page';
 import ContributorMeetingPage from './contributor-meeting-page';
 import { useProjectStore } from '@/store/useProjectStore';
+import { FinishMeetingModal } from './modals/finish-meeting-modal';
 
 interface Meeting {
   id: string;
@@ -86,6 +89,29 @@ export default function MeetingsPage({
     agenda: ''
   })
 
+  // Modal State
+  const [modal, setModal] = useState({
+    open: false,
+    title: '',
+    message: '',
+    type: 'confirm' as 'confirm' | 'alert'
+  });
+  const [pendingAction, setPendingAction] = useState<{ type: 'finish' | 'cancel', id: string } | null>(null);
+  const [finishModalOpen, setFinishModalOpen] = useState(false);
+  const [meetingToFinishId, setMeetingToFinishId] = useState<string | null>(null);
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, open: false }));
+    setPendingAction(null);
+  };
+
+  const onConfirmAction = () => {
+    if (pendingAction?.type === 'cancel') {
+      executeCancelMeeting(pendingAction.id);
+    }
+    closeModal();
+  };
+
   const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
   const [pastMeetings, setPastMeetings] = useState<Meeting[]>([]);
 
@@ -101,15 +127,16 @@ export default function MeetingsPage({
         status: statusParam
       });
 
-      const meetings = res.data;
-      const total = res.data.length;
+      // Backend now returns { items: [], total: number }
+      // And axios interceptor unwraps the response.data
+      const { items, total } = res.data;
 
       if (type === 'upcoming') {
-        setUpcomingMeetings(meetings);
-        setUpcomingTotal(total);
+        setUpcomingMeetings(items || []);
+        setUpcomingTotal(total || 0);
       } else {
-        setPastMeetings(meetings);
-        setPastTotal(total);
+        setPastMeetings(items || []);
+        setPastTotal(total || 0);
       }
     } catch (err) {
       console.error(`Failed to fetch ${type} meetings`, err);
@@ -148,14 +175,34 @@ export default function MeetingsPage({
     }))
   }
 
+  const handleDateChange = (field: string, value: Date | null) => {
+    if (!value) return;
+
+    let formattedValue = '';
+    if (field === 'date') {
+      // Format as YYYY-MM-DD
+      formattedValue = value.toISOString().split('T')[0];
+    } else if (field === 'time' || field === 'endTime') {
+      // Format as HH:mm
+      const hours = value.getHours().toString().padStart(2, '0');
+      const minutes = value.getMinutes().toString().padStart(2, '0');
+      formattedValue = `${hours}:${minutes}`;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [field]: formattedValue
+    }));
+  };
+
   const handleScheduleMeeting = async () => {
     if (!formData.date || !formData.time || !formData.endTime || !projectId) {
-      alert('Please select date, start time, end time and ensure project is loaded')
+      toast.error('Please select date, start time, end time and ensure project is loaded');
       return;
     }
 
     if (!formData.agenda.trim()) {
-      alert('Please enter a meeting agenda');
+      toast.error('Please enter a meeting agenda');
       return;
     }
 
@@ -164,7 +211,7 @@ export default function MeetingsPage({
     const endDateTime = new Date(`${formData.date}T${formData.endTime}`);
 
     if (endDateTime <= startDateTime) {
-      alert('End time must be after start time');
+      toast.error('End time must be after start time');
       return;
     }
 
@@ -187,17 +234,18 @@ export default function MeetingsPage({
         agenda: ''
       });
 
-      alert('Meeting scheduled successfully!')
+      toast.success('Meeting scheduled successfully!');
     } catch (err) {
       console.error("Failed to schedule meeting", err);
-      alert("Failed to schedule meeting");
+      toast.error("Failed to schedule meeting");
     }
   }
 
-  const handleFinishMeeting = async (meetingId: string) => {
-    if (!projectId) return;
+  const executeFinishMeeting = async (endTime: Date) => {
+    if (!projectId || !meetingToFinishId) return;
 
-    if (!confirm("Are you sure you want to finish this meeting?")) return;
+    const meetingId = meetingToFinishId;
+    console.log(`[MeetingPage] Finishing meeting: ${meetingId} at ${endTime.toISOString()}`);
 
     try {
       const meetingToFinish = upcomingMeetings.find(m => m.id === meetingId);
@@ -206,7 +254,11 @@ export default function MeetingsPage({
       setUpcomingMeetings(prev => prev.filter(m => m.id !== meetingId));
       setUpcomingTotal(prev => prev - 1);
 
-      const finishedMeeting = { ...meetingToFinish, status: 'completed' };
+      const finishedMeeting = {
+        ...meetingToFinish,
+        status: 'completed',
+        endTime: endTime.toISOString()
+      };
       setPastMeetings(prev => {
         const exists = prev.some(m => m.id === meetingId);
         if (exists) {
@@ -220,7 +272,7 @@ export default function MeetingsPage({
         return exists ? prev : prev + 1;
       });
 
-      await updateMeetingStatus(meetingId, 'completed');
+      await updateMeetingStatus(meetingId, 'completed', endTime);
 
       console.log("Meeting marked as completed");
 
@@ -233,12 +285,12 @@ export default function MeetingsPage({
       console.error("Failed to finish meeting", err);
       fetchMeetings('upcoming', upcomingPage);
       fetchMeetings('past', pastPage);
-      alert("Failed to finish meeting. Please try again.");
+      toast.error("Failed to finish meeting. Please try again.");
     }
   };
 
-  const handleCancelMeeting = async (meetingId: string) => {
-    if (!projectId || !confirm("Are you sure you want to cancel this meeting?")) return;
+  const executeCancelMeeting = async (meetingId: string) => {
+    if (!projectId) return;
 
     try {
       const meetingToCancel = upcomingMeetings.find(m => m.id === meetingId);
@@ -274,13 +326,31 @@ export default function MeetingsPage({
       console.error("Failed to cancel meeting", err);
       fetchMeetings('upcoming', upcomingPage);
       fetchMeetings('past', pastPage);
-      alert("Failed to cancel meeting. Please try again.");
+      toast.error("Failed to cancel meeting. Please try again.");
     }
+  };
+
+
+  const handleFinishMeeting = async (meetingId: string) => {
+    setMeetingToFinishId(meetingId);
+    setFinishModalOpen(true);
+  };
+
+  const handleCancelMeeting = async (meetingId: string) => {
+    setPendingAction({ type: 'cancel', id: meetingId });
+    setModal({
+      open: true,
+      title: 'Cancel Meeting',
+      message: 'Are you sure you want to cancel this meeting?',
+      type: 'confirm'
+    });
   };
 
 
   const [activeMeetingId, setActiveMeetingId] = useState<string | null>(null);
   const userId = user?.userId || `guest-${Math.random().toString(36).substr(2, 9)}`;
+
+
 
   const handleJoinMeeting = (id: string) => {
     setActiveMeetingId(id);
@@ -292,18 +362,59 @@ export default function MeetingsPage({
 
   if (isCreator) {
     return (
-      <CreatorMeetingPage
-        formData={formData}
+      <>
+        <CreatorMeetingPage
+          formData={formData}
+          upcomingMeetings={upcomingMeetings}
+          pastMeetings={pastMeetings}
+          handleInputChange={handleInputChange}
+          handleDateChange={handleDateChange}
+          handleScheduleMeeting={handleScheduleMeeting}
+          handleJoinMeeting={handleJoinMeeting}
+          handleCancelMeeting={handleCancelMeeting}
+          handleFinishMeeting={handleFinishMeeting}
+          activeMeetingId={activeMeetingId}
+          userId={userId}
+          userName={user?.name || 'Creator'}
+          setActiveMeetingId={setActiveMeetingId}
+          upcomingPage={upcomingPage}
+          pastPage={pastPage}
+          upcomingTotal={upcomingTotal}
+          pastTotal={pastTotal}
+          setUpcomingPage={setUpcomingPage}
+          setPastPage={setPastPage}
+          itemsPerPage={ITEMS_PER_PAGE}
+          StatusBadge={StatusBadge}
+        />
+        <ConfirmModal
+          open={modal.open}
+          title={modal.title}
+          message={modal.message}
+          type={modal.type}
+          onConfirm={onConfirmAction}
+          onCancel={closeModal}
+        />
+        <FinishMeetingModal
+          isOpen={finishModalOpen}
+          onClose={() => {
+            setFinishModalOpen(false);
+            setMeetingToFinishId(null);
+          }}
+          onConfirm={executeFinishMeeting}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <ContributorMeetingPage
         upcomingMeetings={upcomingMeetings}
         pastMeetings={pastMeetings}
-        handleInputChange={handleInputChange}
-        handleScheduleMeeting={handleScheduleMeeting}
         handleJoinMeeting={handleJoinMeeting}
-        handleCancelMeeting={handleCancelMeeting}
-        handleFinishMeeting={handleFinishMeeting}
         activeMeetingId={activeMeetingId}
         userId={userId}
-        userName={user?.name || 'Creator'}
+        userName={user?.name || 'Contributor'}
         setActiveMeetingId={setActiveMeetingId}
         upcomingPage={upcomingPage}
         pastPage={pastPage}
@@ -314,26 +425,22 @@ export default function MeetingsPage({
         itemsPerPage={ITEMS_PER_PAGE}
         StatusBadge={StatusBadge}
       />
-    );
-  }
-
-  return (
-    <ContributorMeetingPage
-      upcomingMeetings={upcomingMeetings}
-      pastMeetings={pastMeetings}
-      handleJoinMeeting={handleJoinMeeting}
-      activeMeetingId={activeMeetingId}
-      userId={userId}
-      userName={user?.name || 'Contributor'}
-      setActiveMeetingId={setActiveMeetingId}
-      upcomingPage={upcomingPage}
-      pastPage={pastPage}
-      upcomingTotal={upcomingTotal}
-      pastTotal={pastTotal}
-      setUpcomingPage={setUpcomingPage}
-      setPastPage={setPastPage}
-      itemsPerPage={ITEMS_PER_PAGE}
-      StatusBadge={StatusBadge}
-    />
+      <ConfirmModal
+        open={modal.open}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onConfirm={onConfirmAction}
+        onCancel={closeModal}
+      />
+      <FinishMeetingModal
+        isOpen={finishModalOpen}
+        onClose={() => {
+          setFinishModalOpen(false);
+          setMeetingToFinishId(null);
+        }}
+        onConfirm={executeFinishMeeting}
+      />
+    </>
   );
 }

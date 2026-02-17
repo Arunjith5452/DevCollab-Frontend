@@ -10,6 +10,9 @@ import { useProjectStore } from "@/store/useProjectStore";
 import { ProjectDetails } from "../types/project.types";
 import { ContributorStats } from "../types/contributor-stats.types";
 import { Pagination } from "@/shared/common/Pagination";
+import EarningTrendGraph from "@/shared/common/charts/EarningTrendGraph";
+import ActivityTrendGraph from "@/shared/common/charts/ActivityTrendGraph";
+import DashboardDateFilter from "@/shared/common/analytics/DashboardDateFilter";
 
 export default function ContributorDashboardPage({
     searchParams,
@@ -27,6 +30,10 @@ export default function ContributorDashboardPage({
 
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
+    const [dateRange, setDateRange] = useState<{ startDate: Date | undefined; endDate: Date | undefined }>({
+        startDate: undefined,
+        endDate: undefined
+    });
 
     useEffect(() => {
         searchParams.then((params) => {
@@ -41,7 +48,7 @@ export default function ContributorDashboardPage({
             setLoading(true);
             Promise.all([
                 projectDetails(id),
-                getContributorStats(id, currentPage, pageSize)
+                getContributorStats(id, currentPage, pageSize, dateRange.startDate, dateRange.endDate)
             ]).then(([resDetails, resStats]) => {
                 setProjectData(resDetails.data);
                 setStats(resStats.data || resStats);
@@ -51,7 +58,7 @@ export default function ContributorDashboardPage({
                 setLoading(false);
             });
         });
-    }, [searchParams, router, setProject, currentPage, pageSize]);
+    }, [searchParams, router, setProject, currentPage, pageSize, dateRange]);
 
 
 
@@ -59,7 +66,7 @@ export default function ContributorDashboardPage({
 
     const totalTasks = stats?.totalTasksInBreakdown || 0;
     const totalPages = Math.ceil(totalTasks / pageSize);
-    const paginatedTasks = stats?.taskBreakdown || []; 
+    const paginatedTasks = stats?.taskBreakdown || [];
 
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= totalPages) {
@@ -127,40 +134,58 @@ export default function ContributorDashboardPage({
         }
     };
 
+    const isInitialLoad = !stats && loading;
+
     return (
         <div className="flex h-screen overflow-hidden bg-white">
             <ContributorSidebar activeItem="dashboard" />
 
             <div className="flex-1 flex flex-col overflow-hidden">
                 <ContributorHeader />
-                <main className="flex-1 overflow-y-auto p-8">
-                    {loading ? (
-                        <div className="flex h-full items-center justify-center">
-                            <PageLoader />
-                        </div>
-                    ) : (
-                        <>
-                            {/* Project Overview */}
-                            <div className="mb-8">
-                                <h2 className="text-[#0c1d1a] text-xl font-bold mb-4">Project Overview</h2>
-                                <div className="flex items-start justify-between">
+                <main className="flex-1 overflow-y-auto p-8 relative">
+                    {/* Project Overview */}
+                    <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h2 className="text-[#0c1d1a] text-xl font-bold mb-1">Project Overview</h2>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-start">
                                     <div>
-                                        <h3 className="text-[#0c1d1a] font-semibold mb-1">{projectName}</h3>
+                                        <h3 className="text-[#0c1d1a] font-semibold">{projectName}</h3>
                                         <p className="text-[#6b7280] text-sm">
                                             {project?.status === 'active' ? 'Active Project' : 'Project Dashboard'}
                                         </p>
                                     </div>
-                                    <div className="w-32 h-32 rounded-lg overflow-hidden bg-[#f5e6d3] border border-[#e6f4f2]">
-                                        {project?.image ? (
-                                            <img src={project.image} alt={projectName} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-[#f5e6d3]">
-                                                <div className="w-12 h-12 bg-[#0c1d1a] rounded-sm opacity-10"></div>
-                                            </div>
-                                        )}
-                                    </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <DashboardDateFilter
+                                onFilterChange={(startDate, endDate) => setDateRange({ startDate, endDate })}
+                            />
+                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#f5e6d3] border border-[#e6f4f2]">
+                                {project?.image ? (
+                                    <img src={project.image} alt={projectName} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-[#f5e6d3]">
+                                        <div className="w-12 h-12 bg-[#0c1d1a] rounded-sm opacity-10"></div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {isInitialLoad ? (
+                        <div className="flex h-full items-center justify-center py-20">
+                            <PageLoader />
+                        </div>
+                    ) : (
+                        <div className="relative">
+                            {loading && (
+                                <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center backdrop-blur-[1px] transition-all duration-200">
+                                    <PageLoader />
+                                </div>
+                            )}
 
                             {/* Earnings Cards */}
                             <div className="grid grid-cols-3 gap-6 mb-8">
@@ -186,6 +211,23 @@ export default function ContributorDashboardPage({
                                         {formatCurrency(stats?.pendingEarnings || 0)}
                                     </p>
                                     <p className="text-[#6b7280] text-sm">In escrow or unpaid</p>
+                                </div>
+                            </div>
+
+                            {/* Analytics Graphs */}
+                            <div className="grid grid-cols-2 gap-6 mb-8">
+                                <div className="h-[400px]">
+                                    <EarningTrendGraph
+                                        data={stats?.earningsTimeline || []}
+                                        title="My Earnings Trend"
+                                    />
+                                </div>
+                                <div className="h-[400px]">
+                                    <ActivityTrendGraph
+                                        data={stats?.activityTimeline || []}
+                                        type="contributor"
+                                        title="My Activity"
+                                    />
                                 </div>
                             </div>
 
@@ -300,8 +342,7 @@ export default function ContributorDashboardPage({
                                     )}
                                 </div>
                             </div>
-
-                        </>
+                        </div>
                     )}
                 </main>
             </div>

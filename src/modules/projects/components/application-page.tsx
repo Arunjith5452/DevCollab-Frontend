@@ -162,7 +162,7 @@ export default function ApplicationsPage() {
                                                     {/* <p className="text-gray-500 text-xs mb-3">Full Stack Developer</p> Application entity doesn't have role, maybe in future */}
 
                                                     <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 text-left w-full mb-4 flex-grow">
-                                                        <p className="line-clamp-3 italic">"{suggestion.reason}"</p>
+                                                        <p className="line-clamp-3 italic">&quot;{suggestion.reason}&quot;</p>
                                                     </div>
 
                                                     <button className="w-full py-2 bg-white border border-[#e6f4f2] text-[#006b5b] text-sm font-medium rounded-lg group-hover:bg-[#006b5b] group-hover:text-white transition-colors">

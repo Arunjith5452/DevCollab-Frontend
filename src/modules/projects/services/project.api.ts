@@ -180,19 +180,27 @@ export const disableProject = async (projectId: string) => {
     }
 }
 
-export const getProjectStats = async (projectId: string) => {
+export const getProjectStats = async (projectId: string, startDate?: Date, endDate?: Date) => {
     try {
-        const response = await api.get(`${PROJECT_ROUTES.PROJECT_DETAILS}/${projectId}/stats`)
-        return response.data
+        const params: Record<string, string> = {};
+        if (startDate) params.startDate = startDate.toISOString();
+        if (endDate) params.endDate = endDate.toISOString();
+
+        const response = await api.get(`${PROJECT_ROUTES.PROJECT_DETAILS}/${projectId}/stats`, { params });
+        return response.data;
     } catch (error) {
-        throw error
+        throw error;
     }
 }
 
-export const getContributorStats = async (projectId: string, page: number = 1, limit: number = 10) => {
+export const getContributorStats = async (projectId: string, page: number = 1, limit: number = 10, startDate?: Date, endDate?: Date) => {
     try {
+        const params: Record<string, string | number> = { page, limit };
+        if (startDate) params.startDate = startDate.toISOString();
+        if (endDate) params.endDate = endDate.toISOString();
+
         const response = await api.get(`${PROJECT_ROUTES.PROJECT_DETAILS}/${projectId}/contributor-stats`, {
-            params: { page, limit }
+            params
         })
         return response.data
     } catch (error) {
@@ -248,9 +256,9 @@ export const createMeeting = async (data: { projectId: string; title: string; da
     }
 }
 
-export const updateMeetingStatus = async (meetingId: string, status: string) => {
+export const updateMeetingStatus = async (meetingId: string, status: string, endTime?: Date) => {
     try {
-        const response = await api.patch(`${PROJECT_ROUTES.UPDATE_MEETING_STATUS}/${meetingId}/status`, { status });
+        const response = await api.patch(`${PROJECT_ROUTES.UPDATE_MEETING_STATUS}/${meetingId}/status`, { status, endTime });
         return response;
     } catch (error) {
         throw error;

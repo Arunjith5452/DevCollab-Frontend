@@ -6,6 +6,7 @@ import { CreatorSidebar } from '@/shared/common/user-common/Creator-sidebar';
 import CreatorHeader from '@/shared/common/user-common/Creator-header';
 import { VideoCallComponent } from './video-call-component';
 import { Pagination } from '@/shared/common/Pagination';
+import CustomDatePicker from '@/shared/common/CustomDatePicker';
 
 interface Meeting {
     id: string;
@@ -31,6 +32,7 @@ interface CreatorMeetingPageProps {
     upcomingMeetings: Meeting[];
     pastMeetings: Meeting[];
     handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleDateChange: (field: string, value: Date | null) => void;
     handleScheduleMeeting: () => void;
     handleJoinMeeting: (id: string) => void;
     handleCancelMeeting: (id: string) => void;
@@ -55,6 +57,7 @@ export default function CreatorMeetingPage({
     upcomingMeetings,
     pastMeetings,
     handleInputChange,
+    handleDateChange,
     handleScheduleMeeting,
     handleJoinMeeting,
     handleCancelMeeting,
@@ -75,6 +78,8 @@ export default function CreatorMeetingPage({
     const totalUpcomingPages = Math.ceil(upcomingTotal / itemsPerPage);
     const totalPastPages = Math.ceil(pastTotal / itemsPerPage);
 
+    const activeMeeting = upcomingMeetings.find(m => m.id === activeMeetingId) || pastMeetings.find(m => m.id === activeMeetingId);
+
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden relative">
             <CreatorSidebar activeItem="meetings" />
@@ -87,40 +92,39 @@ export default function CreatorMeetingPage({
                             <h2 className="text-2xl font-bold text-gray-900 mb-6">Schedule New Meeting</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
-                                    <input
-                                        type="date"
-                                        name="date"
-                                        value={formData.date}
-                                        onChange={handleInputChange}
-                                        min={new Date().toISOString().split('T')[0]}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
-                                        required={true}
-
+                                    <CustomDatePicker
+                                        label="Select Date"
+                                        selected={formData.date ? new Date(formData.date) : null}
+                                        onChange={(date) => handleDateChange('date', date)}
+                                        minDate={new Date()}
+                                        placeholderText="Select meeting date"
+                                        required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
-                                    <input
-                                        type="time"
-                                        name="time"
-                                        value={formData.time}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
-                                        required={true}
-
+                                    <CustomDatePicker
+                                        label="Start Time"
+                                        selected={formData.time ? new Date(`2000-01-01T${formData.time}`) : null}
+                                        onChange={(date) => handleDateChange('time', date)}
+                                        showTimeSelect
+                                        showTimeSelectOnly
+                                        timeIntervals={15}
+                                        dateFormat="h:mm aa"
+                                        placeholderText="Select start time"
+                                        required
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
-                                    <input
-                                        type="time"
-                                        name="endTime"
-                                        value={formData.endTime}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
-                                        required={true}
-
+                                <div className="md:col-span-2 md:w-1/2">
+                                    <CustomDatePicker
+                                        label="End Time"
+                                        selected={formData.endTime ? new Date(`2000-01-01T${formData.endTime}`) : null}
+                                        onChange={(date) => handleDateChange('endTime', date)}
+                                        showTimeSelect
+                                        showTimeSelectOnly
+                                        timeIntervals={15}
+                                        dateFormat="h:mm aa"
+                                        placeholderText="Select end time"
+                                        required
                                     />
                                 </div>
                             </div>
@@ -180,7 +184,7 @@ export default function CreatorMeetingPage({
                                                     <button
                                                         onClick={() => handleFinishMeeting(meeting.id)}
                                                         className="p-2.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-                                                        title="Finish / Mark as Completed"  // Tooltip shows full meaning
+                                                        title="Finish / Mark as Completed"
                                                         aria-label="Finish meeting"
                                                     >
                                                         <Check size={18} />
@@ -189,7 +193,7 @@ export default function CreatorMeetingPage({
                                                     <button
                                                         onClick={() => handleCancelMeeting(meeting.id)}
                                                         className="p-2.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
-                                                        title="Cancel Meeting"  // Clear tooltip
+                                                        title="Cancel Meeting"
                                                         aria-label="Cancel meeting"
                                                     >
                                                         <X size={18} />
@@ -222,8 +226,8 @@ export default function CreatorMeetingPage({
                                             key={meeting.id}
                                             className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors opacity-75"
                                         >
-                                            <div className="flex justify-between items-center gap-4"> {/* items-center + gap */}
-                                                <div className="flex-1 min-w-0"> {/* min-w-0 prevents overflow on long titles */}
+                                            <div className="flex justify-between items-center gap-4">
+                                                <div className="flex-1 min-w-0">
                                                     <h3 className="text-lg font-bold text-gray-900 truncate">{meeting.title}</h3>
                                                     <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />
@@ -261,6 +265,7 @@ export default function CreatorMeetingPage({
                     />
                 </div>
             )}
+
         </div>
     );
 }
