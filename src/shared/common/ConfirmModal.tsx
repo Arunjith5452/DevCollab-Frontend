@@ -19,7 +19,8 @@ export default function ConfirmModal({
     cancelText = "Cancel",
     onConfirm,
     onCancel,
-}: ConfirmModalProps) {
+    type = 'confirm'
+}: ConfirmModalProps & { type?: 'confirm' | 'alert' }) {
 
     return (
         <AnimatePresence>
@@ -46,18 +47,20 @@ export default function ConfirmModal({
                         <p className="text-sm text-gray-600 mt-2">{message}</p>
 
                         <div className="mt-6 flex justify-end gap-3">
-                            <button
-                                onClick={onCancel}
-                                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm hover:bg-gray-100 transition"
-                            >
-                                {cancelText}
-                            </button>
+                            {type === 'confirm' && (
+                                <button
+                                    onClick={onCancel}
+                                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm hover:bg-gray-100 transition"
+                                >
+                                    {cancelText}
+                                </button>
+                            )}
 
                             <button
                                 onClick={onConfirm}
-                                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 transition"
+                                className={`px-4 py-2 rounded-lg text-white text-sm transition ${type === 'alert' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'}`}
                             >
-                                {confirmText}
+                                {type === 'alert' && confirmText === "Confirm" ? "OK" : confirmText}
                             </button>
                         </div>
                     </motion.div>

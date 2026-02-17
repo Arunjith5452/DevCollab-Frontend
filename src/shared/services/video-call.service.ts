@@ -7,7 +7,8 @@ export type VideoCallEvents = {
     onUserDisconnected?: (userId: string, userName: string) => void;
     onHandRaised?: (userId: string, raised: boolean) => void;
     onRemoteVideoState?: (userId: string, enabled: boolean) => void;
-    onRemoteAudioState?: (userId: string, enabled: boolean) => void
+    onRemoteAudioState?: (userId: string, enabled: boolean) => void;
+    onRoomState?: (state: { video: Record<string, boolean>; audio: Record<string, boolean> }) => void;
 };
 
 export class VideoCallService {
@@ -88,6 +89,19 @@ export class VideoCallService {
         this.socket.on('audio-state', (payload: { userId: string; enabled: boolean }) => {
             this.remoteAudioEnabled.set(payload.userId, payload.enabled);
             this.events.onRemoteAudioState?.(payload.userId, payload.enabled);
+        });
+
+        this.socket.on('room-state', (payload: { video: Record<string, boolean>; audio: Record<string, boolean> }) => {
+            console.log('Received initial room state:', payload);
+
+            Object.entries(payload.video).forEach(([userId, enabled]) => {
+                this.remoteVideoEnabled.set(userId, enabled);
+            });
+            Object.entries(payload.audio).forEach(([userId, enabled]) => {
+                this.remoteAudioEnabled.set(userId, enabled);
+            });
+
+            this.events.onRoomState?.(payload);
         });
     }
 

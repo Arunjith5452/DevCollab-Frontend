@@ -58,6 +58,8 @@ export default function ContributorMeetingPage({
     const totalUpcomingPages = Math.ceil(upcomingTotal / itemsPerPage);
     const totalPastPages = Math.ceil(pastTotal / itemsPerPage);
 
+    const activeMeeting = upcomingMeetings.find(m => m.id === activeMeetingId) || pastMeetings.find(m => m.id === activeMeetingId);
+
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden relative">
             <ContributorSidebar activeItem="meetings" />

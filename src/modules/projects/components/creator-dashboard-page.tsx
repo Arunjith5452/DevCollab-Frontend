@@ -14,6 +14,9 @@ import { ProjectStats } from "../types/project-stats.types";
 import { getCreatorTasks } from "@/modules/tasks/services/task.api";
 import { Pagination } from "@/shared/common/Pagination";
 import { Task } from "@/types/tasks/task.types";
+import EarningTrendGraph from "@/shared/common/charts/EarningTrendGraph";
+import ActivityTrendGraph from "@/shared/common/charts/ActivityTrendGraph";
+import DashboardDateFilter from "@/shared/common/analytics/DashboardDateFilter";
 
 export default function CreatorDashboardPage() {
     const router = useRouter();
@@ -37,8 +40,13 @@ export default function CreatorDashboardPage() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalItems, setTotalItems] = useState(0); 
+    const [totalItems, setTotalItems] = useState(0);
     const pageSize = 10;
+
+    const [dateRange, setDateRange] = useState<{ startDate: Date | undefined; endDate: Date | undefined }>({
+        startDate: undefined,
+        endDate: undefined
+    });
 
     const fetchTasks = useCallback(async (page: number) => {
         if (!projectId) return;
@@ -52,7 +60,7 @@ export default function CreatorDashboardPage() {
             console.log("Tasks response:", res);
             setTasks(res.tasks || []);
             const total = res.total || 0;
-            setTotalItems(total); 
+            setTotalItems(total);
             setTotalPages(Math.ceil(total / pageSize));
         } catch (error) {
             console.error("Failed to fetch tasks:", error);
@@ -61,28 +69,30 @@ export default function CreatorDashboardPage() {
         }
     }, [projectId]);
 
-    useEffect(() => {
-        if (projectId) {
+    const fetchProjectData = useCallback(async () => {
+        if (!projectId) return;
+        try {
             setLoading(true);
-            Promise.all([
+            const [details, statsData] = await Promise.all([
                 projectDetails(projectId),
-                getProjectStats(projectId)
-            ]).then(([resDetails, resStats]) => {
-                setProjectData(resDetails.data);
-                setStats(resStats);
-                setProject({ id: resDetails.data.id, title: resDetails.data.title });
-
-                fetchTasks(1);
-
-                setLoading(false);
-            }).catch(err => {
-                console.error("Failed to fetch dashboard data:", err);
-                setLoading(false);
-            });
-        } else {
+                getProjectStats(projectId, dateRange.startDate, dateRange.endDate)
+            ]);
+            setProjectData(details.data);
+            setProject(details.data);
+            setStats(statsData);
+        } catch (error) {
+            console.error("Failed to fetch project data:", error);
+        } finally {
             setLoading(false);
         }
-    }, [projectId, setProject, fetchTasks]);
+    }, [projectId, dateRange]);
+
+    useEffect(() => {
+        if (projectId) {
+            fetchProjectData();
+            fetchTasks(1);
+        }
+    }, [projectId, fetchProjectData, fetchTasks]);
 
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= totalPages) {
@@ -98,32 +108,44 @@ export default function CreatorDashboardPage() {
             <div className="flex-1 flex flex-col overflow-hidden">
                 <CreatorHeader />
                 <main className="flex-1 overflow-y-auto p-8">
-                    {loading ? (
-                        <div className="flex h-full items-center justify-center">
-                            <PageLoader />
-                        </div>
-                    ) : (
-                        <>
-                            <div className="mb-8">
-                                <h2 className="text-[#0c1d1a] text-xl font-bold mb-4">Project Overview</h2>
-                                <div className="flex items-start justify-between">
+                    {/* Project Overview */}
+                    <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h2 className="text-[#0c1d1a] text-xl font-bold mb-1">Project Overview</h2>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-start">
                                     <div>
-                                        <h3 className="text-[#0c1d1a] font-semibold mb-1">{projectName}</h3>
+                                        <h3 className="text-[#0c1d1a] font-semibold">{projectName}</h3>
                                         <p className="text-[#6b7280] text-sm">
                                             {project?.status === 'active' ? 'Active Project' : 'Project Dashboard'} | {memberCount} Members
                                         </p>
                                     </div>
-                                    <div className="w-32 h-32 rounded-lg overflow-hidden bg-[#f5e6d3] border border-[#e6f4f2]">
-                                        {project?.image ? (
-                                            <img src={project.image} alt={projectName} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-[#f5e6d3]">
-                                                <div className="w-12 h-12 bg-[#0c1d1a] rounded-sm opacity-10"></div>
-                                            </div>
-                                        )}
-                                    </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <DashboardDateFilter
+                                onFilterChange={(startDate, endDate) => setDateRange({ startDate, endDate })}
+                            />
+                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#f5e6d3] border border-[#e6f4f2]">
+                                {project?.image ? (
+                                    <img src={project.image} alt={projectName} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-[#f5e6d3]">
+                                        <div className="w-12 h-12 bg-[#0c1d1a] rounded-sm opacity-10"></div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <div className="flex h-full items-center justify-center py-20">
+                            <PageLoader />
+                        </div>
+                    ) : (
+                        <>
 
                             {/* Stats Cards */}
                             <div className="grid grid-cols-2 gap-6 mb-8">
@@ -188,6 +210,23 @@ export default function CreatorDashboardPage() {
                                             <p className="text-sm text-gray-400">No contributor data yet.</p>
                                         )}
                                     </div>
+                                </div>
+                            </div>
+
+                            {/* Analytics Graphs */}
+                            <div className="grid grid-cols-2 gap-6 mb-8">
+                                <div className="h-[400px]">
+                                    <EarningTrendGraph
+                                        data={stats?.earningsTimeline || []}
+                                        title="Project Expenses"
+                                    />
+                                </div>
+                                <div className="h-[400px]">
+                                    <ActivityTrendGraph
+                                        data={stats?.activityTimeline || []}
+                                        type="project"
+                                        title="Project Activity"
+                                    />
                                 </div>
                             </div>
 

@@ -1,14 +1,25 @@
 "use client"
+import React, { useState } from 'react'
+import ConfirmModal from '@/shared/common/ConfirmModal'
 
-import React from 'react'
+export const Button = ({ name }: { name: string }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-export const Button = ({name}:{name:string}) => {
   return (
-    <button onClick={()=>{
-        alert(`name is: ${name}`)
-    }}>
-      See name
-    </button>
+    <>
+      <button onClick={() => setIsModalOpen(true)}>
+        See name
+      </button>
+
+      <ConfirmModal
+        open={isModalOpen}
+        title="Name Info"
+        message={`name is: ${name}`}
+        type="alert"
+        onConfirm={() => setIsModalOpen(false)}
+        onCancel={() => setIsModalOpen(false)}
+      />
+    </>
   )
 }
 

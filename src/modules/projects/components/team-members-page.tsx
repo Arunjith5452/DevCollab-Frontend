@@ -13,6 +13,7 @@ import { SearchInput } from '@/shared/common/Searching';
 import { DataTable } from '@/shared/common/DataTable';
 import { Pagination } from '@/shared/common/Pagination';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
+import ConfirmModal from '@/shared/common/ConfirmModal';
 
 const RoleCell = ({ member, onRoleChange }: { member: Member, onRoleChange: (id: string, role: 'contributor' | 'maintainer') => Promise<void> }) => {
     const [open, setOpen] = useState(false);
@@ -155,6 +156,13 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
     const [search, setSearch] = useState(initialData.currentSearch);
     const [loading, setLoading] = useState(false);
 
+    const [modal, setModal] = useState({
+        open: false,
+        title: '',
+        message: '',
+        memberId: ''
+    });
+
     // Sync URL + fetch new data
     const updateUrlAndFetch = useCallback(
         async (newSearch: string, newPage: number) => {
@@ -216,15 +224,25 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
         }
     };
 
-    const handleRemove = async (memberId: string, name: string) => {
-        if (!confirm(`Remove ${name} from the team?`)) return;
+    const handleRemove = (memberId: string, name: string) => {
+        setModal({
+            open: true,
+            title: 'Remove Member',
+            message: `Remove ${name} from the team?`,
+            memberId
+        });
+    };
+
+    const confirmRemove = async () => {
+        if (!modal.memberId) return;
         try {
-            await removeMember(projectId, memberId);
-            setMembers(prev => prev.filter(m => m.id !== memberId));
+            await removeMember(projectId, modal.memberId);
+            setMembers(prev => prev.filter(m => m.id !== modal.memberId));
             toast.success("Member removed");
         } catch (err) {
             toast.error("Failed to remove member");
         }
+        setModal(prev => ({ ...prev, open: false, memberId: '' }));
     };
 
     const columns = [
@@ -288,6 +306,13 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
                     </div>
                 </main>
             </div>
+            <ConfirmModal
+                open={modal.open}
+                title={modal.title}
+                message={modal.message}
+                onConfirm={confirmRemove}
+                onCancel={() => setModal(prev => ({ ...prev, open: false }))}
+            />
         </div>
     );
 }
