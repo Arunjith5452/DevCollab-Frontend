@@ -3,12 +3,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 interface ActivityTrendData {
     month: string;
-    [key: string]: string | number; // Dynamic keys for 'created', 'completed', 'assigned'
+    [key: string]: string | number;
 }
 
 interface ActivityTrendGraphProps {
     data: ActivityTrendData[];
-    type: 'contributor' | 'project'; // To determine label names
+    type: 'contributor' | 'project'
     title?: string;
 }
 
@@ -19,8 +19,8 @@ const ActivityTrendGraph: React.FC<ActivityTrendGraphProps> = ({ data, type, tit
     const bar1Label = type === 'contributor' ? 'Assigned' : 'Created';
     const bar2Label = 'Completed';
 
-    const bar1Color = '#0f766e'; // Darker teal
-    const bar2Color = '#2dd4bf'; // Lighter teal
+    const bar1Color = '#0f766e';
+    const bar2Color = '#2dd4bf';
 
     return (
         <div className="bg-white p-6 rounded-lg border border-[#e6f4f2] h-full flex flex-col">

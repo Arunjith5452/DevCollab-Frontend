@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, Code, DollarSign, Folder, Home, Settings, Users } from "lucide-react";
+import { Activity, Code, DollarSign, Folder, Home, Settings, Users, CreditCard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSidebar } from "@/shared/hooks/useSidebar";
 import { MobileMenuButton } from "@/shared/common/MobileMenuButton";
@@ -38,6 +38,7 @@ export function Sidebar({ activeItem }: SidebarProps) {
     { id: 'dashboard', icon: Home, label: 'Dashboard', badge: null, href: '/admin/dashboard' },
     { id: 'users', icon: Users, label: 'Users', badge: counts.users > 0 ? counts.users.toString() : null, href: '/admin/userManagement' },
     { id: 'projects', icon: Folder, label: 'Projects', badge: counts.projects > 0 ? counts.projects.toString() : null, href: '/admin/projectManagement' },
+    { id: 'plans', icon: CreditCard, label: 'Plans', badge: null, href: '/admin/plans' },
     // { id: 'revenue', icon: DollarSign, label: 'Revenue', badge: null, href: '#' },
     // { id: 'analytics', icon: Activity, label: 'Analytics', badge: null, href: '#' },
     // { id: 'settings', icon: Settings, label: 'Settings', badge: null, href: '#' },

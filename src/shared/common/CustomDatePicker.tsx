@@ -32,15 +32,12 @@ export default function CustomDatePicker({
     error
 }: CustomDatePickerProps) {
 
-    // Determine default format if not provided
     const format = dateFormat || (showTimeSelectOnly ? "h:mm aa" : showTimeSelect ? "MMMM d, yyyy h:mm aa" : "MMMM d, yyyy");
 
-    // Initialize time state from selected date or default to 12:00 AM
     const [selectedHour, setSelectedHour] = useState<number>(selected ? (selected.getHours() % 12 || 12) : 12);
     const [selectedMinute, setSelectedMinute] = useState<number>(selected ? selected.getMinutes() : 0);
     const [selectedPeriod, setSelectedPeriod] = useState<"AM" | "PM">(selected ? (selected.getHours() >= 12 ? "PM" : "AM") : "AM");
 
-    // Sync state when selected date prop changes
     useEffect(() => {
         if (selected) {
             setSelectedHour(selected.getHours() % 12 || 12);
@@ -59,12 +56,10 @@ export default function CustomDatePicker({
         if (type === "minute") newMinute = value as number;
         if (type === "period") newPeriod = value as "AM" | "PM";
 
-        // Update local state immediately for UI responsiveness
         if (type === "hour") setSelectedHour(newHour);
         if (type === "minute") setSelectedMinute(newMinute);
         if (type === "period") setSelectedPeriod(newPeriod);
 
-        // Convert 12h format to 24h for Date object
         let hour24 = newHour;
         if (newPeriod === "PM" && newHour !== 12) hour24 += 12;
         if (newPeriod === "AM" && newHour === 12) hour24 = 0;
@@ -76,7 +71,6 @@ export default function CustomDatePicker({
         onChange(newDate);
     };
 
-    // Generate arrays for time options
     const hours = Array.from({ length: 12 }, (_, i) => i + 1);
     const minutes = Array.from({ length: 60 / timeIntervals }, (_, i) => i * timeIntervals);
     const periods = ["AM", "PM"];
@@ -95,7 +89,6 @@ export default function CustomDatePicker({
                 <DatePicker
                     selected={selected}
                     onChange={(date: Date | null) => {
-                        // When calendar date changes, preserve current time selection
                         if (!date) {
                             onChange(null);
                             return;
@@ -110,7 +103,7 @@ export default function CustomDatePicker({
                         newDate.setMinutes(selectedMinute);
                         onChange(newDate);
                     }}
-                    showTimeSelect={false} // Disable native time select to use custom one
+                    showTimeSelect={false}
                     showTimeSelectOnly={showTimeSelectOnly}
                     timeIntervals={timeIntervals}
                     dateFormat={format}
