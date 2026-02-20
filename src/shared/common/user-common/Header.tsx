@@ -4,10 +4,10 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   Bell, Code, Menu, Search, X, LogOut, User,
-  ChevronDown, Loader2
+  ChevronDown, Loader2, Sparkles
 } from 'lucide-react';
 import { useAuthStore, useUser } from '@/store/useUserStore';
-import { logout } from "@/modules/auth/services/auth.api"
+import { logout as logoutApi } from "@/modules/auth/services/auth.api"
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 
@@ -40,6 +40,9 @@ export function Header({
 
   const user = useUser()
   const fetchUser = useAuthStore((state) => state.fetchUser)
+  const storeLogout = useAuthStore((state) => state.logout)
+
+  const isPro = user?.subscription?.status === 'active' && !['free', 'free tier', 'free plan', 'basic'].includes(user?.subscription?.plan?.toLowerCase() || '');
 
   useEffect(() => {
     const loadUser = async () => {
@@ -74,11 +77,11 @@ export function Header({
 
   const handleLogout = async () => {
     try {
-      await logout();
-      localStorage.clear()
+      // Clear store state immediately so UI updates at once
+      storeLogout();
+      await logoutApi();
       toast.success('Logged out')
       router.push('/login');
-
     } catch (error) {
       getErrorMessage(error)
     }
@@ -119,42 +122,82 @@ export function Header({
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-
-            {/* {showSearch && (
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                <Search className="w-5 h-5" />
-              </button>
-            )}
-
-            {showNotifications && (
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-green-600 rounded-full" />
-              </button>
-            )} */}
-
             {isLoading ? (
               <div className="w-9 h-9 bg-gray-200 rounded-full animate-pulse" />
             ) : user ? (
               <div ref={dropdownRef} className="relative">
                 <button
                   onClick={() => setDropdownOpen(v => !v)}
-                  className="flex items-center space-x-2 rounded-full pr-3 pl-1 py-1 hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+                  className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 hover:bg-gray-100/80 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 group"
                   aria-label="User menu"
                 >
-                  <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-pink-500 rounded-full flex items-center justify-center text-white font-medium text-sm shadow-md overflow-hidden">
-                    {user.profileImage ? (
-                      <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
+                  {/* Avatar with Pro ring */}
+                  <div className="relative flex-shrink-0">
+                    {isPro ? (
+                      <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-full p-[2px] bg-gradient-to-tr from-amber-200 via-amber-400 to-amber-500 shadow-sm">
+                        <div className="w-full h-full rounded-full overflow-hidden border-2 border-white bg-white flex items-center justify-center text-sm font-semibold text-gray-700">
+                          {user.profileImage
+                            ? <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
+                            : user.name.charAt(0).toUpperCase()
+                          }
+                        </div>
+                        {/* Elegant small pro badge */}
+                        <div className="absolute -bottom-1 -right-1 flex h-4 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-1.5 border-[1.5px] border-white shadow-sm">
+                          <span className="text-[8px] font-bold text-white tracking-wider">PRO</span>
+                        </div>
+                      </div>
                     ) : (
-                      user.name.charAt(0).toUpperCase()
+                      <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm">
+                        {user.profileImage
+                          ? <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
+                          : user.name.charAt(0).toUpperCase()
+                        }
+                      </div>
                     )}
                   </div>
-                  <span className="text-sm font-medium text-gray-800">{user.name}</span>
-                  <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+
+                  {/* Name section */}
+                  <div className="hidden md:flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-gray-700">
+                      {user.name}
+                    </span>
+                  </div>
+                  <ChevronDown className={`hidden md:block w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 overflow-hidden" style={{ animation: 'fadeSlideDown 0.15s ease' }}>
+                    {/* Dropdown header */}
+                    {isPro ? (
+                      <div className="mx-2 mb-2 rounded-xl px-3 py-3 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                            {user.profileImage
+                              ? <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
+                              : user.name.charAt(0).toUpperCase()
+                            }
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-white truncate">{user.name}</p>
+                            <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-2 bg-amber-500/20 border border-amber-400/30 rounded-lg px-2 py-1">
+                          <Sparkles className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                          <span className="text-xs font-semibold text-amber-300 tracking-wide">PRO MEMBER</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="px-4 py-3 border-b border-gray-100 mb-1">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                        <Link href="/subscription" className="mt-2 flex items-center justify-center gap-1.5 text-xs font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 py-1.5 rounded-lg hover:opacity-90 transition-opacity">
+                          <Sparkles className="w-3 h-3" />
+                          Upgrade to Pro
+                        </Link>
+                      </div>
+                    )}
+
                     <Link
                       href="/user-profile"
                       className="flex items-center space-x-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors"
@@ -232,8 +275,21 @@ export function Header({
                     className="flex w-full items-center justify-between px-4 py-2 text-gray-800"
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                        {user.name.charAt(0).toUpperCase()}
+                      <div className="relative flex-shrink-0">
+                        {isPro ? (
+                          <div className="relative w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-amber-200 via-amber-400 to-amber-500 shadow-sm">
+                            <div className="w-full h-full rounded-full overflow-hidden border-[1.5px] border-white bg-white flex items-center justify-center text-gray-700 text-sm font-semibold">
+                              {user.profileImage ? <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" /> : user.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 flex h-3.5 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-1 border-[1.5px] border-white shadow-sm">
+                              <span className="text-[7px] font-bold text-white tracking-wider">PRO</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                            {user.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
                       </div>
                       <span className="font-medium">{user.name}</span>
                     </div>
@@ -242,8 +298,13 @@ export function Header({
 
                   {dropdownOpen && (
                     <div className="mt-2 space-y-1 px-4">
+                      {!isPro && (
+                        <Link href="/subscription" onClick={() => setMobileOpen(false)} className="block text-center text-xs font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 py-2 rounded-lg mb-3">
+                          Upgrade to Pro
+                        </Link>
+                      )}
                       <Link
-                        href="/profile"
+                        href="/user-profile"
                         onClick={() => setMobileOpen(false)}
                         className="flex items-center space-x-2 py-2 text-gray-700 hover:text-green-600"
                       >
@@ -251,7 +312,7 @@ export function Header({
                         <span>View Profile</span>
                       </Link>
                       <button
-                        onClick={logout}
+                        onClick={handleLogout}
                         disabled={loggingOut}
                         className="flex w-full items-center space-x-2 py-2 text-red-600 hover:text-red-700 disabled:opacity-50"
                       >
