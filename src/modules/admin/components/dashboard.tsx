@@ -7,6 +7,11 @@ import PageLoader from "@/shared/common/LoadingComponent";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardStats, ActivityItem, DateRangeQuery, ChartDataPoint, TechDataPoint } from "@/types/admin/dashboard.types";
+import { PlanList } from "../plans/components/PlanList";
+import { CreatePlanModal } from "../plans/components/CreatePlanModal";
+import { EditPlanModal } from "../plans/components/EditPlanModal";
+import { Plan } from "../services/plans.api";
+import { Plus } from "lucide-react";
 
 export function Dashboard() {
   const router = useRouter();

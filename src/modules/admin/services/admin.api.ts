@@ -72,3 +72,14 @@ export const getActivities = async ({ page = 1, limit = 10 } = {}) => {
         throw error
     }
 }
+
+export const getAllSubscriptions = async ({ page = 1, limit = 10, search = '', status = '' } = {}) => {
+    try {
+        const response = await api.get(ADMIN_ROUTES.GET_ALL_SUBSCRIPTIONS, {
+            params: { page, limit, search, status }
+        })
+        return response.data
+    } catch (error) {
+        throw error
+    }
+}
