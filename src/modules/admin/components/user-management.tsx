@@ -65,10 +65,11 @@ export default function UserManagement() {
   const handleBlockUnblock = async () => {
     if (!selectedUser || !newStatus) return;
     try {
-      await updateUserStatus({ userId: selectedUser._id, newStatus });
+      const userIdToUpdate = selectedUser.id || selectedUser._id;
+      await updateUserStatus({ userId: userIdToUpdate, newStatus });
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user._id === selectedUser._id ? { ...user, status: newStatus } : user
+          (user.id === userIdToUpdate || user._id === userIdToUpdate) ? { ...user, status: newStatus } : user
         )
       );
       toast.success(

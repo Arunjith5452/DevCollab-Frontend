@@ -7,6 +7,12 @@ import PageLoader from "@/shared/common/LoadingComponent";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardStats, ActivityItem, DateRangeQuery, ChartDataPoint, TechDataPoint } from "@/types/admin/dashboard.types";
+import { PlanList } from "../plans/components/PlanList";
+import { CreatePlanModal } from "../plans/components/CreatePlanModal";
+import { EditPlanModal } from "../plans/components/EditPlanModal";
+import { Plan } from "../services/plans.api";
+import { Plus } from "lucide-react";
+import { Pagination } from "@/shared/common/Pagination";
 
 export function Dashboard() {
   const router = useRouter();
@@ -376,27 +382,15 @@ export function Dashboard() {
                   </div>
 
                   {/* Pagination */}
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
-                    <span className="text-sm text-gray-500">
-                      Showing {activitiesData.activities.length} of {activitiesData.total}
-                    </span>
-                    <div className="flex space-x-2">
-                      <button
-                        disabled={page === 1}
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <button
-                        disabled={page * LIMIT >= activitiesData.total}
-                        onClick={() => setPage(p => p + 1)}
-                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+                  {activitiesData.total > LIMIT && (
+                    <Pagination
+                      currentPage={page}
+                      totalPages={Math.ceil(activitiesData.total / LIMIT)}
+                      onPageChange={setPage}
+                      totalItems={activitiesData.total}
+                      itemsPerPage={LIMIT}
+                    />
+                  )}
                 </div>
               </div>
             </>

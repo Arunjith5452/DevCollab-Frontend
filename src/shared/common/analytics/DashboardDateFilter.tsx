@@ -44,7 +44,7 @@ const DashboardDateFilter: React.FC<DashboardDateFilterProps> = ({ onFilterChang
                 monday.setDate(diff);
                 monday.setHours(0, 0, 0, 0);
                 start = monday;
-                end = new Date(); // End is current time
+                end = new Date();
                 break;
             case 'month':
                 start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -60,7 +60,7 @@ const DashboardDateFilter: React.FC<DashboardDateFilterProps> = ({ onFilterChang
                 break;
             case 'custom':
                 setIsCustomPickerOpen(true);
-                return; // Do not trigger callback yet
+                return;
         }
 
         onFilterChange(start, end);

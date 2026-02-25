@@ -3,8 +3,10 @@
 import { Users, GitBranch, Star, ArrowRight, TrendingUp, Award } from 'lucide-react';
 import { Header } from "@/shared/common/user-common/Header";
 import { Footer } from "@/shared/common/user-common/Footer";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { useAuthStore } from '@/store/useUserStore';
 import api from '@/lib/axios';
 import { getPlatformStats, getFeaturedProjects } from '@/modules/projects/services/project.api';
 import PageLoader from '@/shared/common/LoadingComponent';
@@ -31,9 +33,22 @@ interface FeaturedProject {
 
 export function HomePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fetchUser = useAuthStore((state) => state.fetchUser);
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [featuredProjects, setFeaturedProjects] = useState<FeaturedProject[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (searchParams.get('subscription_success')) {
+      // Wait 5 seconds to allow Stripe webhook to update the backend DB before re-fetching
+      setTimeout(() => {
+        fetchUser(true);
+      }, 5000);
+      toast.success("Subscription activated! Your Pro status will update shortly.");
+      router.replace('/home');
+    }
+  }, [searchParams, fetchUser, router]);
 
   useEffect(() => {
     const fetchData = async () => {

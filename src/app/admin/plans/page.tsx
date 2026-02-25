@@ -1,12 +1,12 @@
 "use client";
 
-import UserManagement from "@/modules/admin/components/user-management";
+import { PlansPage } from "@/modules/admin/plans/PlansPage";
 import AdminRouteGuard from "@/shared/common/guards/AdminRouteGuard";
 
-export default function UserManagementPage() {
+export default function Page() {
     return (
         <AdminRouteGuard>
-            <UserManagement />
+            <PlansPage />
         </AdminRouteGuard>
     );
 }

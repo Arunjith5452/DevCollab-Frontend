@@ -17,6 +17,7 @@ import { Task } from "@/types/tasks/task.types";
 import EarningTrendGraph from "@/shared/common/charts/EarningTrendGraph";
 import ActivityTrendGraph from "@/shared/common/charts/ActivityTrendGraph";
 import DashboardDateFilter from "@/shared/common/analytics/DashboardDateFilter";
+import UnauthorizedPage from "@/shared/common/guards/UnauthorizedPage";
 
 export default function CreatorDashboardPage() {
     const router = useRouter();
@@ -27,6 +28,8 @@ export default function CreatorDashboardPage() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [taskLoading, setTaskLoading] = useState(false);
+    const [accessDenied, setAccessDenied] = useState(false);
+    const [accessDeniedMessage, setAccessDeniedMessage] = useState("");
     const { setProject } = useProjectStore();
 
     const projectName = project?.title || "Project";
@@ -80,19 +83,29 @@ export default function CreatorDashboardPage() {
             setProjectData(details.data);
             setProject(details.data);
             setStats(statsData);
-        } catch (error) {
-            console.error("Failed to fetch project data:", error);
+        } catch (err: unknown) {
+            // Show access denied UI instead of a silent redirect
+            const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
+            const msg = axiosErr?.response?.data?.message || axiosErr?.message || "";
+            if (msg.toLowerCase().includes("creator") || msg.toLowerCase().includes("denied") || msg.toLowerCase().includes("private")) {
+                setAccessDeniedMessage("You are not the creator of this project.");
+            } else {
+                setAccessDeniedMessage("You do not have access to this project's creator dashboard.");
+            }
+            setAccessDenied(true);
         } finally {
             setLoading(false);
         }
-    }, [projectId, dateRange]);
+    }, [projectId, dateRange, setProject]);
 
     useEffect(() => {
-        if (projectId) {
-            fetchProjectData();
-            fetchTasks(1);
+        if (!projectId) {
+            router.push("/home");
+            return;
         }
-    }, [projectId, fetchProjectData, fetchTasks]);
+        fetchProjectData();
+        fetchTasks(1);
+    }, [projectId, fetchProjectData, fetchTasks, router]);
 
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= totalPages) {
@@ -100,6 +113,24 @@ export default function CreatorDashboardPage() {
             fetchTasks(newPage);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <PageLoader />
+            </div>
+        );
+    }
+
+    if (accessDenied) {
+        return (
+            <UnauthorizedPage
+                title="Access Denied"
+                message={accessDeniedMessage || "You don't have permission to view this project's creator dashboard."}
+                redirectTo="/home"
+            />
+        );
+    }
 
     return (
         <div className="flex h-screen overflow-hidden bg-white">

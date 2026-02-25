@@ -313,6 +313,7 @@ export default function CreateTaskPage() {
 
         // 2. Create Stripe Checkout Session with taskId in metadata
         const amountInPaise = Math.round(paymentAmount * 100);
+        const baseUrl = window.location.origin;
         const response = await createCheckoutSession({
           amount: amountInPaise,
           metadata: {
@@ -320,6 +321,9 @@ export default function CreateTaskPage() {
             project_id: String(projectId || ''),
             task_title: String(data.title),
           },
+          // Explicitly set success/cancel URLs so projectId is always preserved
+          success_url: `${baseUrl}/task-listing?projectId=${projectId}&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${baseUrl}/task-listing?projectId=${projectId}`,
         });
 
         if (response.url) {

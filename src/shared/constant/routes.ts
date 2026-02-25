@@ -49,7 +49,7 @@ export const TASK_ROUTERS = {
 export const USER_ROUTERS = {
   USER_PROFILE: "/api/users/profile",
   EDIT_PROFILE: "/api/users/profile",
-  MY_PROFILE: "/api/profile/me" // This might be legacy or need verification, keeping for safety
+  MY_PROFILE: "/api/profile/me"
 }
 
 export const ADMIN_ROUTES = {
@@ -57,5 +57,14 @@ export const ADMIN_ROUTES = {
   GET_ALL_PROJECTS: "/api/admin/projects",
   GET_DASHBOARD_STATS: "/api/admin/dashboard-stats",
   GET_ACTIVITIES: "/api/admin/activities",
+  GET_ALL_SUBSCRIPTIONS: "/api/admin/subscriptions",
   UPDATE_USER_STATUS: (id: string) => `/api/admin/users/${id}/status`,
+};
+
+export const PLAN_ROUTES = {
+  GET_ACTIVE_PLANS: "/api/plans",
+  GET_ALL_PLANS: "/api/admin/plans",
+  CREATE_PLAN: "/api/admin/plans",
+  EDIT_PLAN: (id: string) => `/api/admin/plans/${id}`,
+  TOGGLE_PLAN_STATUS: (id: string) => `/api/admin/plans/${id}/status`,
 };

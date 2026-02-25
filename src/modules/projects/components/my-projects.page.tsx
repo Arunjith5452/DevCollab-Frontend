@@ -8,6 +8,7 @@ import { disableProject, getMyCreatedProject } from '../services/project.api';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 import toast from 'react-hot-toast';
 import ConfirmModal from '@/shared/common/ConfirmModal';
+import { Pagination } from '@/shared/common/Pagination';
 
 interface Project {
     _id: string;
@@ -26,23 +27,28 @@ export function MyProjectsTab() {
     const [showMenuId, setShowMenuId] = useState<string | null>(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 8;
 
     const router = useRouter();
 
+    const fetchMyProjects = async () => {
+        try {
+            setLoading(true);
+            const data: any = await getMyCreatedProject(currentPage, itemsPerPage);
+            setProjects(data.projects);
+            setTotalItems(data.total);
+        } catch (err) {
+            setError('Failed to load your projects');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchMyProjects = async () => {
-            try {
-                setLoading(true);
-                const { data } = await getMyCreatedProject();
-                setProjects(data);
-            } catch (err) {
-                setError('Failed to load your projects');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchMyProjects();
-    }, []);
+    }, [currentPage]);
 
     const handleEditProject = (projectId: string) => {
         router.push(`/edit-project/${projectId}`);
@@ -114,7 +120,7 @@ export function MyProjectsTab() {
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-[#0c1d1a]">My Projects ({projects.length})</h2>
+                <h2 className="text-2xl font-bold text-[#0c1d1a]">My Projects ({totalItems})</h2>
                 <button
                     onClick={() => router.push('/create-project')}
                     className="px-4 py-2 bg-[#006b5b] text-white text-sm font-medium rounded-lg hover:bg-[#005a4d] transition flex items-center gap-2"
@@ -235,7 +241,18 @@ export function MyProjectsTab() {
                         </div>
                     </div>
                 ))}
+
             </div>
+
+            {totalItems > itemsPerPage && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(totalItems / itemsPerPage)}
+                    onPageChange={setCurrentPage}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                />
+            )}
 
             {/* CONFIRM MODAL */}
             <ConfirmModal

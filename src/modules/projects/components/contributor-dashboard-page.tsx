@@ -13,6 +13,7 @@ import { Pagination } from "@/shared/common/Pagination";
 import EarningTrendGraph from "@/shared/common/charts/EarningTrendGraph";
 import ActivityTrendGraph from "@/shared/common/charts/ActivityTrendGraph";
 import DashboardDateFilter from "@/shared/common/analytics/DashboardDateFilter";
+import UnauthorizedPage from "@/shared/common/guards/UnauthorizedPage";
 
 export default function ContributorDashboardPage({
     searchParams,
@@ -26,6 +27,8 @@ export default function ContributorDashboardPage({
     const [project, setProjectData] = useState<ProjectDetails | null>(null);
     const [stats, setStats] = useState<ContributorStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [accessDenied, setAccessDenied] = useState(false);
+    const [accessDeniedMessage, setAccessDeniedMessage] = useState("");
     const { setProject } = useProjectStore();
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -54,8 +57,16 @@ export default function ContributorDashboardPage({
                 setStats(resStats.data || resStats);
                 setProject({ id: resDetails.data.id, title: resDetails.data.title });
                 setLoading(false);
-            }).catch(err => {
+            }).catch((err) => {
                 setLoading(false);
+                // Show an access denied error UI instead of a silent redirect
+                const msg = err?.response?.data?.message || err?.message || "";
+                if (msg.toLowerCase().includes("member") || msg.toLowerCase().includes("not found") || msg.toLowerCase().includes("private")) {
+                    setAccessDeniedMessage("You are not an approved member of this project, or it does not exist.");
+                } else {
+                    setAccessDeniedMessage("You do not have access to this project's contributor dashboard.");
+                }
+                setAccessDenied(true);
             });
         });
     }, [searchParams, router, setProject, currentPage, pageSize, dateRange]);
@@ -135,6 +146,24 @@ export default function ContributorDashboardPage({
     };
 
     const isInitialLoad = !stats && loading;
+
+    if (isInitialLoad) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <PageLoader />
+            </div>
+        );
+    }
+
+    if (accessDenied) {
+        return (
+            <UnauthorizedPage
+                title="Access Denied"
+                message={accessDeniedMessage || "You don't have permission to view this project's contributor dashboard."}
+                redirectTo="/home"
+            />
+        );
+    }
 
     return (
         <div className="flex h-screen overflow-hidden bg-white">

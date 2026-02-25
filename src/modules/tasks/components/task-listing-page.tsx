@@ -10,11 +10,9 @@ import { Pagination } from '@/shared/common/Pagination';
 import { format } from 'date-fns';
 import { ProjectTask } from '@/modules/tasks/types/task.types';
 import { getAssignees, assignTask } from '../services/task.api';
-import { userProfile } from '@/modules/user/services/user.api';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/useUserStore';
 import TaskDetailsPanel from '@/shared/common/user-common/task-details-panel';
-import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 
 interface InitialData {
   tasks: ProjectTask[];
@@ -39,23 +37,15 @@ interface Assignee { userId: string; name: string }
 export default function TasksListingPage({
   initialData,
   initialFilters,
-  projectId
+  projectId: projectIdProp
 }: TasksListingProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Always read projectId from URL params as well to survive Stripe redirect
+  const urlProjectId = searchParams.get('projectId') || '';
+  const projectId = projectIdProp || urlProjectId;
   const user = useAuthStore((state) => state.user)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data } = await userProfile();
-        console.log("check data", data)
-      } catch (error) {
-        getErrorMessage(error)
-      }
-    }
-    fetchData()
-  }, [])
 
   const [searchTerm, setSearchTerm] = useState(initialFilters.search);
   const [statusFilter, setStatusFilter] = useState(initialFilters.status);
@@ -108,7 +98,9 @@ export default function TasksListingPage({
   useEffect(() => {
     const fetchTasks = async () => {
       const params = new URLSearchParams();
-      if (projectId) params.set('projectId', projectId);
+      // Always include projectId so it is never lost from the URL
+      const activeProjectId = projectId || searchParams.get('projectId') || '';
+      if (activeProjectId) params.set('projectId', activeProjectId);
       if (searchTerm) params.set('search', searchTerm);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (assigneeFilter !== 'all') params.set('assignee', assigneeFilter);
@@ -118,7 +110,7 @@ export default function TasksListingPage({
     };
 
     fetchTasks();
-  }, [searchTerm, statusFilter, assigneeFilter, currentPage, projectId, router])
+  }, [searchTerm, statusFilter, assigneeFilter, currentPage, projectId, router, searchParams])
 
 
 
@@ -205,9 +197,19 @@ export default function TasksListingPage({
         <main className="flex-1 px-8 py-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-[#0c1d1a] mb-2">Tasks</h1>
-              <p className="text-[#6b7280]">Manage and track all project tasks</p>
+            <div className="mb-8 flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-[#0c1d1a] mb-2">Tasks</h1>
+                <p className="text-[#6b7280]">Manage and track all project tasks</p>
+              </div>
+              {projectId && (
+                <button
+                  onClick={() => router.push(`/create-task?projectId=${projectId}`)}
+                  className="px-4 py-2 bg-[#006b5b] text-white text-sm font-semibold rounded-lg hover:bg-[#005a4d] transition"
+                >
+                  + Create Task
+                </button>
+              )}
             </div>
 
             {/* Search + Filters */}

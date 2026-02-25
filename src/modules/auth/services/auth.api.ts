@@ -128,7 +128,6 @@ export const resetPassword = async (data: {
     try {
 
         const response = await api.post(AUTH_ROUTES.RESET_PASSWORD, data)
-        console.log("response", response)
         return response
 
     } catch (error) {

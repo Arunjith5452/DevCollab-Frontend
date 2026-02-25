@@ -101,12 +101,14 @@ export const rejectApplication = async (applicationId: string) => {
     }
 }
 
-export const getMyAppliedProject = async () => {
+export const getMyAppliedProject = async (page: number = 1, limit: number = 10) => {
 
     try {
 
-        const response = await api.get(PROJECT_ROUTES.GET_APPLIED_PROJECT)
-        return response
+        const response = await api.get(PROJECT_ROUTES.GET_APPLIED_PROJECT, {
+            params: { page, limit }
+        })
+        return response.data;
 
     } catch (error) {
         throw error
@@ -114,11 +116,13 @@ export const getMyAppliedProject = async () => {
 
 }
 
-export const getMyCreatedProject = async () => {
+export const getMyCreatedProject = async (page: number = 1, limit: number = 10) => {
     try {
 
-        const response = await api.get(PROJECT_ROUTES.GET_MY_PROJECT)
-        return response
+        const response = await api.get(PROJECT_ROUTES.GET_MY_PROJECT, {
+            params: { page, limit }
+        })
+        return response.data;
 
     } catch (error) {
         throw error
