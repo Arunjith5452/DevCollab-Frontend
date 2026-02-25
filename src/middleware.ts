@@ -1,21 +1,47 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
+/**
+ * Decodes the JWT payload (without verifying signature - verification happens server-side).
+ * Used here solely to read the `role` field from the token for routing decisions.
+ */
+function decodeJwtPayload(token: string): { role?: string } | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 export function middleware(req: NextRequest) {
   const accessToken = req.cookies.get('accessToken')?.value;
   const refreshToken = req.cookies.get('refreshToken')?.value;
 
   const { pathname } = req.nextUrl;
 
+  // Always allow API auth routes and callback routes
   if (
-    pathname.startsWith("/api/auth") ||
-    pathname === "/callback" ||
-    pathname.includes("callback")
+    pathname.startsWith('/api/auth') ||
+    pathname === '/callback' ||
+    pathname.includes('callback')
   ) {
     return NextResponse.next();
   }
 
-  console.log("this is working")
+  const isAuthenticated = !!(accessToken || refreshToken);
+
+  // Decode role from the access token (falls back to refreshToken if access token missing)
+  let userRole: string | undefined;
+  const tokenToDecode = accessToken || refreshToken;
+  if (tokenToDecode) {
+    const payload = decodeJwtPayload(tokenToDecode);
+    userRole = payload?.role;
+  }
+
+  const isAdmin = userRole === 'admin';
 
   const publicRoutes = [
     '/',
@@ -26,42 +52,54 @@ export function middleware(req: NextRequest) {
     '/forgot-otp',
     '/reset-password',
     '/forgot-password',
-    '/admin/login'
+    '/admin/login',
   ];
 
-  const roleRedirectMap: Record<string, string> = {
-    '/admin': '/admin/dashboard'
-  };
+  // —— Admin route protection ——
+  if (pathname.startsWith('/admin')) {
+    if (pathname === '/admin/login') {
+      // If already logged in as admin, redirect to admin dashboard
+      if (isAuthenticated && isAdmin) {
+        return NextResponse.redirect(new URL('/admin/dashboard', req.url));
+      }
+      // If logged in but NOT admin, redirect to /home (not admin login)
+      if (isAuthenticated && !isAdmin) {
+        return NextResponse.redirect(new URL('/home', req.url));
+      }
+      return NextResponse.next();
+    }
 
-  const isAdmin = pathname.startsWith('/admin')
-
-  // Redirect authenticated users from root to /home
-  if (pathname === '/' && (accessToken || refreshToken)) {
-    return NextResponse.redirect(new URL('/home', req.url));
-  }
-
-  if (pathname === '/home') {
-    if (!accessToken && !refreshToken) {
-      return NextResponse.redirect(new URL('/login', req.url));
+    // For all other /admin/* routes
+    if (!isAuthenticated) {
+      return NextResponse.redirect(new URL('/admin/login', req.url));
+    }
+    if (!isAdmin) {
+      // Authenticated user but not an admin — redirect to user home
+      return NextResponse.redirect(new URL('/home', req.url));
     }
     return NextResponse.next();
   }
 
-  const matchedRole = Object.keys(roleRedirectMap)
-    .sort((a, b) => b.length - a.length)
-    .find((prefix) => pathname.startsWith(prefix));
-
-  if (publicRoutes.includes(pathname) && (accessToken || refreshToken) && matchedRole) {
-    return NextResponse.redirect(new URL(roleRedirectMap[matchedRole], req.url));
-  }
-
-  if ((accessToken || refreshToken) && (pathname === '/login' || pathname === '/signup' || pathname === '/register-otp' || pathname === '/reset-password' || pathname === '/forgot-otp' || pathname === '/reset-password' || pathname === '/forgot-password') && !isAdmin) {
+  // —— Redirect authenticated users away from auth pages ——
+  if (
+    isAuthenticated &&
+    (pathname === '/login' ||
+      pathname === '/register' ||
+      pathname === '/register-otp' ||
+      pathname === '/forgot-otp' ||
+      pathname === '/reset-password' ||
+      pathname === '/forgot-password')
+  ) {
     return NextResponse.redirect(new URL('/home', req.url));
   }
-  if (!publicRoutes.includes(pathname) && !accessToken && !refreshToken) {
-    if (pathname.startsWith('/admin')) {
-      return NextResponse.redirect(new URL('/admin/login', req.url));
-    }
+
+  // —— Redirect authenticated users from root to /home ——
+  if (pathname === '/' && isAuthenticated) {
+    return NextResponse.redirect(new URL('/home', req.url));
+  }
+
+  // —— Protect all non-public routes ——
+  if (!publicRoutes.includes(pathname) && !isAuthenticated) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
@@ -71,4 +109,3 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: ['/((?!_next|api|favicon.ico|.*\\..*).*)'],
 };
-
