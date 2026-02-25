@@ -17,7 +17,11 @@ interface Plan {
     features: string[];
     isActive: boolean;
     type: 'one-time';
+    projectLimit: number;
+    maxContributors: number;
+    participationLimit: number;
 }
+
 
 const SubscriptionPage = () => {
     const user = useUser();
@@ -32,9 +36,11 @@ const SubscriptionPage = () => {
         const loadPlans = async () => {
             try {
                 const data = await getActivePlans();
-                const sortedPlans = data.sort((a: Plan, b: Plan) => a.price - b.price);
+                const plansArray = data?.plans || [];
+                const sortedPlans = [...plansArray].sort((a: Plan, b: Plan) => a.price - b.price);
                 setPlans(sortedPlans);
             } catch (error) {
+
                 console.error("Failed to load plans", error);
                 toast.error("Failed to load subscription plans");
             } finally {
@@ -46,7 +52,6 @@ const SubscriptionPage = () => {
 
     useEffect(() => {
         if (searchParams.get('success')) {
-            // Delay the fetch slightly to give the Stripe Webhook time to update the backend DB
             setTimeout(() => {
                 fetchUser(true);
             }, 2000);
@@ -88,22 +93,18 @@ const SubscriptionPage = () => {
     }
 
 
-    const isCurrentPlan = (planName: string, isFree: boolean) => {
-        // If they have a specific active plan, check if it matches
+    const isCurrentPlan = (planName: string, isFreePlan: boolean) => {
+        // If the user has an active subscription, compare current plan name
         if (user?.subscription?.status === 'active') {
-            // Some backends might store 'Free' or 'free', so check case-insensitively
             if (user.subscription.plan) {
                 return user.subscription.plan.toLowerCase() === planName.toLowerCase();
             }
         }
 
-        // If they have NO active subscription at all, the Free plan is their default current plan
-        if (isFree && (!user?.subscription || user.subscription.status !== 'active')) {
-            return true;
-        }
-
-        return false;
+        // If no active subscription, the Free plan is the default
+        return isFreePlan;
     };
+
 
     if (pageLoading) {
         return (
@@ -193,15 +194,32 @@ const SubscriptionPage = () => {
                                     </div>
 
                                     <ul className="space-y-4 mb-8 flex-1">
-                                        {plan.features.map((feature, i) => (
-                                            <li key={i} className="flex items-center text-gray-200">
-                                                <div className={`rounded-full p-1 mr-3 ${isFree ? 'bg-green-500/30' : 'bg-amber-500/20'}`}>
-                                                    {isFree ? <Check className="w-3 h-3 text-green-300" /> : <Zap className="w-3 h-3 text-amber-400" />}
-                                                </div>
-                                                <span className="text-sm">{feature}</span>
-                                            </li>
-                                        ))}
+                                        {plan.features.map((feature, i) => {
+                                            const getFeatureLabel = (feat: string) => {
+                                                switch (feat) {
+                                                    case "CREATE_PROJECTS":
+                                                        return `can create ${plan.projectLimit} project${plan.projectLimit > 1 ? 's' : ''}`;
+                                                    case "JOIN_PROJECTS":
+                                                        return `can join ${plan.participationLimit} project${plan.participationLimit > 1 ? 's' : ''}`;
+                                                    case "MAX_CONTRIBUTORS":
+                                                        return `max ${plan.maxContributors} contributors in a project`;
+                                                    default:
+                                                        return feat;
+                                                }
+
+                                            };
+
+                                            return (
+                                                <li key={i} className="flex items-center text-gray-200">
+                                                    <div className={`rounded-full p-1 mr-3 ${isFree ? 'bg-green-500/30' : 'bg-amber-500/20'}`}>
+                                                        {isFree ? <Check className="w-3 h-3 text-green-300" /> : <Zap className="w-3 h-3 text-amber-400" />}
+                                                    </div>
+                                                    <span className="text-sm">{getFeatureLabel(feature)}</span>
+                                                </li>
+                                            );
+                                        })}
                                     </ul>
+
 
                                     <button
                                         onClick={() => handleSubscriptionModel(plan)}
