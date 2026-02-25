@@ -15,9 +15,22 @@ export interface Plan {
     participationLimit?: number;
 }
 
-export const getAllPlans = async () => {
+export const getAllPlans = async (page: number = 1, limit: number = 10) => {
     try {
-        const response = await api.get(PLAN_ROUTES.GET_ALL_PLANS);
+        const response = await api.get(PLAN_ROUTES.GET_ALL_PLANS, {
+            params: { page, limit }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getActivePlans = async (page: number = 1, limit: number = 10) => {
+    try {
+        const response = await api.get(PLAN_ROUTES.GET_ACTIVE_PLANS, {
+            params: { page, limit }
+        });
         return response.data;
     } catch (error) {
         throw error;

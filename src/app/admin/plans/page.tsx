@@ -1,5 +1,12 @@
+"use client";
+
 import { PlansPage } from "@/modules/admin/plans/PlansPage";
+import AdminRouteGuard from "@/shared/common/guards/AdminRouteGuard";
 
 export default function Page() {
-    return <PlansPage />;
+    return (
+        <AdminRouteGuard>
+            <PlansPage />
+        </AdminRouteGuard>
+    );
 }

@@ -6,6 +6,7 @@ import { X, Plus, Trash } from "lucide-react";
 import { editPlan, Plan } from "@/modules/admin/services/plans.api";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "@/shared/utils/ErrorMessage";
+import { PlanFeature, PLAN_FEATURE_LABELS } from "@/shared/constants/plan-features";
 
 interface EditPlanModalProps {
     isOpen: boolean;
@@ -21,7 +22,7 @@ export const EditPlanModal = ({ isOpen, onClose, onSuccess, plan }: EditPlanModa
         description: "",
         price: "",
         durationInDays: "",
-        features: [""],
+        features: [] as PlanFeature[],
         projectLimit: "1",
         maxContributors: "4",
         participationLimit: "1"
@@ -34,7 +35,7 @@ export const EditPlanModal = ({ isOpen, onClose, onSuccess, plan }: EditPlanModa
                 description: plan.description || "",
                 price: (plan.price ?? 0).toString(),
                 durationInDays: (plan.durationInDays ?? 30).toString(),
-                features: plan.features && plan.features.length > 0 ? plan.features : [""],
+                features: plan.features && plan.features.length > 0 ? plan.features as PlanFeature[] : [],
                 projectLimit: (plan.projectLimit ?? 1).toString(),
                 maxContributors: (plan.maxContributors ?? 4).toString(),
                 participationLimit: (plan.participationLimit ?? 1).toString()
@@ -47,19 +48,14 @@ export const EditPlanModal = ({ isOpen, onClose, onSuccess, plan }: EditPlanModa
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleFeatureChange = (index: number, value: string) => {
-        const newFeatures = [...formData.features];
-        newFeatures[index] = value;
-        setFormData((prev) => ({ ...prev, features: newFeatures }));
-    };
-
-    const addFeature = () => {
-        setFormData((prev) => ({ ...prev, features: [...prev.features, ""] }));
-    };
-
-    const removeFeature = (index: number) => {
-        const newFeatures = formData.features.filter((_, i) => i !== index);
-        setFormData((prev) => ({ ...prev, features: newFeatures }));
+    const toggleFeature = (feature: PlanFeature) => {
+        setFormData((prev) => {
+            const isSelected = prev.features.includes(feature);
+            const newFeatures = isSelected
+                ? prev.features.filter((f) => f !== feature)
+                : [...prev.features, feature];
+            return { ...prev, features: newFeatures };
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -78,7 +74,7 @@ export const EditPlanModal = ({ isOpen, onClose, onSuccess, plan }: EditPlanModa
                 description: formData.description,
                 price: Number(formData.price),
                 durationInDays: Number(formData.durationInDays),
-                features: formData.features.filter((f) => f.trim() !== ""),
+                features: formData.features,
                 projectLimit: Number(formData.projectLimit),
                 maxContributors: Number(formData.maxContributors),
                 participationLimit: Number(formData.participationLimit),
@@ -197,34 +193,31 @@ export const EditPlanModal = ({ isOpen, onClose, onSuccess, plan }: EditPlanModa
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-2">Features</label>
-                            <div className="space-y-2">
-                                {formData.features.map((feature, index) => (
-                                    <div key={index} className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={feature}
-                                            onChange={(e) => handleFeatureChange(index, e.target.value)}
-                                            className="flex-1 p-2 rounded-md border border-input bg-background focus:ring-2 focus:ring-primary/50 outline-none"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => removeFeature(index)}
-                                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
-                                            disabled={formData.features.length === 1}
-                                        >
-                                            <Trash size={18} />
-                                        </button>
-                                    </div>
+                            <label className="block text-sm font-medium mb-3">Include Features</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 border border-border rounded-md bg-muted/30">
+                                {Object.values(PlanFeature).map((feature) => (
+                                    <label key={feature} className="flex items-center gap-2 cursor-pointer group">
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.features.includes(feature)}
+                                                onChange={() => toggleFeature(feature)}
+                                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                            />
+                                        </div>
+                                        <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                                            {feature === "CREATE_PROJECTS"
+                                                ? `can create ${formData.projectLimit} project${Number(formData.projectLimit) > 1 ? 's' : ''}`
+                                                : feature === "JOIN_PROJECTS"
+                                                    ? `can join ${formData.participationLimit} project${Number(formData.participationLimit) > 1 ? 's' : ''}`
+                                                    : feature === "MAX_CONTRIBUTORS"
+                                                        ? `max ${formData.maxContributors} contributors in a project`
+                                                        : PLAN_FEATURE_LABELS[feature]}
+                                        </span>
+
+                                    </label>
                                 ))}
                             </div>
-                            <button
-                                type="button"
-                                onClick={addFeature}
-                                className="mt-2 text-sm text-primary hover:underline flex items-center gap-1"
-                            >
-                                <Plus size={16} /> Add Feature
-                            </button>
                         </div>
 
                         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
