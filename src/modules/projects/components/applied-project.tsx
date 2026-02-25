@@ -6,6 +6,7 @@ import { FileText, Clock, CheckCircle, XCircle, Calendar, ExternalLink } from 'l
 import PageLoader from '@/shared/common/LoadingComponent';
 import { getMyAppliedProject } from '../services/project.api';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
+import { Pagination } from '@/shared/common/Pagination';
 
 interface Project {
   _id: string;
@@ -30,24 +31,27 @@ export function AppliedProjectsTab() {
   const [applications, setApplications] = useState<AppliedProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 8;
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchAppliedProjects = async () => {
-      try {
-        setLoading(true);
-        const { data } = await getMyAppliedProject()
-        setApplications(data);
-      } catch (err) {
-        getErrorMessage(err)
-        setError('Failed to load your applications');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchAppliedProjects = async () => {
+    try {
+      setLoading(true);
+      const data: any = await getMyAppliedProject(currentPage, itemsPerPage);
+      setApplications(data.applications);
+      setTotalItems(data.total);
+    } catch (err) {
+      setError('Failed to load your applications');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchAppliedProjects();
-  }, []);
+  }, [currentPage]);
 
   const getStatusBadge = (status: string) => {
     const configs: Record<string, { icon: React.ElementType; bg: string; text: string; label: string }> = {
@@ -207,6 +211,16 @@ export function AppliedProjectsTab() {
           );
         })}
       </div>
+
+      {totalItems > itemsPerPage && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={Math.ceil(totalItems / itemsPerPage)}
+          onPageChange={setCurrentPage}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
+      )}
     </div>
   );
 }

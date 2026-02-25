@@ -44,7 +44,12 @@ export const addComment = async (taskId: string, message: string) => {
 // }
 
 // services/task.api.ts or payment.api.ts
-export const createCheckoutSession = async (data: { amount: number; metadata: Record<string, string> }) => {
+export const createCheckoutSession = async (data: {
+    amount: number;
+    metadata: Record<string, string>;
+    success_url?: string;
+    cancel_url?: string;
+}) => {
     const response = await api.post(TASK_ROUTERS.CREATE_CHECKOUT_SESSION, data);
     return response.data;
 }

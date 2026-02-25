@@ -223,15 +223,23 @@ export default function ProjectDetailsPage() {
 
           {/* Apply Button */}
           <div className="flex justify-center">
-            <button
-              onClick={() => {
-                router.push(`/apply-project?projectId=${id}&tech=${encodeURIComponent(JSON.stringify(project.techStack))}`);
-              }}
-              className="px-8 py-3 bg-[#006b5b] text-white text-base font-bold rounded hover:bg-[#005a4d] transition-colors"
-            >
-              Apply to Join This Project
-            </button>
-
+            {new Date(project.endDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? (
+              <button
+                disabled
+                className="px-8 py-3 bg-gray-400 text-white text-base font-bold rounded cursor-not-allowed"
+              >
+                Applications Closed
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  router.push(`/apply-project?projectId=${id}&tech=${encodeURIComponent(JSON.stringify(project.techStack))}`);
+                }}
+                className="px-8 py-3 bg-[#006b5b] text-white text-base font-bold rounded hover:bg-[#005a4d] transition-colors"
+              >
+                Apply to Join This Project
+              </button>
+            )}
           </div>
         </div>
       </main>
