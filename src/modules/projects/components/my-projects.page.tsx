@@ -36,7 +36,7 @@ export function MyProjectsTab() {
     const fetchMyProjects = async () => {
         try {
             setLoading(true);
-            const data: any = await getMyCreatedProject(currentPage, itemsPerPage);
+            const data = (await getMyCreatedProject(currentPage, itemsPerPage)) as { projects: Project[]; total: number };
             setProjects(data.projects);
             setTotalItems(data.total);
         } catch (err) {

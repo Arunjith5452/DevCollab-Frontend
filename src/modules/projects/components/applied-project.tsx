@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { FileText, Clock, CheckCircle, XCircle, Calendar, ExternalLink } from 'lucide-react';
 import PageLoader from '@/shared/common/LoadingComponent';
 import { getMyAppliedProject } from '../services/project.api';
-import { getErrorMessage } from '@/shared/utils/ErrorMessage';
 import { Pagination } from '@/shared/common/Pagination';
 
 interface Project {
@@ -39,7 +38,7 @@ export function AppliedProjectsTab() {
   const fetchAppliedProjects = async () => {
     try {
       setLoading(true);
-      const data: any = await getMyAppliedProject(currentPage, itemsPerPage);
+      const data = (await getMyAppliedProject(currentPage, itemsPerPage)) as { applications: AppliedProject[]; total: number };
       setApplications(data.applications);
       setTotalItems(data.total);
     } catch (err) {
