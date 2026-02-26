@@ -10,7 +10,6 @@ import {
   ExternalLink,
   Check,
   MessageSquare,
-  Send,
   Clock,
   CheckCircle2,
   Circle,
@@ -55,11 +54,9 @@ export default function TaskDetailsPanel({
   task,
   isOpen,
   onClose,
-  assignees,
   getAssigneeName,
   isCreator = false,
   currentUserId,
-  onReassign,
   onStartTask,
   onMarkAsDone,
   onUpdateAcceptanceCriteria,
@@ -79,7 +76,6 @@ export default function TaskDetailsPanel({
   // Helper variables
   const isUnderReview = task?.status === 'done' && task?.approval === 'under-review';
   console.log("isUnderReview", task?.approval)
-  const isApproved = task?.status === 'done' && task?.approval === 'approved';
   const needsImprovement = task?.status === 'in-progress' && !!task?.feedback;
 
   const handleApprove = async (taskId: string) => {
@@ -120,7 +116,7 @@ export default function TaskDetailsPanel({
       setAcceptanceCriteria(task.acceptanceCriteria || []);
       setComments((task.comments as TaskComment[]) || []);
     }
-  }, [task?.id, task?.acceptanceCriteria, task?.comments]);
+  }, [task, task?.id, task?.acceptanceCriteria, task?.comments]);
 
 
   useEffect(() => {
@@ -173,7 +169,7 @@ export default function TaskDetailsPanel({
     task.approval === 'under-review' ? 'under-review' :
       task.status;
 
-  const statusConfig = STATUS_CONFIG[statusKey as keyof typeof STATUS_CONFIG]; const StatusIcon = statusConfig.icon;
+  const statusConfig = STATUS_CONFIG[statusKey as keyof typeof STATUS_CONFIG];
   const completedCount = acceptanceCriteria.filter(c => c.completed).length;
   const totalCount = acceptanceCriteria.length;
 

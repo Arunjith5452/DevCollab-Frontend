@@ -137,6 +137,15 @@ export default function ContributorTasksPage({
   };
 
   const handleMarkAsDone = async (taskId: string) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (task && task.acceptanceCriteria && task.acceptanceCriteria.length > 0) {
+      const incomplete = task.acceptanceCriteria.filter(c => !c.completed);
+      if (incomplete.length > 0) {
+        toast.error("Please complete all acceptance criteria before submitting");
+        return;
+      }
+    }
+
     setSubmittingTaskId(taskId);
     setSubmitModalOpen(true);
   };
