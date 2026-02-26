@@ -9,6 +9,9 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import { editProfile } from "../services/user.api";
 import { getErrorMessage } from "@/shared/utils/ErrorMessage";
 import { Camera, User } from "lucide-react";
+import { useAuthStore } from "@/store/useUserStore";
+import { BackButton } from '@/shared/common/BackButton';
+import PageLoader from '@/shared/common/LoadingComponent';
 
 export default function ProfileEditPage() {
   const router = useRouter();
@@ -38,7 +41,7 @@ export default function ProfileEditPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading your profile...</div>
+        <PageLoader />
       </div>
     );
   }
@@ -99,8 +102,11 @@ export default function ProfileEditPage() {
       });
 
       toast.success("Profile updated successfully!");
-      await refetch()
-      router.push("/user-profile")
+      await refetch();
+      // Force refresh the global header state
+      const { fetchUser } = useAuthStore.getState();
+      await fetchUser(true);
+      router.push("/user-profile");
     } catch (err) {
       getErrorMessage(err)
     } finally {
@@ -110,10 +116,13 @@ export default function ProfileEditPage() {
 
   return (
     <div className="relative flex size-full min-h-screen flex-col bg-white overflow-x-hidden">
-      <Header user={{ name: user?.name || "User" }} />
+      <Header />
 
-      <main className="pt-24 pb-12 px-4 md:px-8 lg:px-6">
-        <div className="max-w-7xl mx-auto">
+      <main className="pt-24 pb-12">
+        <div className="px-4 md:px-8 lg:px-24 xl:px-40 py-6">
+          <BackButton />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-6">
           <div className="lg:pl-14">
             <div className="max-w-xl">
               <h1 className="text-2xl md:text-3xl font-bold text-[#0c1d1a]">

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { toast } from "react-hot-toast";
+
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -25,7 +25,7 @@ api.interceptors.response.use(
         return {
           ...response,
           data,
-          message, 
+          message,
         };
       }
     }
@@ -53,8 +53,8 @@ api.interceptors.response.use(
 
         originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
         return api(originalRequest);
-      } catch (refreshError: any) {
-        if (refreshError.response?.status === 401) {
+      } catch (refreshError: unknown) {
+        if (axios.isAxiosError(refreshError) && refreshError.response?.status === 401) {
           if (typeof window !== "undefined") {
             setTimeout(() => {
               window.location.href = "/login";
@@ -75,7 +75,9 @@ api.interceptors.response.use(
         console.error("Unexpected error occurred.");
       }
     } else if (status === 404) {
-      console.error("Requested resource not found.");
+      if (typeof window !== "undefined") {
+        window.location.href = "/404";
+      }
     } else if (status === 500) {
       console.error("Server error! Please try again later.");
     } else if (!status) {

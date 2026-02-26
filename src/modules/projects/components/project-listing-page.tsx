@@ -4,9 +4,8 @@ import { ChevronDown, X, Filter, Code2, BarChart3, Users } from 'lucide-react';
 import { Header } from '@/shared/common/user-common/Header';
 import { Pagination } from '@/shared/common/admin-common';
 import { listProject } from '../services/project.api';
-import { SearchInput } from '@/shared/common/admin-common/Searching';
+import { SearchInput } from '@/shared/common/Searching';
 import { CustomSelectProps, ListProjectResponse, Project } from '../types/project.types';
-import api from '@/lib/axios';
 import Link from 'next/link';
 import PageLoader from '@/shared/common/LoadingComponent';
 
@@ -43,18 +42,7 @@ export default function ExploreProjectsPage() {
   // }, [])
 
 
-  const featuredProjects: Project[] = [
-    {
-      _id: '1',
-      title: 'AI-Powered Chatbot for Customer Support',
-      description: 'Develop an intelligent chatbot using natural language processing to handle customer inquiries and provide instant support.',
-      featured: true,
-      image: '🤖',
-      techStack: ['Python', 'NLP', 'AI'],
-      difficulty: 'Advanced',
-      roleNeeded: 'UI && UX Designer'
-    }
-  ];
+  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     if (showTechInput && techInputRef.current) techInputRef.current.focus();
@@ -63,6 +51,18 @@ export default function ExploreProjectsPage() {
   useEffect(() => {
     if (showRoleInput && roleInputRef.current) roleInputRef.current.focus();
   }, [showRoleInput]);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const data = await listProject({ sort: 'featured', limit: 1 });
+        setFeaturedProjects(data.projects ?? []);
+      } catch (error) {
+        console.error("Failed to fetch featured projects", error);
+      }
+    };
+    fetchFeatured();
+  }, []);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -175,7 +175,7 @@ export default function ExploreProjectsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header user={{ name: "Arunjith" }} />
+      <Header />
 
       <main className="pt-16 pb-16 md:pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -389,11 +389,11 @@ export default function ExploreProjectsPage() {
             </div>
           </div>
 
-          {/* Featured Projects */}
+          {/* Featured Project */}
           <section className="mb-12">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5">Featured Projects</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5">Featured Project</h2>
             {featuredProjects.map((project) => (
-              <div key={project._id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-5 shadow-sm hover:shadow-md transition-shadow">
+              <div key={project.id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-center">
                   <div className="md:col-span-2 space-y-3 order-2 md:order-1">
                     <div className="inline-block px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-semibold rounded-full">
@@ -405,12 +405,22 @@ export default function ExploreProjectsPage() {
                     <p className="text-sm sm:text-base text-gray-600 line-clamp-3">
                       {project.description}
                     </p>
-                    <button type="button" className="mt-3 px-5 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-lg hover:bg-teal-100 transition-colors">
+                    <Link href={`/project-details/${project.id}`} className="mt-3 inline-block px-5 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-lg hover:bg-teal-100 transition-colors">
                       View Project
-                    </button>
+                    </Link>
                   </div>
-                  <div className="flex justify-center items-center bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 h-32 sm:h-40 order-1 md:order-2">
-                    <div className="text-6xl sm:text-8xl">{project.image}</div>
+                  <div className="flex justify-center items-center rounded-xl h-32 sm:h-40 order-1 md:order-2 overflow-hidden">
+                    {project.image ? (
+                      <img
+                        src={project.image}
+                        alt={project.title}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl flex items-center justify-center">
+                        <Code2 className="w-12 h-12 text-orange-400" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -430,7 +440,7 @@ export default function ExploreProjectsPage() {
             ) : (
               <div className="space-y-5">
                 {projects.map((project, index) => (
-                  <div key={project._id || index} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div key={project.id || index} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-center">
                       <div className="md:col-span-2 space-y-3">
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
@@ -440,7 +450,7 @@ export default function ExploreProjectsPage() {
                           {project.description}
                         </p>
                         <Link
-                          href={`/project-details/${project._id}`}
+                          href={`/project-details/${project.id}`}
                           className="inline-block mt-3 px-5 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-lg hover:bg-teal-100 transition-colors"
                         >
                           View Project
@@ -458,7 +468,7 @@ export default function ExploreProjectsPage() {
                           <img
                             src={project.image}
                             alt={`Image for ${project.title}`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                           />
                         ) : (
                           <div className="text-4xl text-gray-500 flex justify-center items-center h-full w-full bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl">

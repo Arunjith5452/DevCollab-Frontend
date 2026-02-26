@@ -1,11 +1,12 @@
-import UserManagement from "@/modules/admin/components/UserMangement";
+"use client";
 
-export default function userManagement(){
+import UserManagement from "@/modules/admin/components/user-management";
+import AdminRouteGuard from "@/shared/common/guards/AdminRouteGuard";
 
+export default function UserManagementPage() {
     return (
-        <>
-        <UserManagement/>
-        </>
-    )
-
+        <AdminRouteGuard>
+            <UserManagement />
+        </AdminRouteGuard>
+    );
 }

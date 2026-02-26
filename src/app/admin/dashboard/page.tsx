@@ -1,11 +1,12 @@
 "use client"
 
-import {Dashboard} from '../../../modules/admin/components/dashboard'
+import { Dashboard } from '../../../modules/admin/components/dashboard'
+import AdminRouteGuard from '@/shared/common/guards/AdminRouteGuard'
 
-export default function AdminDashboard(){
+export default function AdminDashboard() {
     return (
-        <>
-        <Dashboard/>
-        </>
+        <AdminRouteGuard>
+            <Dashboard />
+        </AdminRouteGuard>
     )
 }

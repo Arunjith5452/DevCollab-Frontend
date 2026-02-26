@@ -1,5 +1,10 @@
 
-export function Badge({ children, variant = 'default' }:any) {
+interface BadgeProps {
+  children: React.ReactNode;
+  variant?: 'default' | 'success' | 'danger' | 'warning' | 'info';
+}
+
+export function Badge({ children, variant = 'default' }: BadgeProps) {
   const variants = {
     default: 'bg-gray-100 text-gray-700',
     success: 'bg-emerald-100 text-emerald-700',

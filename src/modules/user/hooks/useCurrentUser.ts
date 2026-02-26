@@ -10,6 +10,9 @@ interface User {
     title?: string;
     techStack?: string[];
     profileImage?: string;
+    createdProjectsCount?: number;
+    contributionsCount?: number;
+    recentActivities?: { type: string; title: string; timestamp: string }[];
 }
 
 interface UseCurrentUserReturn {

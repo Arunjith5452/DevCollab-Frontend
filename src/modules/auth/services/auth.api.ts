@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { AUTH_ROUTES } from "@/shared/constant/routes";
+import { AUTH_ROUTES } from "@/shared/constants/routes";
 
 
 
@@ -20,7 +20,7 @@ export const signup = async (data: {
 
 export const verifyOTP = async (data: {
     token: string,
-    otp: Number
+    otp: number
 
 }) => {
     try {
@@ -37,7 +37,7 @@ export const verifyOTP = async (data: {
 
 export const verifyForgotOTP = async (data: {
     email: string,
-    otp: Number
+    otp: number
 
 }) => {
     try {
@@ -128,7 +128,6 @@ export const resetPassword = async (data: {
     try {
 
         const response = await api.post(AUTH_ROUTES.RESET_PASSWORD, data)
-        console.log("response",response)
         return response
 
     } catch (error) {
@@ -149,3 +148,13 @@ export const googleLogin = async () => {
 };
 
 
+export const logout = async () => {
+
+    try {
+        const response = await api.post(AUTH_ROUTES.LOGOUT)
+        return response
+    } catch (error) {
+        throw error
+    }
+
+}

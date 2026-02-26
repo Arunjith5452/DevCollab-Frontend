@@ -1,168 +1,404 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { X, Calendar, DollarSign, Upload, Check } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import {
+  X,
+  Calendar,
+  DollarSign,
+  Upload,
+  Check,
+  ChevronDown,
+  Search,
+} from 'lucide-react';
 import { Header } from '@/shared/common/user-common/Header';
-import { createTask } from '../services/task.api';
+import { createCheckoutSession, createTask, getAssignees } from '../services/task.api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/shared/utils/ErrorMessage';
+import { useS3Upload } from '@/shared/hooks/uses3Upload';
+import { CreateTaskPayload } from '../types/task.types';
+import { BackButton } from '@/shared/common/BackButton';
+
+type TaskStatus = 'todo' | 'in-progress' | 'done' | 'improvement-needed';
+
+interface Assignee {
+  userId: string;
+  name: string;
+}
+
+interface FormValues {
+  title: string;
+  description: string;
+  assignedId: string;
+  deadline: string;
+  status: TaskStatus;
+  tags: string[];
+  acceptanceCriteria: { text: string; completed: boolean }[];
+  payment?: { amount: number };
+  paymentConfirmed: boolean;
+  documents?: string[];
+}
 
 export default function CreateTaskPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // const projectId = searchParams.get('projectId');
-  const projectId = '6912bf4bfd6a31a7a45fe477'
+  const rawProjectId = searchParams.get('projectId');
+  const projectId = (rawProjectId && rawProjectId !== 'undefined' && rawProjectId !== 'null') ? rawProjectId : null;
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    acceptanceCriteria: [] as Array<{ text: string; completed: boolean }>,
-    payment: 0,
-    advancePaid: 0,
-    assignedTo: '',
-    deadline: '',
-    tags: [] as string[],
-    status: 'todo',
-    files: [] as File[]
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    trigger,
+  } = useForm<FormValues>({
+    defaultValues: {
+      status: 'todo',
+      tags: [],
+      acceptanceCriteria: [],
+      documents: [],
+      paymentConfirmed: false,
+    },
   });
 
+  const { uploadToS3 } = useS3Upload();
+
+  const watchTags = watch('tags', []);
+  const watchCriteria = watch('acceptanceCriteria', []);
+  const watchPayment = watch('payment');
+  const watchAssignedId = watch('assignedId');
+  const watchDocuments = watch('documents') || [];
+  const paymentAmount = watch('payment.amount') || 0
+
+  const [assignees, setAssignees] = useState<Assignee[]>([]);
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [assigneeSearch, setAssigneeSearch] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [criteriaInput, setCriteriaInput] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
 
-  const predefinedTags = ['Frontend', 'React', 'UIUX'];
-  const teamMembers = ['John Doe', 'Sarah Smith', 'Mike Johnson', 'Emily Brown', 'David Lee'];
+  useEffect(() => {
+    if (!projectId || projectId === 'undefined') return
+    getAssignees(projectId)
+      .then((r) => setAssignees(r.data || []))
+      .catch(() => toast.error('Failed to load team members'));
+  }, [projectId]);
 
-  const handleTagToggle = (tag: string) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter(t => t !== tag));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+
+    if (sessionId) {
+      console.log('Payment return debug:', {
+        sessionId,
+        projectIdFromState: projectId,
+        currentUrl: window.location.href,
+        searchParams: searchParams.toString()
+      });
+
+      if (projectId) {
+        toast.success('Payment successful! Your task is being processed.');
+        window.history.replaceState({}, '', window.location.pathname + `?projectId=${projectId}`);
+        router.push(`/task-listing?projectId=${projectId}`);
+      } else {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pid = urlParams.get('projectId');
+        if (pid && pid !== 'null' && pid !== 'undefined') {
+          toast.success('Payment successful! Your task is being processed.');
+          router.push(`/task-listing?projectId=${pid}`);
+        } else {
+          toast.error('Payment successful, but lost project context.');
+          router.push('/task-listing');
+        }
+      }
     }
+  }, [router, projectId, searchParams]);
+
+  const predefinedTags = ['Frontend', 'React', 'UIUX', 'Backend'];
+
+  const toggleTag = (tag: string) => {
+    const newTags = watchTags.includes(tag)
+      ? watchTags.filter((t) => t !== tag)
+      : [...watchTags, tag];
+    setValue('tags', newTags, { shouldValidate: true });
   };
 
   const handleAddCustomTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
-      e.preventDefault();
-      if (!selectedTags.includes(tagInput.trim())) {
-        setSelectedTags([...selectedTags, tagInput.trim()]);
-      }
-      setTagInput('');
-    }
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const val = tagInput.trim();
+    if (!val || watchTags.includes(val)) return;
+    setValue('tags', [...watchTags, val], { shouldValidate: true });
+    setTagInput('');
   };
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
+  const handleRemoveTag = (tag: string) => {
+    setValue('tags', watchTags.filter((t) => t !== tag), { shouldValidate: true });
   };
 
   const handleAddCriteria = () => {
-    if (criteriaInput.trim()) {
-      setFormData({
-        ...formData,
-        acceptanceCriteria: [...formData.acceptanceCriteria, { text: criteriaInput.trim(), completed: false }]
-      });
-      setCriteriaInput('');
-    }
+    if (!criteriaInput.trim()) return;
+    setValue(
+      'acceptanceCriteria',
+      [...watchCriteria, { text: criteriaInput.trim(), completed: false }],
+      { shouldValidate: true }
+    );
+    setCriteriaInput('');
   };
 
   const handleRemoveCriteria = (index: number) => {
-    setFormData({
-      ...formData,
-      acceptanceCriteria: formData.acceptanceCriteria.filter((_, i) => i !== index)
-    });
+    setValue(
+      'acceptanceCriteria',
+      watchCriteria.filter((_, i) => i !== index),
+      { shouldValidate: true }
+    );
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setUploadedFiles([...uploadedFiles, ...newFiles]);
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+
+    const files = Array.from(e.target.files);
+    setUploadedFiles((prev) => [...prev, ...files]);
+    setUploadingFiles(true);
+
+    toast.loading(`Uploading ${files.length} file(s)...`, { id: 'upload-toast' });
+
+    const uploadedUrls: string[] = [];
+
+    for (const file of files) {
+      setUploadProgress((prev) => ({ ...prev, [file.name]: 0 }));
+
+      try {
+        const url = await uploadToS3(file);
+        if (url) {
+          uploadedUrls.push(url);
+          setUploadProgress((prev) => ({ ...prev, [file.name]: 100 }));
+        } else {
+          toast.error(`Failed to upload ${file.name}`);
+          setUploadedFiles((prev) => prev.filter((f) => f.name !== file.name));
+        }
+      } catch (err) {
+        toast.error(`Upload failed: ${file.name}`);
+        setUploadedFiles((prev) => prev.filter((f) => f.name !== file.name));
+      }
     }
+
+    if (uploadedUrls.length > 0) {
+      setValue('documents', [...watchDocuments, ...uploadedUrls], {
+        shouldValidate: true,
+      });
+    }
+
+    setUploadingFiles(false);
+    toast.dismiss('upload-toast');
+
+    if (uploadedUrls.length === files.length) {
+      toast.success('All files uploaded successfully!');
+    } else if (uploadedUrls.length > 0) {
+      toast.success(`${uploadedUrls.length} of ${files.length} files uploaded`);
+    } else {
+      toast.error('All uploads failed');
+    }
+
+    e.target.value = '';
   };
 
   const handleRemoveFile = (index: number) => {
-    setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
+    const file = uploadedFiles[index];
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+    setValue('documents', watchDocuments.filter((_, i) => i !== index), {
+      shouldValidate: true,
+    });
+    setUploadProgress((prev) => {
+      const { [file.name]: _, ...rest } = prev;
+      return rest;
+    });
   };
 
-  const handleSelectAssignee = (member: string) => {
-    setFormData({ ...formData, assignedTo: member });
+  const handleSelectAssignee = (userId: string) => {
+    setValue('assignedId', userId, { shouldValidate: true });
     setShowAssigneeDropdown(false);
+    setAssigneeSearch('');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const getAssigneeLabel = () => {
+    if (!watchAssignedId) return 'Select a team member';
+    const found = assignees.find((a) => a.userId === watchAssignedId);
+    return found?.name || 'Select a team member';
+  };
 
-    const taskData = {
-      title: formData.title.trim(),
-      projectId,
-      description: formData.description.trim(),
-      assignedTo: formData.assignedTo,
-      deadline: formData.deadline,
-      status: formData.status,
-      tags: selectedTags,
-      documents: uploadedFiles.map(f => f.name),
-      acceptanceCriteria: formData.acceptanceCriteria.map(c => ({
-        text: c.text.trim(),
-        completed: Boolean(c.completed),
-      })),
-      ...(formData.payment > 0 && {
-        payment: {
-          amount: Number(formData.payment),
-          advancePaid: Number(formData.advancePaid),
-        }
-      })
+  const filteredAssignees = assignees.filter((m) =>
+    m.name.toLowerCase().includes(assigneeSearch.toLowerCase())
+  );
+
+  const onSubmit = async (data: FormValues) => {
+    if (uploadingFiles) {
+      toast.error('Please wait until all files are uploaded');
+      return;
     }
 
-    console.log("FINAL PAYLOAD →", taskData)
+    if (!data.assignedId) {
+      toast.error('Please select an assignee');
+      return;
+    }
+
+    if (data.tags.length === 0) {
+      toast.error('Please add at least one tag');
+      return;
+    }
+
+    if (data.acceptanceCriteria.length === 0) {
+      toast.error('Please add at least one acceptance criteria');
+      return;
+    }
+
+    const paymentAmount = data.payment?.amount || 0;
+
+    if (paymentAmount <= 0) {
+      toast.error('Payment amount is required');
+      return;
+    }
+
+    if (!projectId) {
+      toast.error('Project ID is required');
+      return;
+    }
+
+
+    // Construct payload safely
+    const payload: CreateTaskPayload = {
+      title: data.title,
+      description: data.description,
+      projectId,
+      assignedId: data.assignedId,
+      deadline: data.deadline,
+      tags: data.tags,
+      acceptanceCriteria: data.acceptanceCriteria,
+      status: data.status,
+    };
+
+    if (data.documents && data.documents.length > 0) {
+      payload.documents = data.documents;
+    }
+
+    if (data.payment && data.payment.amount) {
+      payload.payment = {
+        amount: data.payment.amount
+      };
+    }
+
+    if (paymentAmount > 0) {
+      if (!data.paymentConfirmed) {
+        toast.error('Please confirm that you agree to escrow the payment amount');
+        return;
+      }
+      if (!projectId || projectId === 'undefined') {
+        toast.error('Task cannot be created without a valid Project ID');
+        return;
+      }
+
+      try {
+        toast.loading('Initializing task...', { id: 'create-task' });
+
+        // 1. Create the task first (with escrowStatus: 'not-paid')
+        const setupRes = await createTask(payload);
+
+        const taskId = setupRes?.id;
+
+        if (!taskId) throw new Error("Task creation failed: No ID returned");
+
+        // 2. Create Stripe Checkout Session with taskId in metadata
+        const amountInPaise = Math.round(paymentAmount * 100);
+        const baseUrl = window.location.origin;
+        const response = await createCheckoutSession({
+          amount: amountInPaise,
+          metadata: {
+            task_id: String(taskId),
+            project_id: String(projectId || ''),
+            task_title: String(data.title),
+          },
+          // Explicitly set success/cancel URLs so projectId is always preserved
+          success_url: `${baseUrl}/task-listing?projectId=${projectId}&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${baseUrl}/task-listing?projectId=${projectId}`,
+        });
+
+        if (response.url) {
+          window.location.href = response.url; // Redirect to Stripe Checkout
+        } else {
+          toast.dismiss('create-task');
+          toast.error('Failed to start payment');
+        }
+      } catch (err) {
+        toast.dismiss('create-task');
+        toast.error(getErrorMessage(err));
+      }
+      return;
+    }
 
     try {
-      const response = await createTask(taskData);
-      console.log("Success:", response);
-      toast.success("Task created successfully!");
-      router.push(`/tasks?projectId=${projectId}`);
-    } catch (error) {
-      getErrorMessage(error)
+      await createTask(payload);
+      toast.success('Task created successfully!');
+      router.push(`/task-listing?projectId=${projectId}`);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     }
   };
 
   return (
     <div className="min-h-screen bg-white">
-      <Header user={{ name: 'User' }} />
+      <Header />
+      <main className="pt-20 pb-12">
+        <div className="px-4 md:px-8 lg:px-24 xl:px-40 py-6">
+          <BackButton />
+        </div>
+        <div className="max-w-2xl mx-auto px-4 md:px-8">
+          <h1 className="text-3xl font-bold text-[#0c1d1a] mb-8">
+            Create New Task
+          </h1>
 
-      <main className="pt-20 px-4 md:px-8 lg:px-40 pb-12">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-[#0c1d1a] mb-8">Create New Task</h1>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Task Title */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Title */}
             <div>
               <label className="block text-sm font-semibold text-[#0c1d1a] mb-2">
-                Task Title
+                Task Title *
               </label>
               <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Enter task title"
-                required
-                className="w-full px-4 py-3 border border-[#cdeae5] rounded-lg text-[#0c1d1a] placeholder:text-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#006b5b] focus:border-transparent"
+                {...register('title', {
+                  required: 'Title is required',
+                  minLength: { value: 3, message: 'Minimum 3 characters' },
+                  maxLength: { value: 100, message: 'Maximum 100 characters' },
+                })}
+                placeholder="e.g., Build login page"
+                className="w-full px-4 py-3 border border-[#cdeae5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006b5b]"
               />
+              {errors.title && (
+                <p className="text-red-600 text-xs mt-1">{errors.title.message}</p>
+              )}
             </div>
 
-            {/* Task Description */}
+            {/* Description */}
             <div>
               <label className="block text-sm font-semibold text-[#0c1d1a] mb-2">
-                Task Description
+                Description *
               </label>
               <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe the task in detail..."
+                {...register('description', {
+                  required: 'Description is required',
+                  minLength: { value: 10, message: 'Minimum 10 characters' },
+                })}
                 rows={5}
-                className="w-full px-4 py-3 border border-[#cdeae5] rounded-lg text-[#0c1d1a] placeholder:text-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#006b5b] focus:border-transparent resize-none"
+                placeholder="Describe what needs to be done..."
+                className="w-full px-4 py-3 border border-[#cdeae5] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#006b5b]"
               />
+              {errors.description && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.description.message}
+                </p>
+              )}
             </div>
 
             {/* Tags */}
@@ -175,8 +411,8 @@ export default function CreateTaskPage() {
                   <button
                     key={tag}
                     type="button"
-                    onClick={() => handleTagToggle(tag)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedTags.includes(tag)
+                    onClick={() => toggleTag(tag)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition ${watchTags.includes(tag)
                       ? 'bg-[#006b5b] text-white'
                       : 'bg-[#e6f4f2] text-[#0c1d1a] hover:bg-[#cdeae5]'
                       }`}
@@ -186,36 +422,33 @@ export default function CreateTaskPage() {
                 ))}
               </div>
 
-              {/* Custom Tags */}
-              {selectedTags.filter(tag => !predefinedTags.includes(tag)).length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {selectedTags
-                    .filter(tag => !predefinedTags.includes(tag))
-                    .map((tag) => (
-                      <div
-                        key={tag}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-teal-50 text-teal-700 rounded-full text-sm font-medium border border-teal-200"
+              <div className="flex flex-wrap gap-2 mb-3">
+                {watchTags
+                  .filter((t) => !predefinedTags.includes(t))
+                  .map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-100 text-teal-800 rounded-full text-sm"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="ml-1"
                       >
-                        <span>{tag}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveTag(tag)}
-                          className="hover:bg-teal-100 rounded-full p-0.5"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                </div>
-              )}
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+              </div>
 
               <input
                 type="text"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleAddCustomTag}
-                placeholder="Type custom tag and press Enter"
-                className="w-full px-4 py-2 border border-[#cdeae5] rounded-lg text-[#0c1d1a] placeholder:text-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#006b5b] focus:border-transparent text-sm"
+                placeholder="Press Enter to add custom tag"
+                className="w-full px-4 py-2 border border-[#cdeae5] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#006b5b]"
               />
             </div>
 
@@ -224,21 +457,18 @@ export default function CreateTaskPage() {
               <label className="block text-sm font-semibold text-[#0c1d1a] mb-3">
                 Acceptance Criteria
               </label>
-
-              {formData.acceptanceCriteria.length > 0 && (
+              {watchCriteria.length > 0 && (
                 <div className="space-y-2 mb-4 p-4 bg-[#f0faf8] rounded-lg border border-[#cdeae5]">
-                  {formData.acceptanceCriteria.map((criteria, index) => (
-                    <div key={index} className="flex items-start gap-3 group">
-                      <Check className="w-5 h-5 text-[#006b5b] mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-[#0c1d1a]">{criteria.text}</p>
-                      </div>
+                  {watchCriteria.map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 group">
+                      <Check className="w-5 h-5 text-[#006b5b]" />
+                      <span className="flex-1">{item.text}</span>
                       <button
                         type="button"
-                        onClick={() => handleRemoveCriteria(index)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleRemoveCriteria(i)}
+                        className="opacity-0 group-hover:opacity-100"
                       >
-                        <X className="w-4 h-4 text-[#6b7280] hover:text-red-600" />
+                        <X className="w-4 h-4 text-gray-500 hover:text-red-600" />
                       </button>
                     </div>
                   ))}
@@ -250,14 +480,16 @@ export default function CreateTaskPage() {
                   type="text"
                   value={criteriaInput}
                   onChange={(e) => setCriteriaInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCriteria())}
-                  placeholder="Add acceptance criteria and press Enter"
-                  className="flex-1 px-4 py-2 border border-[#cdeae5] rounded-lg text-[#0c1d1a] placeholder:text-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#006b5b] focus:border-transparent text-sm"
+                  onKeyDown={(e) =>
+                    e.key === 'Enter' && (e.preventDefault(), handleAddCriteria())
+                  }
+                  placeholder="Add criteria + Enter"
+                  className="flex-1 px-4 py-2 border border-[#cdeae5] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#006b5b]"
                 />
                 <button
                   type="button"
                   onClick={handleAddCriteria}
-                  className="px-4 py-2 bg-[#e6f4f2] text-[#0c1d1a] rounded-lg hover:bg-[#cdeae5] font-medium text-sm transition-colors"
+                  className="px-5 py-2 bg-[#e6f4f2] hover:bg-[#cdeae5] rounded-lg font-medium text-sm"
                 >
                   Add
                 </button>
@@ -265,92 +497,116 @@ export default function CreateTaskPage() {
             </div>
 
             {/* Payment */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-[#0c1d1a] mb-2">
-                  Payment Amount
+                  Payment Amount to Escrow
                 </label>
                 <div className="relative">
-                  <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#6b7280]" />
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                   <input
                     type="number"
-                    value={formData.payment}
-                    onChange={(e) => setFormData({ ...formData, payment: parseFloat(e.target.value) || 0 })}
-                    placeholder="0.00"
-                    min="0"
                     step="0.01"
-                    className="w-full pl-12 pr-4 py-3 border border-[#cdeae5] rounded-lg text-[#0c1d1a] placeholder:text-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#006b5b] focus:border-transparent"
+                    {...register('payment.amount', { valueAsNumber: true })}
+                    placeholder="0.00"
+                    className="w-full pl-12 pr-4 py-3 border border-[#cdeae5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006b5b]"
                   />
                 </div>
+                <p className="text-xs text-gray-500 mt-1">This amount will be held in escrow until completion.</p>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-[#0c1d1a] mb-2">
-                  Advance Payment
-                </label>
-                <div className="relative">
-                  <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#6b7280]" />
+              {paymentAmount > 0 && (
+                <div className="flex items-start gap-3 mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                   <input
-                    type="number"
-                    value={formData.advancePaid}
-                    onChange={(e) => setFormData({ ...formData, advancePaid: parseFloat(e.target.value) || 0 })}
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                    max={formData.payment}
-                    className="w-full pl-12 pr-4 py-3 border border-[#cdeae5] rounded-lg text-[#0c1d1a] placeholder:text-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#006b5b] focus:border-transparent"
+                    type="checkbox"
+                    id="paymentConfirmed"
+                    {...register('paymentConfirmed')}
+                    className="mt-1 w-4 h-4 text-[#006b5b] rounded border-[#cdeae5] focus:ring-[#006b5b]"
                   />
+                  <label htmlFor="paymentConfirmed" className="text-sm text-orange-800">
+                    I understand that <strong>${paymentAmount}</strong> will be immediately charged and held in escrow. This amount will only be released to the contributor upon my approval of the completed task.
+                  </label>
                 </div>
-                <p className="text-xs text-[#6b7280] mt-1">Balance: ${(formData.payment - formData.advancePaid).toFixed(2)}</p>
-              </div>
+              )}
             </div>
 
-            {/* Assigned To Dropdown */}
+            {/* Assignee */}
             <div>
               <label className="block text-sm font-semibold text-[#0c1d1a] mb-2">
-                Assigned To
+                Assigned To *
               </label>
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setShowAssigneeDropdown(!showAssigneeDropdown)}
-                  className="w-full px-4 py-3 border border-[#cdeae5] rounded-lg text-[#0c1d1a] placeholder:text-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#006b5b] focus:border-transparent text-left bg-white hover:bg-[#f0faf8] transition-colors"
+                  className="w-full px-4 py-3 border border-[#cdeae5] rounded-lg text-left bg-white hover:bg-[#f0faf8] flex justify-between items-center"
                 >
-                  {formData.assignedTo || 'Select a team member'}
+                  <span>{getAssigneeLabel()}</span>
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
                 </button>
 
                 {showAssigneeDropdown && (
-                  <div className="absolute top-full left-0 right-0 mt-1 border border-[#cdeae5] rounded-lg bg-white shadow-lg z-10">
-                    {teamMembers.map((member) => (
-                      <button
-                        key={member}
-                        type="button"
-                        onClick={() => handleSelectAssignee(member)}
-                        className={`w-full px-4 py-3 text-left hover:bg-[#e6f4f2] transition-colors ${formData.assignedTo === member ? 'bg-[#e6f4f2] text-[#006b5b] font-medium' : 'text-[#0c1d1a]'
-                          }`}
-                      >
-                        {member}
-                      </button>
-                    ))}
+                  <div className="absolute z-20 mt-1 w-full bg-white border border-[#cdeae5] rounded-lg shadow-lg max-h-64 overflow-auto">
+                    <div className="p-2 border-b">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                        <input
+                          type="text"
+                          placeholder="Search member..."
+                          value={assigneeSearch}
+                          onChange={(e) => setAssigneeSearch(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      {filteredAssignees.length > 0 ? (
+                        filteredAssignees.map((m) => (
+                          <button
+                            key={m.userId}
+                            type="button"
+                            onClick={() => handleSelectAssignee(m.userId)}
+                            className={`w-full px-4 py-3 text-left hover:bg-[#e6f4f2] text-sm ${watchAssignedId === m.userId ? 'bg-[#e6f4f2] font-medium' : ''
+                              }`}
+                          >
+                            {m.name}
+                          </button>
+                        ))
+                      ) : (
+                        <p className="text-center py-8 text-gray-500 text-sm">
+                          No members found
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
+              {errors.assignedId && (
+                <p className="text-red-600 text-xs mt-1">
+                  Please select an assignee
+                </p>
+              )}
             </div>
 
-            {/* Deadline Date */}
+            {/* Deadline */}
             <div>
               <label className="block text-sm font-semibold text-[#0c1d1a] mb-2">
-                Deadline Date
+                Deadline *
               </label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#6b7280]" />
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
                   type="date"
-                  value={formData.deadline}
-                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  className="w-full pl-12 pr-4 py-3 border border-[#cdeae5] rounded-lg text-[#0c1d1a] focus:outline-none focus:ring-2 focus:ring-[#006b5b] focus:border-transparent"
+                  {...register('deadline', { required: 'Deadline is required' })}
+                  className="w-full pl-12 pr-4 py-3 border border-[#cdeae5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006b5b]"
                 />
               </div>
+              {errors.deadline && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.deadline.message}
+                </p>
+              )}
             </div>
 
             {/* Status */}
@@ -359,9 +615,8 @@ export default function CreateTaskPage() {
                 Status
               </label>
               <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-4 py-3 border border-[#cdeae5] rounded-lg text-[#0c1d1a] focus:outline-none focus:ring-2 focus:ring-[#006b5b] focus:border-transparent bg-white"
+                {...register('status')}
+                className="w-full px-4 py-3 border border-[#cdeae5] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#006b5b]"
               >
                 <option value="todo">To Do</option>
                 <option value="in-progress">In Progress</option>
@@ -370,69 +625,93 @@ export default function CreateTaskPage() {
               </select>
             </div>
 
-            {/* File Upload */}
+            {/* File Upload Section - Now with (Optional) */}
             <div>
               <label className="block text-sm font-semibold text-[#0c1d1a] mb-3">
-                Documents & Attachments
+                Documents & Attachments{' '}
+                <span className="font-normal text-gray-500 text-xs">(Optional)</span>
               </label>
 
               {uploadedFiles.length > 0 ? (
-                <div className="mb-4 p-4 bg-[#f0faf8] rounded-lg border border-[#cdeae5]">
-                  <div className="space-y-2">
-                    {uploadedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-white rounded border border-[#cdeae5] group">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <Upload className="w-4 h-4 text-[#006b5b] flex-shrink-0" />
-                          <span className="text-sm text-[#0c1d1a] truncate">{file.name}</span>
-                          <span className="text-xs text-[#6b7280] flex-shrink-0">({(file.size / 1024).toFixed(2)} KB)</span>
+                <div className="space-y-3 mb-4 p-4 bg-[#f0faf8] rounded-lg border border-[#cdeae5]">
+                  {uploadedFiles.map((file, i) => {
+                    const progress = uploadProgress[file.name] || 0;
+                    const isDone = progress === 100;
+
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 bg-white rounded-lg border group"
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Upload
+                            className={`w-5 h-5 ${isDone ? 'text-green-600' : 'text-[#006b5b]'}`}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{file.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {(file.size / 1024).toFixed(1)} KB
+                              {progress > 0 && !isDone && ` • ${progress}%`}
+                            </p>
+                          </div>
+                          {!isDone && (
+                            <div className="w-ml-4 w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-[#006b5b] transition-all duration-300"
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                          )}
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleRemoveFile(index)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                          onClick={() => handleRemoveFile(i)}
+                          disabled={uploadingFiles}
+                          className="ml-3 opacity-0 group-hover:opacity-100 transition"
                         >
-                          <X className="w-4 h-4 text-[#6b7280] hover:text-red-600" />
+                          <X className="w-5 h-5 text-gray-500 hover:text-red-600" />
                         </button>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               ) : (
-                <div className="mb-4 p-6 border-2 border-dashed border-[#cdeae5] rounded-lg text-center bg-[#f0faf8]">
-                  <Upload className="w-8 h-8 text-[#cdeae5] mx-auto mb-2" />
-                  <p className="text-[#6b7280] text-sm">No documents attached</p>
-                  <p className="text-xs text-[#6b7280] mt-1">Upload files related to this task</p>
+                <div className="p-10 border-2 border-dashed border-[#cdeae5] rounded-lg text-center bg-[#f9fcfb]">
+                  <Upload className="w-12 h-12 text-[#cdeae5] mx-auto mb-3" />
+                  <p className="text-gray-600">No files attached yet</p>
+                  <p className="text-xs text-gray-500 mt-1">You can add files later if needed</p>
                 </div>
               )}
 
-
-              <label className="inline-block">
+              <label className="cursor-pointer inline-block">
                 <input
                   type="file"
                   multiple
                   onChange={handleFileUpload}
+                  disabled={uploadingFiles}
                   className="hidden"
                 />
-                <span className="inline-block px-6 py-3 bg-[#e6f4f2] text-[#006b5b] rounded-lg font-semibold hover:bg-[#cdeae5] transition-colors cursor-pointer text-sm">
-                  Upload Documents
+                <span className="px-6 py-3 bg-[#e6f4f2] text-[#006b5b] rounded-lg font-semibold hover:bg-[#cdeae5] text-sm inline-block transition">
+                  {uploadingFiles ? 'Uploading...' : 'Upload Files'}
                 </span>
               </label>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4 pt-6">
+            {/* Buttons */}
+            <div className="flex gap-4 pt-8">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 px-6 py-3 border border-[#cdeae5] text-[#0c1d1a] rounded-lg font-semibold hover:bg-[#f8fcfb] transition-colors"
+                className="flex-1 py-3 border border-[#cdeae5] rounded-lg font-semibold hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 px-6 py-3 bg-[#006b5b] text-white rounded-lg font-semibold hover:bg-[#005a4d] transition-colors"
+                disabled={isSubmitting || uploadingFiles}
+                className="flex-1 py-3 bg-[#006b5b] text-white rounded-lg font-semibold hover:bg-[#005a4d] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Create Task
+                {isSubmitting || uploadingFiles ? 'Creating...' : 'Create Task'}
               </button>
             </div>
           </form>

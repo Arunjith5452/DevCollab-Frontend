@@ -1,194 +1,318 @@
+'use client';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import CreatorHeader from "@/shared/common/user-common/Creator-header";
 import { CreatorSidebar } from "@/shared/common/user-common/Creator-sidebar";
+import { Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Member } from "@/modules/projects/types/project.types";
+import { getProjectMembers, removeMember, updateMemberRole } from '@/modules/projects/services/project.api';
+import { userProfile } from '@/modules/user/services/user.api';
+import { SearchInput } from '@/shared/common/Searching';
+import { DataTable } from '@/shared/common/DataTable';
+import { Pagination } from '@/shared/common/Pagination';
+import { getErrorMessage } from '@/shared/utils/ErrorMessage';
+import ConfirmModal from '@/shared/common/ConfirmModal';
 
-export default function TeamMembersPage() {
+const RoleCell = ({ member, onRoleChange }: { member: Member, onRoleChange: (id: string, role: 'contributor' | 'maintainer') => Promise<void> }) => {
+    const [open, setOpen] = useState(false);
+    const [pending, setPending] = useState<'contributor' | 'maintainer' | null>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    const toggle = () => setOpen(prev => !prev);
+
+    const selectRole = (role: 'contributor' | 'maintainer') => {
+        if (role === member.role) {
+            setOpen(false);
+            return;
+        }
+        setPending(role);
+    };
+
+    const confirm = async () => {
+        if (!pending) return;
+        await onRoleChange(member.id, pending);
+        setPending(null);
+        setOpen(false);
+    };
+
+    const cancel = () => {
+        setPending(null);
+        setOpen(false);
+    };
+
     return (
+        <>
+            <div className="relative inline-block">
+                <button
+                    ref={buttonRef}
+                    onClick={toggle}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 capitalize shadow-sm transition-all"
+                >
+                    {member.role}
+                    <svg
+                        className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
+            {open && (
+                <>
+                    <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setOpen(false)}
+                    />
+                    <div
+                        className="fixed z-50 min-w-56 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+                        style={{
+                            top: buttonRef.current ? buttonRef.current.getBoundingClientRect().bottom + 8 + window.scrollY : 0,
+                            left: buttonRef.current
+                                ? buttonRef.current.getBoundingClientRect().left + window.scrollX
+                                : 0,
+                            transform: 'translateX(-50%) translateX(50%)',
+                        }}
+                    >
+                        <div className="p-2">
+                            {!pending ? (
+                                <div className="py-2">
+                                    {(['contributor', 'maintainer'] as const).map((role) => (
+                                        <button
+                                            key={role}
+                                            onClick={() => selectRole(role)}
+                                            className="w-full px-4 py-2.5 text-left text-sm rounded-lg hover:bg-gray-100 flex items-center justify-between capitalize transition"
+                                        >
+                                            <span>{role}</span>
+                                            {role === member.role && <span className="text-emerald-600 font-bold">Current</span>}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-4 pb-3">
+                                    <p className="text-sm text-gray-700 mb-4">
+                                        Change role to <span className="font-semibold capitalize">{pending}</span>?
+                                    </p>
+                                    <div className="flex justify-end gap-3">
+                                        <button
+                                            onClick={cancel}
+                                            className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={confirm}
+                                            className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
+                                        >
+                                            Confirm
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
+        </>
+    );
+};
 
+type InitialData = {
+    users: Member[];
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    currentSearch: string;
+};
+
+interface TeamMembersPageProps {
+    initialData: InitialData;
+    projectId: string;
+}
+
+export default function TeamMembersPage({ initialData, projectId }: TeamMembersPageProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const { data } = await userProfile();
+            } catch (error) {
+                const err = error as Error
+                console.error(err.message);
+            }
+        };
+        fetchData();
+    }, [])
+
+    const [members, setMembers] = useState<Member[]>(initialData.users);
+    const [currentPage, setCurrentPage] = useState(initialData.currentPage);
+    const [totalPages, setTotalPages] = useState(initialData.totalPages);
+    const [search, setSearch] = useState(initialData.currentSearch);
+    const [loading, setLoading] = useState(false);
+
+    const [modal, setModal] = useState({
+        open: false,
+        title: '',
+        message: '',
+        memberId: ''
+    });
+
+    // Sync URL + fetch new data
+    const updateUrlAndFetch = useCallback(
+        async (newSearch: string, newPage: number) => {
+            const params = new URLSearchParams();
+            if (newSearch) params.set("search", newSearch);
+            if (newPage > 1) params.set("page", String(newPage));
+            router.push(`${pathname}?${params.toString()}`);
+
+            setLoading(true);
+            try {
+                const res = await getProjectMembers(projectId, {
+                    search: newSearch,
+                    page: newPage,
+                    limit: 10
+                });
+
+                const data = res.data;
+                setMembers(data.data?.users || data.users || []);
+                setTotalPages(data.data?.totalPages || 1);
+                setCurrentPage(data.data?.currentPage || newPage);
+            } catch (err) {
+                const message = getErrorMessage(err)
+                toast.error(message)
+            } finally {
+                setLoading(false);
+            }
+        },
+        [projectId, pathname, router]
+    );
+
+    useEffect(() => {
+        const urlSearch = searchParams.get("search")?.trim() || "";
+        const urlPage = Number(searchParams.get("page")) || 1;
+
+        if (urlSearch !== search || urlPage !== currentPage) {
+            setSearch(urlSearch);
+            setCurrentPage(urlPage);
+        }
+    }, [searchParams, search, currentPage]);
+
+    useEffect(() => {
+        if (search !== initialData.currentSearch || currentPage !== initialData.currentPage) {
+            updateUrlAndFetch(search, currentPage);
+        }
+    }, [search, currentPage, initialData, updateUrlAndFetch]);
+
+    const handlePageChange = (page: number) => {
+        updateUrlAndFetch(search, page);
+    };
+
+    const handleRoleChange = async (memberId: string, newRole: 'contributor' | 'maintainer') => {
+        try {
+            await updateMemberRole(projectId, memberId, newRole);
+            setMembers(prev => prev.map(m => m.id === memberId ? { ...m, role: newRole } : m));
+            toast.success("Role updated");
+        } catch (err) {
+            const message = getErrorMessage(err)
+            toast.error("Failed to update role");
+        }
+    };
+
+    const handleRemove = (memberId: string, name: string) => {
+        setModal({
+            open: true,
+            title: 'Remove Member',
+            message: `Remove ${name} from the team?`,
+            memberId
+        });
+    };
+
+    const confirmRemove = async () => {
+        if (!modal.memberId) return;
+        try {
+            await removeMember(projectId, modal.memberId);
+            setMembers(prev => prev.filter(m => m.id !== modal.memberId));
+            toast.success("Member removed");
+        } catch (err) {
+            toast.error("Failed to remove member");
+        }
+        setModal(prev => ({ ...prev, open: false, memberId: '' }));
+    };
+
+    const columns = [
+        { label: "Name", render: (m: Member) => <span className="font-medium">{m.name}</span> },
+        { label: "Email", key: "email" as keyof Member },
+
+        {
+            label: 'Role',
+            render: (m: Member) => <RoleCell member={m} onRoleChange={handleRoleChange} />
+        },
+
+        {
+            label: "Actions",
+            render: (m: Member) => (
+                <button
+                    onClick={() => handleRemove(m.id, m.name)}
+                    className="text-red-600 hover:text-red-800 font-medium transition"
+                >
+                    Remove
+                </button>
+            ),
+        },
+    ];
+
+    return (
         <div className="flex h-screen overflow-hidden bg-white">
             <CreatorSidebar activeItem="members" />
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                <CreatorHeader projectName="Project Alpha" />
-                <main className="flex-1 overflow-y-auto p-8">
-                    <div className="p-8">
-                        {/* Page Title */}
-                        <h1 className="text-[#0c1d1a] text-2xl font-bold mb-6">Team Members</h1>
+                <CreatorHeader />
 
-                        {/* Search Bar */}
-                        <div className="mb-8">
-                            <div className="relative max-w-xl">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg className="w-5 h-5 text-[#6b7280]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Search members..."
-                                    className="w-full pl-10 pr-4 py-3 bg-[#f8f9fa] border border-[#e6f4f2] rounded-lg text-[#0c1d1a] placeholder:text-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#006b5b] focus:border-transparent"
-                                />
+                <main className="flex-1 overflow-y-auto p-6">
+                    <div className="max-w-6xl mx-auto space-y-8">
+
+                        <div className="flex justify-between items-center">
+                            <h1 className="text-2xl font-bold text-gray-900">Team Members</h1>
+                            <div className="w-80">
+                                <SearchInput value={search} onChange={setSearch} debounceTime={500} placeholder="Search members..." />
                             </div>
                         </div>
 
-                        {/* Approved Members Section */}
-                        <div className="mb-8">
-                            <h2 className="text-[#0c1d1a] text-lg font-bold mb-4">Approved Members</h2>
-
-                            <div className="bg-white rounded-lg border border-[#e6f4f2] overflow-hidden">
-                                {/* Table Header */}
-                                <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-[#f8f9fa] border-b border-[#e6f4f2]">
-                                    <div className="col-span-4">
-                                        <p className="text-[#6b7280] text-xs font-medium">Name</p>
-                                    </div>
-                                    <div className="col-span-3">
-                                        <p className="text-[#6b7280] text-xs font-medium">Role</p>
-                                    </div>
-                                    <div className="col-span-5"></div>
-                                </div>
-
-                                {/* Table Rows */}
-                                <div className="divide-y divide-[#e6f4f2]">
-                                    {/* Member 1 */}
-                                    <div className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-[#f8f9fa] transition-colors">
-                                        <div className="col-span-4">
-                                            <p className="text-[#0c1d1a] text-sm font-medium">Ethan Carter</p>
-                                        </div>
-                                        <div className="col-span-3">
-                                            <p className="text-[#6b7280] text-sm">contributor</p>
-                                        </div>
-                                        <div className="col-span-5 flex justify-end gap-3">
-                                            <button className="px-4 py-2 text-[#6b7280] text-sm font-medium hover:text-[#0c1d1a] transition-colors">
-                                                Remove
-                                            </button>
-                                            <button className="px-4 py-2 text-[#006b5b] text-sm font-medium hover:text-[#005a4d] transition-colors">
-                                                Save
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Member 2 */}
-                                    <div className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-[#f8f9fa] transition-colors">
-                                        <div className="col-span-4">
-                                            <p className="text-[#0c1d1a] text-sm font-medium">Olivia Bennett</p>
-                                        </div>
-                                        <div className="col-span-3">
-                                            <p className="text-[#6b7280] text-sm">maintainer</p>
-                                        </div>
-                                        <div className="col-span-5 flex justify-end gap-3">
-                                            <button className="px-4 py-2 text-[#6b7280] text-sm font-medium hover:text-[#0c1d1a] transition-colors">
-                                                Remove
-                                            </button>
-                                            <button className="px-4 py-2 text-[#006b5b] text-sm font-medium hover:text-[#005a4d] transition-colors">
-                                                Save
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Member 3 */}
-                                    <div className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-[#f8f9fa] transition-colors">
-                                        <div className="col-span-4">
-                                            <p className="text-[#0c1d1a] text-sm font-medium">Noah Thompson</p>
-                                        </div>
-                                        <div className="col-span-3">
-                                            <p className="text-[#6b7280] text-sm">contributor</p>
-                                        </div>
-                                        <div className="col-span-5 flex justify-end gap-3">
-                                            <button className="px-4 py-2 text-[#6b7280] text-sm font-medium hover:text-[#0c1d1a] transition-colors">
-                                                Remove
-                                            </button>
-                                            <button className="px-4 py-2 text-[#006b5b] text-sm font-medium hover:text-[#005a4d] transition-colors">
-                                                Save
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                        {loading ? (
+                            <div className="flex justify-center py-20">
+                                <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
                             </div>
-                        </div>
+                        ) : members.length === 0 ? (
+                            <p className="text-center py-12 text-gray-500">No members found</p>
+                        ) : (
+                            <>
+                                <DataTable columns={columns} data={members} />
 
-                        {/* Pending Join Requests Section */}
-                        <div className="mb-8">
-                            <h2 className="text-[#0c1d1a] text-lg font-bold mb-4">Pending Join Requests</h2>
-
-                            <div className="space-y-4">
-                                {/* Request 1 */}
-                                <div className="bg-white rounded-lg border border-[#e6f4f2] p-6 flex items-center justify-between hover:shadow-sm transition-shadow">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-[#ffc09f] overflow-hidden flex items-center justify-center">
-                                            <span className="text-white font-bold text-lg">AT</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-[#0c1d1a] font-semibold text-sm">Alex Turner</p>
-                                            <p className="text-[#6b7280] text-xs">github.com/alexturner</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <button className="px-4 py-2 text-[#6b7280] text-sm font-medium hover:text-[#0c1d1a] transition-colors">
-                                            Approve / Reject
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Request 2 */}
-                                <div className="bg-white rounded-lg border border-[#e6f4f2] p-6 flex items-center justify-between hover:shadow-sm transition-shadow">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full overflow-hidden">
-                                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%238b7355' width='100' height='100'/%3E%3Ccircle cx='50' cy='40' r='20' fill='%23fff'/%3E%3Cellipse cx='50' cy='75' rx='25' ry='20' fill='%23fff'/%3E%3C/svg%3E" alt="Avatar" className="w-full h-full object-cover" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[#0c1d1a] font-semibold text-sm">Sophia Clark</p>
-                                            <p className="text-[#6b7280] text-xs">sophia.clark@gmail.com</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <button className="px-4 py-2 text-[#6b7280] text-sm font-medium hover:text-[#0c1d1a] transition-colors">
-                                            Approve / Reject
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Request 3 */}
-                                <div className="bg-white rounded-lg border border-[#e6f4f2] p-6 flex items-center justify-between hover:shadow-sm transition-shadow">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-[#d4a373] overflow-hidden flex items-center justify-center">
-                                            <span className="text-white font-bold text-lg">DW</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-[#0c1d1a] font-semibold text-sm">Daniel Walker</p>
-                                            <p className="text-[#6b7280] text-xs">github.com/danielw</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <button className="px-4 py-2 text-[#6b7280] text-sm font-medium hover:text-[#0c1d1a] transition-colors">
-                                            Approve / Reject
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Pagination */}
-                        <div className="flex items-center justify-center gap-2 mt-8">
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8f9fa] rounded transition-colors">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                            <button className="w-8 h-8 flex items-center justify-center bg-[#006b5b] text-white text-sm font-medium rounded">1</button>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8f9fa] text-sm rounded transition-colors">2</button>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8f9fa] text-sm rounded transition-colors">3</button>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8f9fa] text-sm rounded transition-colors">4</button>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8f9fa] text-sm rounded transition-colors">5</button>
-                            <span className="text-[#6b7280] text-sm">...</span>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8f9fa] text-sm rounded transition-colors">10</button>
-                            <button className="w-8 h-8 flex items-center justify-center text-[#6b7280] hover:bg-[#f8f9fa] rounded transition-colors">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                        </div>
+                                {totalPages > 1 && (
+                                    <Pagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={handlePageChange}
+                                    />
+                                )}
+                            </>
+                        )}
                     </div>
                 </main>
             </div>
+            <ConfirmModal
+                open={modal.open}
+                title={modal.title}
+                message={modal.message}
+                onConfirm={confirmRemove}
+                onCancel={() => setModal(prev => ({ ...prev, open: false }))}
+            />
         </div>
     );
 }

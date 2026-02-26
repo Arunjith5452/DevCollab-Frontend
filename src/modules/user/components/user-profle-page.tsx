@@ -17,6 +17,7 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import api from "@/lib/axios";
 import { MyProjectsTab } from "@/modules/projects/components/my-projects.page";
 import { AppliedProjectsTab } from "@/modules/projects/components/applied-project";
+import { BackButton } from "@/shared/common/BackButton";
 
 interface User {
   name: string;
@@ -26,6 +27,9 @@ interface User {
   bio?: string;
   title?: string;
   techStack?: string[];
+  createdProjectsCount?: number;
+  contributionsCount?: number;
+  recentActivities?: { type: string; title: string; timestamp: string }[];
 }
 
 export default function UserProfilePage() {
@@ -34,18 +38,18 @@ export default function UserProfilePage() {
   const router = useRouter();
 
 
-    // useEffect(() => {
-    //   const fetchData = async () => {
-    //     try {
-    //       const { data } = await api.get('/api/profile/me', { withCredentials: true });
-    //     } catch (error) {
-    //       let err = error as Error
-    //       console.error(err.message);
-    //     }
-    //   };
-    //   fetchData();
-    // }, [])
-  
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const { data } = await api.get('/api/profile/me', { withCredentials: true });
+  //     } catch (error) {
+  //       let err = error as Error
+  //       console.error(err.message);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [])
+
 
 
   if (loading) {
@@ -58,10 +62,13 @@ export default function UserProfilePage() {
 
   return (
     <div className="relative flex size-full min-h-screen flex-col bg-white overflow-x-hidden">
-      <Header user={{ name: user?.name || "Guest" }} />
+      <Header />
 
-      <main className="flex-1 pt-20 px-4 md:px-8 lg:px-40">
-        <div className="max-w-4xl mx-auto">
+      <main className="flex-1 pt-20">
+        <div className="px-4 md:px-8 lg:px-24 xl:px-40 py-6">
+          <BackButton />
+        </div>
+        <div className="max-w-4xl mx-auto px-4 md:px-8">
           {user && !loading && (
             <>
               <div className="flex flex-col items-center mb-10">
@@ -184,11 +191,11 @@ export default function UserProfilePage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                     <div className="p-6 border border-[#e6f4f2] rounded-lg text-center">
-                      <p className="text-[#0c1d1a] text-3xl font-bold mb-1">12</p>
+                      <p className="text-[#0c1d1a] text-3xl font-bold mb-1">{user.createdProjectsCount || 0}</p>
                       <p className="text-[#45a193] text-sm">Created Projects</p>
                     </div>
                     <div className="p-6 border border-[#e6f4f2] rounded-lg text-center">
-                      <p className="text-[#0c1d1a] text-3xl font-bold mb-1">45</p>
+                      <p className="text-[#0c1d1a] text-3xl font-bold mb-1">{user.contributionsCount || 0}</p>
                       <p className="text-[#45a193] text-sm">Contributions</p>
                     </div>
                   </div>
@@ -197,24 +204,36 @@ export default function UserProfilePage() {
                   <div className="mb-12">
                     <h2 className="text-[#0c1d1a] text-xl font-bold mb-6">Activity Timeline</h2>
                     <div className="space-y-8">
-                      {[
-                        { Icon: FileText, color: "text-green-600", bg: "bg-green-600", title: "Joined Project: OpenSourceApp", time: "3 months ago" },
-                        { Icon: GitBranch, color: "text-[#0c1d1a]", bg: "bg-[#0c1d1a]", title: "Contributed to DataVizLib", time: "6 months ago" },
-                        { Icon: FolderOpen, color: "text-[#006b5b]", bg: "bg-[#006b5b]", title: "Created Project: WebToolKit", time: "1 year ago" },
-                      ].map((a, i) => (
-                        <div key={i} className="flex gap-4">
-                          <div className="flex flex-col items-center">
-                            <div className={`w-10 h-10 rounded-full ${a.bg} flex items-center justify-center`}>
-                              <a.Icon className="w-5 h-5 text-white" />
+                      {user.recentActivities && user.recentActivities.length > 0 ? (
+                        user.recentActivities.map((activity, i) => {
+                          const isProject = activity.type === 'project_created';
+                          const Icon = isProject ? FolderOpen : FileText;
+                          const bg = isProject ? "bg-[#006b5b]" : "bg-green-600";
+
+                          return (
+                            <div key={i} className="flex gap-4">
+                              <div className="flex flex-col items-center">
+                                <div className={`w-10 h-10 rounded-full ${bg} flex items-center justify-center`}>
+                                  <Icon className="w-5 h-5 text-white" />
+                                </div>
+                                {i < (user.recentActivities?.length || 0) - 1 && <div className="w-0.5 h-16 bg-[#e6f4f2]" />}
+                              </div>
+                              <div className="flex-1 pt-1">
+                                <p className="text-[#0c1d1a] font-semibold text-sm mb-1">{activity.title}</p>
+                                <p className="text-[#45a193] text-xs">
+                                  {new Date(activity.timestamp).toLocaleDateString('en-US', {
+                                    month: 'long',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                </p>
+                              </div>
                             </div>
-                            {i < 2 && <div className="w-0.5 h-16 bg-[#e6f4f2]" />}
-                          </div>
-                          <div className="flex-1 pt-1">
-                            <p className="text-[#0c1d1a] font-semibold text-sm mb-1">{a.title}</p>
-                            <p className="text-[#45a193] text-xs">{a.time}</p>
-                          </div>
-                        </div>
-                      ))}
+                          );
+                        })
+                      ) : (
+                        <p className="text-[#9ca3af] text-sm italic">No recent activity to show.</p>
+                      )}
                     </div>
                   </div>
                 </>

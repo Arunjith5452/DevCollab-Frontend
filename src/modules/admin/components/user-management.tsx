@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { Badge, DataTable, Header, Pagination, Sidebar } from "@/shared/common/admin-common";
 import { ChevronDown, Download } from "lucide-react";
 import { getAllUsers, updateUserStatus } from "../services/admin.api";
-import { SearchInput } from "@/shared/common/admin-common/Searching";
+import { SearchInput } from "@/shared/common/Searching";
 import toast from "react-hot-toast";
 import PageLoader from "@/shared/common/LoadingComponent";
 
 
 export interface User {
+  id: string;
   _id: string;
   name: string;
   email: string;
@@ -20,7 +21,6 @@ export interface User {
 
 
 export default function UserManagement() {
-  const [activeTab, setActiveTab] = useState("users");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -65,10 +65,11 @@ export default function UserManagement() {
   const handleBlockUnblock = async () => {
     if (!selectedUser || !newStatus) return;
     try {
-      await updateUserStatus({ userId: selectedUser._id, newStatus });
+      const userIdToUpdate = selectedUser.id || selectedUser._id;
+      await updateUserStatus({ userId: userIdToUpdate, newStatus });
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user._id === selectedUser._id ? { ...user, status: newStatus } : user
+          (user.id === userIdToUpdate || user._id === userIdToUpdate) ? { ...user, status: newStatus } : user
         )
       );
       toast.success(
@@ -86,26 +87,22 @@ export default function UserManagement() {
   const columns = [
     {
       label: "Name",
-      key: "name",
       render: (row: User) => (
         <span className="text-sm font-semibold text-gray-900">{row.name}</span>
       ),
     },
     {
       label: "Email",
-      key: "email",
       render: (row: User) => (
         <span className="text-sm text-teal-600">{row.email}</span>
       ),
     },
     {
       label: "Role",
-      key: "role",
       render: (row: User) => <Badge variant="info">{row.role}</Badge>,
     },
     {
       label: "Status",
-      key: "status",
       render: (row: User) => (
         <Badge variant={row.status === "block" ? "danger" : "success"}>
           {row.status === "block" ? "Blocked" : "Active"}
@@ -114,7 +111,6 @@ export default function UserManagement() {
     },
     {
       label: "Joined Date",
-      key: "createdAt",
       render: (row: User) => (
         <span className="text-sm text-gray-600">
           {new Date(row.createdAt).toLocaleDateString()}
@@ -123,7 +119,6 @@ export default function UserManagement() {
     },
     {
       label: "Actions",
-      key: "actions",
       render: (row: User) => (
         <button
           onClick={() => confirmAction(row)}
@@ -141,7 +136,7 @@ export default function UserManagement() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar activeItem="users" />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header
@@ -173,9 +168,7 @@ export default function UserManagement() {
                 >
                   <option value="all">All Roles</option>
                   <option value="user">User</option>
-                  <option value="creator">Creator</option>
-                  <option value="contributer">Contributer</option>
-                  <option value="maintainer">Maintainer</option>
+
                   <option value="admin">Admin</option>
                 </select>
                 <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -196,11 +189,15 @@ export default function UserManagement() {
             </div>
           </div>
 
-          {loading ? (
-            <PageLoader />
-          ) : (
-            <DataTable columns={columns} data={users} />
-          )}
+          <div className="relative z-0 min-h-150">
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/10 backdrop-blur-sm rounded-2xl">
+                <PageLoader />
+              </div>
+            ) : (
+              <DataTable<User> columns={columns} data={users} />
+            )}
+          </div>
 
           <Pagination
             currentPage={currentPage}
@@ -211,37 +208,44 @@ export default function UserManagement() {
       </div>
 
       {showConfirmModal && (
-        <div className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 z-50">
-          <div className="bg-white rounded-2xl p-6 shadow-2xl border border-gray-200 w-80 text-center">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              {newStatus === "block" ? "Block User" : "Unblock User"}
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to{" "}
-              {newStatus === "block" ? "block" : "unblock"}{" "}
-              <span className="font-medium">{selectedUser?.name}</span>?
-            </p>
+        <>
+          {/* Dark backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setShowConfirmModal(false)}
+          />
 
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={handleBlockUnblock}
-                className={`px-4 py-2 rounded-lg text-white font-medium ${newStatus === "block"
+          {/* Modal */}
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-96">
+            <div className="bg-white rounded-2xl p-8 shadow-2xl border border-gray-200 text-center">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                {newStatus === "block" ? "Block" : "Unblock"} User
+              </h3>
+              <p className="text-gray-600 mb-8">
+                Are you sure you want to{" "}
+                <span className="font-semibold">{selectedUser?.name}</span>?
+              </p>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setShowConfirmModal(false)}
+                  className="px-6 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleBlockUnblock}
+                  className={`px-6 py-3 rounded-xl text-white font-bold transition ${newStatus === "block"
                     ? "bg-red-600 hover:bg-red-700"
                     : "bg-green-600 hover:bg-green-700"
-                  }`}
-              >
-                Yes
-              </button>
-
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium"
-              >
-                Cancel
-              </button>
+                    }`}
+                >
+                  Yes, {newStatus === "block" ? "Block" : "Unblock"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

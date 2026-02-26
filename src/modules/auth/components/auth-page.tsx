@@ -2,6 +2,7 @@
 
 import { AuthHeader, Footer, GitHubButton, GoogleButton } from "@/shared/common/auth-common";
 import { useState } from "react";
+import { Eye, EyeOff, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import PageLoader from "@/shared/common/LoadingComponent";
@@ -19,7 +20,7 @@ export function AuthLogin({
 }: {
   title: string;
   description?: string;
-  onLogin: (data: { email: string; password: string }) => Promise<any>;
+  onLogin: (data: { email: string; password: string }) => Promise<{ role: string }>;
   showSocialButtons?: boolean;
   showForgotPassword?: boolean;
   headerButtonText?: string;
@@ -28,6 +29,7 @@ export function AuthLogin({
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -91,14 +93,19 @@ export function AuthLogin({
             {/* Email */}
             <div className="flex justify-center">
               <div className="flex max-w-[480px] w-full flex-wrap items-end gap-4 px-4 py-3">
-                <label className="flex flex-col min-w-40 flex-1">
+                <label className="flex flex-col min-w-40 flex-1 relative">
                   <p className="text-[#0c1d1a] text-base font-medium leading-normal pb-2">Email</p>
-                  <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email"
-                    className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded text-[#0c1d1a] border border-[#cdeae5] bg-white h-14 p-[15px] text-base font-normal leading-normal placeholder:text-[#45a193] focus:outline-0 focus:ring-0 focus:border-[#cdeae5]"
-                  />
+                  <div className="relative">
+                    <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email"
+                      className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded text-[#0c1d1a] border border-[#cdeae5] bg-white h-14 p-[15px] pr-10 text-base font-normal leading-normal placeholder:text-[#45a193] focus:outline-0 focus:ring-0 focus:border-[#cdeae5]"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#45a193]">
+                      <Mail size={20} />
+                    </div>
+                  </div>
                 </label>
               </div>
             </div>
@@ -106,15 +113,24 @@ export function AuthLogin({
             {/* Password */}
             <div className="flex justify-center">
               <div className="flex max-w-[480px] w-full flex-wrap items-end gap-4 px-4 py-3">
-                <label className="flex flex-col min-w-40 flex-1">
+                <label className="flex flex-col min-w-40 flex-1 relative">
                   <p className="text-[#0c1d1a] text-base font-medium leading-normal pb-2">Password</p>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
-                    className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded text-[#0c1d1a] border border-[#cdeae5] bg-white h-14 p-[15px] text-base font-normal placeholder:text-[#45a193] leading-normal focus:outline-0 focus:ring-0 focus:border-[#cdeae5]"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Password"
+                      className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded text-[#0c1d1a] border border-[#cdeae5] bg-white h-14 p-[15px] pr-10 text-base font-normal placeholder:text-[#45a193] leading-normal focus:outline-0 focus:ring-0 focus:border-[#cdeae5]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#45a193] hover:text-[#006b5b] transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
                 </label>
               </div>
             </div>
@@ -159,8 +175,11 @@ export function AuthLogin({
                   </div>
                 </div>
 
-                <p className="text-[#45a193] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center underline cursor-pointer">
-                  Don't have an account? Sign Up
+                <p
+                  onClick={() => router.push("/register")}
+                  className="text-[#45a193] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center underline cursor-pointer hover:text-[#006b5b]"
+                >
+                  Don&apos;t have an account? Sign Up
                 </p>
               </>
             )}
