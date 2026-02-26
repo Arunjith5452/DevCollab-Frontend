@@ -1,5 +1,5 @@
 import api from "@/lib/axios"
-import { TASK_ROUTERS } from "@/shared/constant/routes"
+import { TASK_ROUTERS } from "@/shared/constants/routes"
 import { CreateTaskPayload } from "../types/task.types";
 
 

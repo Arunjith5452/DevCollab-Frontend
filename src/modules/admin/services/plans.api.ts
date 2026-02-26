@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { PLAN_ROUTES } from "@/shared/constant/routes";
+import { PLAN_ROUTES } from "@/shared/constants/routes";
 
 export interface Plan {
     id: string;

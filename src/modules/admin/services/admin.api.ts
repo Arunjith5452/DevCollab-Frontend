@@ -1,5 +1,5 @@
 import api from "@/lib/axios"
-import { ADMIN_ROUTES } from "@/shared/constant/routes"
+import { ADMIN_ROUTES } from "@/shared/constants/routes"
 
 
 export const getAllUsers = async ({ search = '', role = '', status = '', page = 1, limit = 7 } = {}) => {
