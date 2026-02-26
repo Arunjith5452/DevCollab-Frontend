@@ -1,5 +1,5 @@
 import api from "@/lib/axios"
-import { PROJECT_ROUTES } from "@/shared/constant/routes"
+import { PROJECT_ROUTES } from "@/shared/constants/routes"
 import { BaseProjectPayload, GetAiSuggestionsResponse } from "@/modules/projects/types/project.types"
 
 

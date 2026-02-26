@@ -118,7 +118,7 @@ const SubscriptionPage = () => {
         <div className="min-h-screen relative bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 overflow-hidden text-white pt-20">
             {/* Back Button */}
             <button
-                onClick={() => router.back()}
+                onClick={() => router.push('/home')}
                 className="absolute top-6 left-6 z-50 p-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white hover:bg-white/20 transition-all hover:scale-105"
             >
                 <ArrowLeft className="w-5 h-5" />

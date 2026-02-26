@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { PLAN_ROUTES } from "@/shared/constant/routes";
+import { PLAN_ROUTES } from "@/shared/constants/routes";
 
 export const getActivePlans = async () => {
     const response = await api.get(PLAN_ROUTES.GET_ACTIVE_PLANS);

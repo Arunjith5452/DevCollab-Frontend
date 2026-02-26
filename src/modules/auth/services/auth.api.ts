@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { AUTH_ROUTES } from "@/shared/constant/routes";
+import { AUTH_ROUTES } from "@/shared/constants/routes";
 
 
 
