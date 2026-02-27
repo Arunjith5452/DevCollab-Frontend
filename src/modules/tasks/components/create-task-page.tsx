@@ -676,10 +676,12 @@ export default function CreateTaskPage() {
                   })}
                 </div>
               ) : (
-                <div className="p-10 border-2 border-dashed border-[#cdeae5] rounded-lg text-center bg-[#f9fcfb]">
-                  <Upload className="w-12 h-12 text-[#cdeae5] mx-auto mb-3" />
-                  <p className="text-gray-600">No files attached yet</p>
-                  <p className="text-xs text-gray-500 mt-1">You can add files later if needed</p>
+                <div className="mt-2">
+                  <div className="p-6 sm:p-10 border-2 border-dashed border-[#cdeae5] rounded-lg text-center bg-[#f9fcfb]">
+                    <Upload className="w-12 h-12 text-[#cdeae5] mx-auto mb-3" />
+                    <p className="text-gray-600">No files attached yet</p>
+                    <p className="text-xs text-gray-500 mt-1">You can add files later if needed</p>
+                  </div>
                 </div>
               )}
 

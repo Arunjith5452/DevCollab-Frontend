@@ -107,7 +107,7 @@ export const SubscriptionList = () => {
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center p-12 text-teal-600">
+                <div className="flex justify-center items-center p-4 sm:p-12 text-teal-600">
                     <Loader2 className="w-8 h-8 animate-spin" />
                 </div>
             ) : (
@@ -125,7 +125,7 @@ export const SubscriptionList = () => {
                         <tbody className="divide-y divide-teal-50">
                             {subscriptions.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={5} className="px-6 py-8 sm:py-12 text-center text-gray-500">
                                         No subscriptions found.
                                     </td>
                                 </tr>

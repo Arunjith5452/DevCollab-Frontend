@@ -277,9 +277,9 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
                 <main className="flex-1 overflow-y-auto p-6">
                     <div className="max-w-6xl mx-auto space-y-8">
 
-                        <div className="flex justify-between items-center">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <h1 className="text-2xl font-bold text-gray-900">Team Members</h1>
-                            <div className="w-80">
+                            <div className="w-full sm:w-80">
                                 <SearchInput value={search} onChange={setSearch} debounceTime={500} placeholder="Search members..." />
                             </div>
                         </div>

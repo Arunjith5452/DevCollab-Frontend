@@ -60,7 +60,7 @@ export default function ContributorSidebar({ activeItem = 'dashboard' }: Sidebar
                     <span className="text-[#0c1d1a] font-bold text-lg">DevCollab</span>
                 </div>
                 {/* Navigation */}
-                <nav className="flex-1 py-4">
+                <nav className="flex-1 py-4 overflow-y-auto">
                     {menuItems.map((item) => (
                         <button
                             key={item.id}
