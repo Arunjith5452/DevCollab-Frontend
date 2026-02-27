@@ -69,12 +69,6 @@ export const PlansPage = () => {
                             </button>
                         )}
 
-                        {activeTab === 'subscriptions' && (
-                            <button className="flex items-center space-x-2 px-4 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl transition-all font-medium">
-                                <Download className="w-4 h-4" />
-                                <span className="text-sm">Export</span>
-                            </button>
-                        )}
                     </div>
 
                     {/* Content */}

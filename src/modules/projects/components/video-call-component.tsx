@@ -165,7 +165,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
                     <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 sm:p-4 shadow-xl">
                         <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-gray-700/70 rounded-xl border border-white/5 text-gray-300 shadow-sm" title="Participants">
                             <Users size={20} />
-                            <span className="font-medium">{remoteVideoStates.size + 1}</span>
+                            <span className="font-medium">{remoteStreams.size + 1}</span>
                         </div>
 
                         <button

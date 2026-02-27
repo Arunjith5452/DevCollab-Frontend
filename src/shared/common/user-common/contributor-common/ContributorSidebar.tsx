@@ -89,13 +89,6 @@ export default function ContributorSidebar({ activeItem = 'dashboard' }: Sidebar
                         <span>Back to Home</span>
                     </button>
 
-                    {/* Notifications */}
-                    <div className="px-6 py-4">
-                        <button className="flex items-center gap-2 text-[#6b7280] text-sm hover:text-[#0c1d1a] transition-colors">
-                            <Bell className="w-5 h-5" />
-                            Notifications
-                        </button>
-                    </div>
                 </div>
             </aside>
         </>
