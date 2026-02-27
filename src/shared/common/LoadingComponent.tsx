@@ -2,7 +2,7 @@ import { Code } from "lucide-react";
 
 export default function PageLoader() {
   return (
-    <div className="flex items-center justify-center h-full w-full px-4">
+    <div className="flex items-center justify-center min-h-screen w-full px-4">
       <div className="flex flex-col items-center text-center space-y-6">
         {/* Animated Logo */}
         <div className="relative flex items-center justify-center">
@@ -12,7 +12,7 @@ export default function PageLoader() {
           {/* Spinning Ring */}
           <div className="absolute inset-0 border-4 border-green-200 border-t-green-600 rounded-2xl animate-spin"></div>
         </div>
-        
+
         {/* Loading Text */}
         <div className="space-y-2">
           <p className="text-base sm:text-lg font-semibold text-gray-900">
