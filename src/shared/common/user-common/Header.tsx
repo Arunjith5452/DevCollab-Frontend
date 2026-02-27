@@ -53,6 +53,13 @@ export function Header({
         setIsLoading(false);
         return;
       }
+
+      const hasAuthData = typeof window !== 'undefined' && localStorage.getItem('auth-storage');
+      if (!hasAuthData) {
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       try {
         await fetchUser();
