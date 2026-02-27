@@ -71,7 +71,7 @@ export default function ContributorTasksPage({
 
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      return;
+      if (tasks.length > 0) return;
     }
 
     const fetchTasks = async () => {
