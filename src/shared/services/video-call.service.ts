@@ -9,6 +9,7 @@ export type VideoCallEvents = {
     onRemoteVideoState?: (userId: string, enabled: boolean) => void;
     onRemoteAudioState?: (userId: string, enabled: boolean) => void;
     onRoomState?: (state: { video: Record<string, boolean>; audio: Record<string, boolean> }) => void;
+    onMediaError?: (error: Error) => void;
 };
 
 export class VideoCallService {
@@ -26,6 +27,10 @@ export class VideoCallService {
     private config: RTCConfiguration = {
         iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' },
         ],
     };
 
@@ -115,6 +120,7 @@ export class VideoCallService {
             this.events.onLocalStream?.(this.localStream);
         } catch (error) {
             console.error('Error accessing media devices:', error);
+            this.events.onMediaError?.(error instanceof Error ? error : new Error('Media permission denied or hardware unavailable'));
             return;
         }
 

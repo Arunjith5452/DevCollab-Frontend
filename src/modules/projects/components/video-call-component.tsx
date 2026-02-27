@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { VideoCallService } from '@/shared/services/video-call.service';
 import { Mic, MicOff, Video, VideoOff, PhoneOff, User, Hand, Users } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 
 interface VideoCallComponentProps {
@@ -31,10 +32,14 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 
     /* --------------- service life-cycle --------------- */
     useEffect(() => {
-        const service = new VideoCallService('http://localhost:3001', {
+        const socketUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const service = new VideoCallService(socketUrl, {
             onLocalStream: (stream) => {
                 setLocalStream(stream);
                 if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+            },
+            onMediaError: (error) => {
+                toast.error(error.message || 'Camera/Microphone permission failed');
             },
             onRemoteStream: (stream, peerId, peerUserName) => {
                 setRemoteStreams(prev => {
