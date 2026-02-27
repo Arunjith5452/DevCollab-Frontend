@@ -9,7 +9,7 @@ import { SearchInput } from '@/shared/common/Searching';
 import { Pagination } from '@/shared/common/Pagination';
 import { format } from 'date-fns';
 import { ProjectTask } from '@/modules/tasks/types/task.types';
-import { getAssignees, assignTask } from '../services/task.api';
+import { getAssignees, assignTask, getCreatorTasks } from '../services/task.api';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/useUserStore';
 import TaskDetailsPanel from '@/shared/common/user-common/task-details-panel';
@@ -41,16 +41,46 @@ export default function TasksListingPage({
 }: TasksListingProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // Always read projectId from URL params as well to survive Stripe redirect
   const urlProjectId = searchParams.get('projectId') || '';
   const projectId = projectIdProp || urlProjectId;
   const user = useAuthStore((state) => state.user)
 
 
+  const [tasks, setTasks] = useState<ProjectTask[]>(initialData.tasks);
+  const [totalPages, setTotalPages] = useState<number>(initialData.totalPages);
+  const fetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (initialData.tasks.length > 0) {
+      setTasks(initialData.tasks);
+      setTotalPages(initialData.totalPages);
+    }
+  }, [initialData]);
+
   const [searchTerm, setSearchTerm] = useState(initialFilters.search);
   const [statusFilter, setStatusFilter] = useState(initialFilters.status);
   const [assigneeFilter, setAssigneeFilter] = useState(initialFilters.assignee);
   const [currentPage, setCurrentPage] = useState(initialData.currentPage);
+
+  useEffect(() => {
+    if (!fetchedRef.current && tasks.length === 0) {
+      fetchedRef.current = true;
+      getCreatorTasks({
+        projectId: projectId,
+        search: searchTerm,
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        assignee: assigneeFilter === 'all' ? undefined : assigneeFilter,
+        page: currentPage,
+        limit: 10
+      }).then(res => {
+        const newTasks = res.data?.tasks || res.tasks || [];
+        setTasks(newTasks);
+        setTotalPages(res.data?.totalPages || res.totalPages || 1);
+      }).catch(err => {
+        console.error("Failed to fetch tasks on client:", err);
+      });
+    }
+  }, [tasks.length, projectId, searchTerm, statusFilter, assigneeFilter, currentPage]);
 
   const [selectedTask, setSelectedTask] = useState<ProjectTask | null>(null);
   const [showTaskDetails, setShowTaskDetails] = useState(false);
@@ -78,12 +108,12 @@ export default function TasksListingPage({
 
   useEffect(() => {
     if (selectedTask) {
-      const updatedTask = initialData.tasks.find(t => t.id === selectedTask.id);
+      const updatedTask = tasks.find(t => t.id === selectedTask.id);
       if (updatedTask && JSON.stringify(updatedTask) !== JSON.stringify(selectedTask)) {
         setSelectedTask(updatedTask)
       }
     }
-  }, [initialData, selectedTask])
+  }, [tasks, selectedTask])
 
 
   useEffect(() => {
@@ -98,7 +128,6 @@ export default function TasksListingPage({
   useEffect(() => {
     const fetchTasks = async () => {
       const params = new URLSearchParams();
-      // Always include projectId so it is never lost from the URL
       const activeProjectId = projectId || searchParams.get('projectId') || '';
       if (activeProjectId) params.set('projectId', activeProjectId);
       if (searchTerm) params.set('search', searchTerm);
@@ -106,7 +135,10 @@ export default function TasksListingPage({
       if (assigneeFilter !== 'all') params.set('assignee', assigneeFilter);
       params.set('page', currentPage.toString());
 
-      router.replace(`/task-listing?${params.toString()}`, { scroll: false });
+      const newQuery = params.toString();
+      if (searchParams.toString() !== newQuery) {
+        router.replace(`/task-listing?${newQuery}`, { scroll: false });
+      }
     };
 
     fetchTasks();
@@ -122,7 +154,7 @@ export default function TasksListingPage({
   };
 
   const assigneeOptions = assignees.filter(member =>
-    initialData.tasks.some(task => task.assignedId === member.userId)
+    tasks.some(task => task.assignedId === member.userId)
   );
 
   const statusLabels: Record<string, string> = {
@@ -154,7 +186,7 @@ export default function TasksListingPage({
     }
   };
 
-  const filteredTasks = initialData.tasks.filter(task => {
+  const filteredTasks = tasks.filter(task => {
     const assigneeName = getAssigneeName(task.assignedId).toLowerCase();
     const matchesSearch =
       task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -177,6 +209,7 @@ export default function TasksListingPage({
 
       if (selectedTask && selectedTask.id === taskId) {
         setSelectedTask({ ...selectedTask, assignedId: newAssigneeId });
+        setTasks(prev => prev.map(t => t.id === taskId ? { ...t, assignedId: newAssigneeId } : t));
       }
 
       router.refresh();
@@ -307,8 +340,8 @@ export default function TasksListingPage({
               )}
             </div>
 
-            {initialData.totalPages > 1 && (
-              <Pagination currentPage={currentPage} totalPages={initialData.totalPages} onPageChange={setCurrentPage} />
+            {totalPages > 1 && (
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
             )}
           </div>
         </main>

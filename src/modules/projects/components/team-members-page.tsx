@@ -155,6 +155,7 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
     const [totalPages, setTotalPages] = useState(initialData.totalPages);
     const [search, setSearch] = useState(initialData.currentSearch);
     const [loading, setLoading] = useState(false);
+    const fetchedRef = useRef(false);
 
     const [modal, setModal] = useState({
         open: false,
@@ -162,6 +163,13 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
         message: '',
         memberId: ''
     });
+
+    useEffect(() => {
+        if (!fetchedRef.current && members.length === 0) {
+            fetchedRef.current = true;
+            updateUrlAndFetch(search, currentPage);
+        }
+    }, [members.length, search, currentPage]);
 
     // Sync URL + fetch new data
     const updateUrlAndFetch = useCallback(
