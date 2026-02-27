@@ -161,16 +161,16 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
                 </div>
 
                 {/* CONTROLS */}
-                <div className="mt-auto w-full flex-shrink-0">
-                    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 bg-gray-800/80 backdrop-blur-xl border border-white/10 rounded-2xl p-3 sm:p-4 shadow-xl">
-                        <div className="flex items-center gap-2 px-3 sm:px-4 py-3 bg-gray-700/70 rounded-xl border border-white/5 text-gray-300" title="Participants">
+                <div className="mt-auto pt-2 w-full flex-shrink-0 z-10">
+                    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 sm:p-4 shadow-xl">
+                        <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-gray-700/70 rounded-xl border border-white/5 text-gray-300 shadow-sm" title="Participants">
                             <Users size={20} />
                             <span className="font-medium">{remoteVideoStates.size + 1}</span>
                         </div>
 
                         <button
                             onClick={toggleAudio}
-                            className={`p-3 sm:p-4 rounded-xl transition-all ${isAudioEnabled
+                            className={`p-2 sm:p-4 rounded-xl transition-all shadow-sm ${isAudioEnabled
                                 ? 'bg-gray-700 hover:bg-gray-600'
                                 : 'bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30'
                                 }`}
@@ -181,7 +181,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 
                         <button
                             onClick={toggleVideo}
-                            className={`p-3 sm:p-4 rounded-xl transition-all ${isVideoEnabled
+                            className={`p-2 sm:p-4 rounded-xl transition-all shadow-sm ${isVideoEnabled
                                 ? 'bg-gray-700 hover:bg-gray-600'
                                 : 'bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30'
                                 }`}
@@ -192,7 +192,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 
                         <button
                             onClick={toggleHandRaise}
-                            className={`p-3 sm:p-4 rounded-xl transition-all ${isHandRaised
+                            className={`p-2 sm:p-4 rounded-xl transition-all shadow-sm ${isHandRaised
                                 ? 'bg-yellow-500 text-black hover:bg-yellow-400'
                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                 }`}
@@ -203,7 +203,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 
                         <button
                             onClick={onLeave}
-                            className="p-3 sm:p-4 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all shadow-lg shadow-red-900/20 flex justify-center"
+                            className="p-2 sm:p-4 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all shadow-lg flex justify-center"
                             title="Leave Call"
                         >
                             <PhoneOff size={24} />
@@ -231,14 +231,18 @@ const RemoteVideo: React.FC<{
         const v = videoRef.current;
         if (!v || !stream) return;
 
-        // Directly bind the original WebRTC stream reference. 
-        // DO NOT clone the stream, as cloned references drop asynchronous track mutations on mobile.
-        if (v.srcObject !== stream) {
-            v.srcObject = stream;
-        }
+        // Force WebKit/Blink to notice asynchronous track additions by completely re-binding the stream reference.
+        // Mobile browsers will silently fail to render if tracks are appended to an active stream object.
+        v.srcObject = null;
+        v.srcObject = stream;
 
-        v.play().catch(err => console.error("[REMOTE] Video auto-play blocked by browser:", err));
+        // A tiny timeout delay guarantees the DOM has officially painted the new srcObject before play is called.
+        // This is necessary to bypass a severe race condition in iOS/Android Autoplay Policies.
+        const timeout = setTimeout(() => {
+            v.play().catch(err => console.log("[REMOTE] Warning: Background auto-play denied:", err));
+        }, 50);
 
+        return () => clearTimeout(timeout);
     }, [stream, trackNonce]);
 
     const nameBar = (
