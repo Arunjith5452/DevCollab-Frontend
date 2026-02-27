@@ -149,7 +149,8 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
                     {/* REMOTE TILES */}
                     {Array.from(remoteStreams.entries()).map(([peerId, { stream, userName }]) => (
                         <RemoteVideo
-                            key={`${peerId}-${trackNonce[peerId] || 0}`}
+                            key={peerId}
+                            trackNonce={trackNonce[peerId] || 0}
                             stream={stream}
                             userName={userName}
                             isHandRaised={!!remoteHands.get(peerId)}
@@ -160,16 +161,16 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
                 </div>
 
                 {/* CONTROLS */}
-                <div className="flex items-center justify-between px-6 py-4 bg-gray-800/50 backdrop-blur-xl border border-white/5 rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-4 py-3 bg-gray-700/50 rounded-xl border border-white/5 text-gray-300" title="Participants">
+                <div className="mt-auto w-full flex-shrink-0">
+                    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 bg-gray-800/80 backdrop-blur-xl border border-white/10 rounded-2xl p-3 sm:p-4 shadow-xl">
+                        <div className="flex items-center gap-2 px-3 sm:px-4 py-3 bg-gray-700/70 rounded-xl border border-white/5 text-gray-300" title="Participants">
                             <Users size={20} />
                             <span className="font-medium">{remoteVideoStates.size + 1}</span>
                         </div>
 
                         <button
                             onClick={toggleAudio}
-                            className={`p-4 rounded-xl transition-all ${isAudioEnabled
+                            className={`p-3 sm:p-4 rounded-xl transition-all ${isAudioEnabled
                                 ? 'bg-gray-700 hover:bg-gray-600'
                                 : 'bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30'
                                 }`}
@@ -180,7 +181,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 
                         <button
                             onClick={toggleVideo}
-                            className={`p-4 rounded-xl transition-all ${isVideoEnabled
+                            className={`p-3 sm:p-4 rounded-xl transition-all ${isVideoEnabled
                                 ? 'bg-gray-700 hover:bg-gray-600'
                                 : 'bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30'
                                 }`}
@@ -191,7 +192,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 
                         <button
                             onClick={toggleHandRaise}
-                            className={`p-4 rounded-xl transition-all ${isHandRaised
+                            className={`p-3 sm:p-4 rounded-xl transition-all ${isHandRaised
                                 ? 'bg-yellow-500 text-black hover:bg-yellow-400'
                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                 }`}
@@ -199,15 +200,15 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
                         >
                             <Hand size={24} fill={isHandRaised ? 'currentColor' : 'none'} />
                         </button>
-                    </div>
 
-                    <button
-                        onClick={onLeave}
-                        className="p-4 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all shadow-lg shadow-red-900/20"
-                        title="Leave Call"
-                    >
-                        <PhoneOff size={24} />
-                    </button>
+                        <button
+                            onClick={onLeave}
+                            className="p-3 sm:p-4 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all shadow-lg shadow-red-900/20 flex justify-center"
+                            title="Leave Call"
+                        >
+                            <PhoneOff size={24} />
+                        </button>
+                    </div>
                 </div>
             </div>
             {/* Extension Modal Removed */}
@@ -218,26 +219,27 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 /* ---------- REMOTE VIDEO COMPONENT ---------- */
 const RemoteVideo: React.FC<{
     stream: MediaStream;
+    trackNonce: number;
     userName: string;
     isHandRaised: boolean;
     isVideoEnabled: boolean;
     isAudioEnabled: boolean;
-}> = ({ stream, userName, isHandRaised, isVideoEnabled, isAudioEnabled }) => {
+}> = ({ stream, trackNonce, userName, isHandRaised, isVideoEnabled, isAudioEnabled }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
         const v = videoRef.current;
-        if (!v) return;
+        if (!v || !stream) return;
 
-        v.srcObject = null;
-        requestAnimationFrame(() => {
-            const clone = stream.clone();
-            v.srcObject = clone;
-            v.autoplay = true;
-            v.playsInline = true;
-            v.muted = false;
-        });
-    }, [stream]);
+        // Directly bind the original WebRTC stream reference. 
+        // DO NOT clone the stream, as cloned references drop asynchronous track mutations on mobile.
+        if (v.srcObject !== stream) {
+            v.srcObject = stream;
+        }
+
+        v.play().catch(err => console.error("[REMOTE] Video auto-play blocked by browser:", err));
+
+    }, [stream, trackNonce]);
 
     const nameBar = (
         <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-medium border border-white/10 flex items-center gap-2">
