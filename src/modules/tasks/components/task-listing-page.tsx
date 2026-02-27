@@ -12,6 +12,7 @@ import { ProjectTask } from '@/modules/tasks/types/task.types';
 import { getAssignees, assignTask, getCreatorTasks } from '../services/task.api';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/useUserStore';
+import { useProjectStore } from '@/store/useProjectStore';
 import TaskDetailsPanel from '@/shared/common/user-common/task-details-panel';
 
 interface InitialData {
@@ -42,7 +43,8 @@ export default function TasksListingPage({
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlProjectId = searchParams.get('projectId') || '';
-  const projectId = projectIdProp || urlProjectId;
+  const { currentProject } = useProjectStore();
+  const projectId = projectIdProp || urlProjectId || currentProject?.id || '';
   const user = useAuthStore((state) => state.user)
 
 

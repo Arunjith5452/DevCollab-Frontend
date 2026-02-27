@@ -9,10 +9,13 @@ import toast from "react-hot-toast";
 import { approveApplication, getPendingApplications, rejectApplication } from "../services/project.api";
 import { PendingApplication, AiSuggestion } from "../types/project.types";
 import api from "@/lib/axios";
+import { useProjectStore } from "@/store/useProjectStore";
 
 export default function ApplicationsPage() {
     const searchParams = useSearchParams();
-    const projectId = searchParams.get("projectId")
+    const urlProjectId = searchParams.get("projectId")
+    const { currentProject } = useProjectStore();
+    const projectId = urlProjectId || currentProject?.id;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -28,7 +31,7 @@ export default function ApplicationsPage() {
 
     const [applications, setApplications] = useState<PendingApplication[]>([]);
     const [selectedApplicant, setSelectedApplicant] = useState<PendingApplication | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!!projectId);
 
     const fetchApplications = async () => {
         if (!projectId) return;
@@ -182,9 +185,10 @@ export default function ApplicationsPage() {
                             </div>
                         )}
 
-                        {/* Loading State */}
                         {loading ? (
                             <div className="text-center py-12 text-gray-500">Loading applications...</div>
+                        ) : !projectId ? (
+                            <div className="text-center py-12 text-red-500 font-medium">Please select a project from your dashboard to view applications.</div>
                         ) : applications.length === 0 ? (
                             <div className="text-center py-12 text-gray-500">No pending applications</div>
                         ) : (
