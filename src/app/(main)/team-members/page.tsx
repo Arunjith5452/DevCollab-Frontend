@@ -14,17 +14,6 @@ export default async function TeamMembers({
 
   console.log("✅ projectId from searchParams:", projectId);
 
-  if (!projectId) {
-    return <p className="p-6 text-red-600">Missing projectId</p>;
-  }
-
-  const currentSearch = search.trim();
-  const currentPage = Number(page) || 1;
-  const API_BASE = process.env.API_URL || "http://localhost:3001";
-
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('accessToken')?.value
-
   let initialData = {
     users: [] as Member[],
     currentPage: 1,
@@ -34,35 +23,44 @@ export default async function TeamMembers({
   };
 
   try {
-    console.log("inside")
-    const res = await fetch(
-      `${API_BASE}/api/projects/${projectId}/members?search=${encodeURIComponent(currentSearch)}&page=${currentPage}&limit=10`,
-      {
-        cache: 'no-store',
-        credentials: 'include',
-        headers: accessToken
-          ? { cookie: `accessToken=${accessToken}` }
-          : {},
+    if (projectId) {
+      const currentSearch = search.trim();
+      const currentPage = Number(page) || 1;
+      const API_BASE = process.env.API_URL || "http://localhost:3001";
+
+      const cookieStore = await cookies();
+      const accessToken = cookieStore.get('accessToken')?.value
+
+      console.log("inside")
+      const res = await fetch(
+        `${API_BASE}/api/projects/${projectId}/members?search=${encodeURIComponent(currentSearch)}&page=${currentPage}&limit=10`,
+        {
+          cache: 'no-store',
+          credentials: 'include',
+          headers: accessToken
+            ? { cookie: `accessToken=${accessToken}` }
+            : {},
+        }
+      );
+
+      console.log("res ponse is:", res)
+
+
+      if (res.ok) {
+        const payload = await res.json();
+        const list: Member[] = payload.data?.users || payload.users || [];
+        initialData = {
+          users: list,
+          currentPage: payload.data?.currentPage || currentPage,
+          totalPages: payload.data?.totalPages || 1,
+          totalItems: payload.data?.totalItems || 0,
+          currentSearch,
+        };
       }
-    );
-
-    console.log("res ponse is:",res)
-
-
-    if (res.ok) {
-      const payload = await res.json();
-      const list: Member[] = payload.data?.users || payload.users || [];
-      initialData = {
-        users: list,
-        currentPage: payload.data?.currentPage || currentPage,
-        totalPages: payload.data?.totalPages || 1,
-        totalItems: payload.data?.totalItems || 0,
-        currentSearch,
-      };
     }
   } catch (err) {
     console.error("SSR fetch failed for members");
   }
 
-  return <TeamMembersPage initialData={initialData} projectId={projectId} />;
+  return <TeamMembersPage initialData={initialData} projectId={projectId || ""} />;
 }
