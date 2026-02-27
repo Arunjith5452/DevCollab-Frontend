@@ -6,6 +6,7 @@ import PageLoader from '@/shared/common/LoadingComponent';
 import { getProjectMeetings, createMeeting, updateMeetingStatus, projectDetails } from '../services/project.api';
 import toast from 'react-hot-toast';
 import ConfirmModal from '@/shared/common/ConfirmModal';
+import { useSearchParams } from 'next/navigation';
 
 
 import CreatorMeetingPage from './creator-meeting-page';
@@ -71,7 +72,10 @@ export default function MeetingsPage({
   initialMeetings?: Meeting[],
   projectId?: string
 }) {
-  const projectId = propProjectId;
+  const searchParams = useSearchParams();
+  const urlProjectId = searchParams.get('projectId') || '';
+  const projectId = propProjectId || urlProjectId;
+
   const { user, fetchUser } = useAuthStore();
   const { setProject } = useProjectStore();
   const [isStoreLoading, setIsStoreLoading] = useState(true);

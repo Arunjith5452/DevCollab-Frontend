@@ -45,10 +45,10 @@ export default function AuthCallbackPage() {
         let userIdFieldName = "";
 
         if (provider === 'github') {
-            backendEndpoint = "http://localhost:3001/api/auth/github/callback";
+            backendEndpoint = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/github/callback`;
             userIdFieldName = "githubId";
         } else if (provider === 'google') {
-            backendEndpoint = "http://localhost:3001/api/auth/google/callback";
+            backendEndpoint = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google/callback`;
             userIdFieldName = "googleId";
         } else {
             console.error(`Unsupported provider: ${provider}`);

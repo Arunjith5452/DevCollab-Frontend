@@ -43,7 +43,7 @@ export default function ConnectGitHubPage() {
                 console.log("DEBUG: Payload:", payload);
 
                 await axios.patch(
-                    "http://localhost:3001/api/users/connect-github",
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/users/connect-github`,
                     payload,
                     { withCredentials: true }
                 );

@@ -10,10 +10,6 @@ export default async function ScheduleMeeting({
     const params = await searchParams;
     const projectId = params.projectId;
 
-    if (!projectId) {
-        redirect("/projects");
-    }
-
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
