@@ -76,6 +76,19 @@ export default function OtpVerificationForm({ type, email }: Props) {
         await verifyOTP({ token, otp: Number(otp) });
         localStorage.removeItem("tempToken");
         toast.success("Account verified successfully ");
+
+        try {
+          const { useAuthStore } = await import('@/store/useUserStore');
+          await useAuthStore.getState().fetchUser(true);
+        } catch (err) {
+          console.error("Failed to fetch user profile post-register", err);
+        }
+
+        const hasAuthData = localStorage.getItem('auth-storage');
+        if (!hasAuthData) {
+          localStorage.setItem('auth-storage', JSON.stringify({ state: { user: {} }, version: 0 }));
+        }
+
         router.push("/login");
       } else {
         if (!forgotEmail) throw new Error("Session expired. Please try again.");

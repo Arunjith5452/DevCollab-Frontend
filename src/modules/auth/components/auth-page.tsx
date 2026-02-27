@@ -41,6 +41,19 @@ export function AuthLogin({
 
       toast.success(`Login successful`);
 
+      try {
+        const { useAuthStore } = await import('@/store/useUserStore');
+        await useAuthStore.getState().fetchUser(true);
+      } catch (err) {
+        console.error("Failed to fetch user profile post-login", err);
+      }
+
+      const hasAuthData = localStorage.getItem('auth-storage');
+      if (!hasAuthData) {
+        // Fallback stub to unblock Header.tsx if fetchUser somehow didn't persist fast enough
+        localStorage.setItem('auth-storage', JSON.stringify({ state: { user: {} }, version: 0 }));
+      }
+
       if (response.role === "admin") {
         router.replace("/admin/dashboard");
       } else {
