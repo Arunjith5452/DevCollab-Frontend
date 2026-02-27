@@ -36,6 +36,7 @@ export function Header({
   const [loggingOut, setLoggingOut] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileDropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -72,7 +73,10 @@ export function Header({
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      const isOutsideDesktop = dropdownRef.current && !dropdownRef.current.contains(e.target as Node);
+      const isOutsideMobile = !mobileDropdownRef.current || !mobileDropdownRef.current.contains(e.target as Node);
+
+      if (isOutsideDesktop && isOutsideMobile) {
         setDropdownOpen(false);
       }
     };
@@ -264,7 +268,7 @@ export function Header({
 
           {/* Mobile Menu */}
           {mobileOpen && (
-            <div className="md:hidden mt-4 pb-4 border-t border-gray-200 pt-4">
+            <div ref={mobileDropdownRef} className="md:hidden mt-4 pb-4 border-t border-gray-200 pt-4 max-h-[calc(100vh-80px)] overflow-y-auto">
               <nav className="flex flex-col space-y-3">
                 {navLinks.map(l => (
                   <Link

@@ -150,7 +150,7 @@ export default function UserManagement() {
           }
         />
 
-        <main className="flex-1 p-8 overflow-auto">
+        <main className="flex-1 p-4 sm:p-8 overflow-auto">
 
           <div className="bg-teal-50 rounded-2xl p-6 mb-6 border border-teal-100">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -216,7 +216,7 @@ export default function UserManagement() {
           />
 
           {/* Modal */}
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-96">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90%] sm:w-96">
             <div className="bg-white rounded-2xl p-8 shadow-2xl border border-gray-200 text-center">
               <h3 className="text-xl font-bold text-gray-900 mb-3">
                 {newStatus === "block" ? "Block" : "Unblock"} User

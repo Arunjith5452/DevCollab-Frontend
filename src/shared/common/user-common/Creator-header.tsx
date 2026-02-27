@@ -34,7 +34,7 @@ export default function CreatorHeader({ projectName: propProjectName }: HeaderPr
     const displayProjectName = propProjectName || (currentProject?.id === projectId ? currentProject?.title : "") || "Project";
 
     return (
-        <header className="bg-white border-b border-[#e6f4f2] px-10 py-4 flex items-center justify-between">
+        <header className="bg-white border-b border-[#e6f4f2] px-4 sm:px-6 md:px-10 py-4 flex items-center justify-between">
             <div>
                 <div className="flex items-center gap-2 mb-1">
                     <svg className="w-4 h-4 text-[#6b7280]" fill="currentColor" viewBox="0 0 20 20">

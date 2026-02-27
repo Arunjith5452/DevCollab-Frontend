@@ -40,8 +40,8 @@ export function ForgotPasswordPage() {
         <AuthHeader text={"Login"} showButton={true} onButtonClick={() => router.push("\login")} />
 
         {/* Main Content */}
-        <div className="px-40 flex flex-1 justify-center py-5">
-          <div className="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 max-w-[960px] flex-1">
+        <div className="px-4 sm:px-10 md:px-40 flex flex-1 justify-center py-5">
+          <div className="layout-content-container flex flex-col w-full sm:w-[512px] max-w-[512px] py-5 max-w-[960px] flex-1">
             <div className="w-full" style={{ height: "120px" }}></div>
 
             {/* Title */}

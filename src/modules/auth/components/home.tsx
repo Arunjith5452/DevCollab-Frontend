@@ -87,8 +87,8 @@ export function HomePage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      {/* Enhanced Hero Section - ONLY THIS CHANGED */}
-      <section className="relative bg-gradient-to-br from-green-600 via-green-700 to-green-800 pt-32 pb-20 px-6 overflow-hidden">
+      {/* Enhanced Hero Section */}
+      <section className="relative bg-gradient-to-br from-green-600 via-green-700 to-green-800 pt-24 md:pt-32 pb-12 md:pb-20 px-6 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 right-20 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
@@ -212,7 +212,7 @@ export function HomePage() {
       </section>
 
       {/* Featured Projects Section - Dynamic */}
-      <section className="px-6 py-16">
+      <section className="px-6 py-10 md:py-16">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">Featured Projects</h2>
 
