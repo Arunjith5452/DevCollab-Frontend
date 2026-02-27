@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Check, Sparkles, Zap, Shield, Crown, ArrowLeft, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageLoader from '@/shared/common/LoadingComponent';
 
 interface Plan {
     id: string;
@@ -107,11 +108,7 @@ const SubscriptionPage = () => {
 
 
     if (pageLoading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 flex items-center justify-center text-white">
-                <Loader2 className="w-10 h-10 animate-spin" />
-            </div>
-        );
+        return <PageLoader />;
     }
 
     return (
