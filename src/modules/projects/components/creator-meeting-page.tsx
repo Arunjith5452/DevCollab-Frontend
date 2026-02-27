@@ -142,7 +142,7 @@ export default function CreatorMeetingPage({
                             </div>
                             <button
                                 onClick={handleScheduleMeeting}
-                                className="w-full py-4 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 transform hover:-translate-y-0.5 transition-all shadow-lg hover:shadow-teal-200"
+                                className="w-full py-3 md:py-4 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 transform hover:-translate-y-0.5 transition-all shadow-lg hover:shadow-teal-200 mt-2"
                             >
                                 Schedule Meeting
                             </button>
@@ -156,10 +156,10 @@ export default function CreatorMeetingPage({
                                     upcomingMeetings.map((meeting) => (
                                         <div
                                             key={meeting.id}
-                                            className="border border-gray-200 rounded-lg p-6 hover:border-teal-300 transition-colors"
+                                            className="border border-gray-200 rounded-lg p-4 md:p-6 hover:border-teal-300 transition-colors"
                                         >
-                                            <div className="flex justify-between items-center gap-4">
-                                                <div className="flex-1 min-w-0">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                                <div className="flex-1 min-w-0 w-full">
                                                     <div className="flex items-center gap-3 mb-2">
                                                         <h3 className="text-lg font-bold text-gray-900 truncate">{meeting.title}</h3>
                                                         <StatusBadge status={meeting.status} />
@@ -173,10 +173,10 @@ export default function CreatorMeetingPage({
                                                     </p>
                                                 </div>
 
-                                                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                                                <div className="flex items-center gap-2 sm:gap-3 flex-wrap w-full md:w-auto">
                                                     <button
                                                         onClick={() => handleJoinMeeting(meeting.id)}
-                                                        className="px-5 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors text-sm shadow-sm whitespace-nowrap"
+                                                        className="flex-1 md:flex-none px-4 md:px-5 py-2 md:py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors text-sm shadow-sm whitespace-nowrap text-center"
                                                     >
                                                         Join Call
                                                     </button>
@@ -224,10 +224,10 @@ export default function CreatorMeetingPage({
                                     pastMeetings.map((meeting) => (
                                         <div
                                             key={meeting.id}
-                                            className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors opacity-75"
+                                            className="border border-gray-200 rounded-lg p-4 md:p-6 hover:border-gray-300 transition-colors opacity-75"
                                         >
-                                            <div className="flex justify-between items-center gap-4">
-                                                <div className="flex-1 min-w-0">
+                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                                <div className="flex-1 min-w-0 w-full">
                                                     <h3 className="text-lg font-bold text-gray-900 truncate">{meeting.title}</h3>
                                                     <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />

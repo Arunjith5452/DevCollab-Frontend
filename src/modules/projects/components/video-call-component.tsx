@@ -160,16 +160,16 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
                 </div>
 
                 {/* CONTROLS */}
-                <div className="flex items-center justify-between px-6 py-4 bg-gray-800/50 backdrop-blur-xl border border-white/5 rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-4 py-3 bg-gray-700/50 rounded-xl border border-white/5 text-gray-300" title="Participants">
+                <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 gap-4 bg-gray-800/50 backdrop-blur-xl border border-white/5 rounded-2xl w-full">
+                    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 w-full sm:w-auto">
+                        <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-gray-700/50 rounded-xl border border-white/5 text-gray-300" title="Participants">
                             <Users size={20} />
                             <span className="font-medium">{remoteVideoStates.size + 1}</span>
                         </div>
 
                         <button
                             onClick={toggleAudio}
-                            className={`p-4 rounded-xl transition-all ${isAudioEnabled
+                            className={`p-3 sm:p-4 rounded-xl transition-all ${isAudioEnabled
                                 ? 'bg-gray-700 hover:bg-gray-600'
                                 : 'bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30'
                                 }`}
@@ -180,7 +180,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 
                         <button
                             onClick={toggleVideo}
-                            className={`p-4 rounded-xl transition-all ${isVideoEnabled
+                            className={`p-3 sm:p-4 rounded-xl transition-all ${isVideoEnabled
                                 ? 'bg-gray-700 hover:bg-gray-600'
                                 : 'bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30'
                                 }`}
@@ -191,7 +191,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 
                         <button
                             onClick={toggleHandRaise}
-                            className={`p-4 rounded-xl transition-all ${isHandRaised
+                            className={`p-3 sm:p-4 rounded-xl transition-all ${isHandRaised
                                 ? 'bg-yellow-500 text-black hover:bg-yellow-400'
                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                 }`}
@@ -203,7 +203,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 
                     <button
                         onClick={onLeave}
-                        className="p-4 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all shadow-lg shadow-red-900/20"
+                        className="p-3 sm:p-4 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all shadow-lg shadow-red-900/20 w-full sm:w-auto flex justify-center mt-2 sm:mt-0"
                         title="Leave Call"
                     >
                         <PhoneOff size={24} />
