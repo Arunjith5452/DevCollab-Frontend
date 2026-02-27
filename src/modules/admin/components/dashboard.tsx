@@ -171,7 +171,7 @@ export function Dashboard() {
           }
         />
 
-        <main className="flex-1 p-8 overflow-auto">
+        <main className="flex-1 p-4 sm:p-8 overflow-auto">
           {loading ? (
             <div className="flex h-full items-center justify-center">
               <PageLoader />

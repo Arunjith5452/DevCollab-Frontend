@@ -52,8 +52,8 @@ export function ResetPasswordPage() {
         <AuthHeader text="" showButton={false} onButtonClick={() => { }} />
 
         {/* Main Content */}
-        <div className="px-40 flex flex-1 justify-center py-5">
-          <div className="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 flex-1">
+        <div className="px-4 sm:px-10 md:px-40 flex flex-1 justify-center py-5">
+          <div className="layout-content-container flex flex-col w-full sm:w-[512px] max-w-[512px] py-5 flex-1">
             <h2 className="text-[#0c1d1a] text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">
               Reset your password
             </h2>

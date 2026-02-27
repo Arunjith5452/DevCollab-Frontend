@@ -64,7 +64,7 @@ export const CreatorSidebar = ({ activeItem = 'dashboard' }: SidebarProps) => {
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 py-4">
+                <nav className="flex-1 py-4 overflow-y-auto">
                     {menuItems.map((item) => (
                         <button
                             key={item.id}
