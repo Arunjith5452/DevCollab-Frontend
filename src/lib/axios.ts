@@ -44,6 +44,10 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    if (originalRequest.url?.includes("/api/auth/refresh")) {
+      return Promise.reject(error);
+    }
+
     if ((status === 401 || status === 403) && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -54,8 +58,9 @@ api.interceptors.response.use(
         originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshError: unknown) {
-        if (axios.isAxiosError(refreshError) && refreshError.response?.status === 401) {
-          if (typeof window !== "undefined") {
+        if (typeof window !== "undefined") {
+          const publicPaths = ['/home', '/login', '/register', '/forgot-password', '/reset-password', '/'];
+          if (!publicPaths.includes(window.location.pathname)) {
             setTimeout(() => {
               window.location.href = "/login";
             }, 1000);
