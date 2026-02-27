@@ -227,16 +227,14 @@ const RemoteVideo: React.FC<{
 
     useEffect(() => {
         const v = videoRef.current;
-        if (!v) return;
+        if (!v || !stream) return;
 
-        v.srcObject = null;
-        requestAnimationFrame(() => {
-            const clone = stream.clone();
-            v.srcObject = clone;
-            v.autoplay = true;
-            v.playsInline = true;
-            v.muted = false;
-        });
+        // Directly bind the original WebRTC stream reference. 
+        // DO NOT clone the stream, as cloned references drop asynchronous track mutations on mobile.
+        if (v.srcObject !== stream) {
+            v.srcObject = stream;
+            v.play().catch(err => console.error("[REMOTE] Video auto-play blocked by browser:", err));
+        }
     }, [stream]);
 
     const nameBar = (
