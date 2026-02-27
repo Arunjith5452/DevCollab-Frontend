@@ -106,7 +106,10 @@ export default function TasksListingPage({
       if (assigneeFilter !== 'all') params.set('assignee', assigneeFilter);
       params.set('page', currentPage.toString());
 
-      router.replace(`/task-listing?${params.toString()}`, { scroll: false });
+      const newQuery = params.toString();
+      if (searchParams.toString() !== newQuery) {
+        router.replace(`/task-listing?${newQuery}`, { scroll: false });
+      }
     };
 
     fetchTasks();
