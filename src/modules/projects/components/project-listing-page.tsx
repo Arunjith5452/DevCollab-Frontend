@@ -394,8 +394,8 @@ export default function ExploreProjectsPage() {
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5">Featured Project</h2>
             {featuredProjects.map((project) => (
               <div key={project.id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-5 shadow-sm hover:shadow-md transition-shadow">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-center">
-                  <div className="md:col-span-2 space-y-3 order-2 md:order-1">
+                <div className="flex flex-col md:grid md:grid-cols-3 gap-4 sm:gap-6 items-start md:items-center">
+                  <div className="w-full md:col-span-2 space-y-3 order-2 md:order-1">
                     <div className="inline-block px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-semibold rounded-full">
                       Featured
                     </div>
@@ -409,12 +409,12 @@ export default function ExploreProjectsPage() {
                       View Project
                     </Link>
                   </div>
-                  <div className="flex justify-center items-center rounded-xl h-32 sm:h-40 order-1 md:order-2 overflow-hidden">
+                  <div className="w-full md:w-auto flex justify-center items-center rounded-xl h-48 sm:h-40 order-1 md:order-2 overflow-hidden bg-gray-50">
                     {project.image ? (
                       <img
                         src={project.image}
                         alt={project.title}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-cover sm:object-contain rounded-xl"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl flex items-center justify-center">
@@ -441,8 +441,8 @@ export default function ExploreProjectsPage() {
               <div className="space-y-5">
                 {projects.map((project, index) => (
                   <div key={project.id || index} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-center">
-                      <div className="md:col-span-2 space-y-3">
+                    <div className="flex flex-col md:grid md:grid-cols-3 gap-4 sm:gap-6 items-start md:items-center">
+                      <div className="w-full md:col-span-2 space-y-3 order-2 md:order-1">
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                           {project.title}
                         </h3>
@@ -458,7 +458,7 @@ export default function ExploreProjectsPage() {
                       </div>
 
                       <div
-                        className="flex justify-center items-center rounded-xl h-32 sm:h-40 overflow-hidden"
+                        className="w-full md:w-auto flex justify-center items-center rounded-xl h-48 sm:h-40 overflow-hidden order-1 md:order-2"
                         style={{
                           backgroundColor: project.image ? 'transparent' : 'var(--fallback-bg-color, #f0fff4)',
                           padding: project.image ? '0' : '1.5rem'
@@ -468,7 +468,7 @@ export default function ExploreProjectsPage() {
                           <img
                             src={project.image}
                             alt={`Image for ${project.title}`}
-                            className="w-full h-full object-contain"
+                            className="w-full h-full object-cover sm:object-contain rounded-xl"
                           />
                         ) : (
                           <div className="text-4xl text-gray-500 flex justify-center items-center h-full w-full bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl">
