@@ -85,7 +85,6 @@ export default function ContributorTasksPage({
     fetchTasks();
   }, [activeTab, user, projectId, refreshKey]);
 
-  // Sync selectedTask with tasks when data refreshes
   useEffect(() => {
     if (selectedTask) {
       const updatedTask = tasks.find(t => t.id === selectedTask.id);

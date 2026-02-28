@@ -74,7 +74,6 @@ export default function EditProjectPage() {
     const skillLevel = watch('skillLevel');
     const isPublic = watch('isPublic');
 
-    // Fetch project data on mount
     useEffect(() => {
         const fetchProject = async () => {
             if (!projectId) return;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getAllPlans, togglePlanStatus, Plan } from "@/modules/admin/services/plans.api";
-import { Edit, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Edit, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { getErrorMessage } from "@/shared/utils/ErrorMessage";

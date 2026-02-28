@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Badge, DataTable, Header, Pagination, Sidebar } from "@/shared/common/admin-common";
-import { ChevronDown, Download, Eye } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 import { getAllProjects } from "../services/admin.api";
 import { SearchInput } from "@/shared/common/Searching";
 import toast from "react-hot-toast";

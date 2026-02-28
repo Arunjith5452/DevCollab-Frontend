@@ -25,22 +25,17 @@ export default function ConnectGitHubPage() {
 
     useEffect(() => {
         if (status !== 'authenticated' || !data?.user?.accessToken) {
-            console.log("DEBUG: No access token in session");
             router.replace("/create-project?error=no_token");
             return;
         }
 
         const sendTokenToBackend = async () => {
             try {
-                console.log("DEBUG: Sending GitHub token to backend");
-                console.log("DEBUG: Access Token:", data.user.accessToken);
 
                 const payload = {
                     githubAccessToken: data.user.accessToken,
                     githubUrl: data.user.githubUrl
                 };
-
-                console.log("DEBUG: Payload:", payload);
 
                 await axios.patch(
                     `${process.env.NEXT_PUBLIC_API_URL}/api/users/connect-github`,
@@ -48,7 +43,6 @@ export default function ConnectGitHubPage() {
                     { withCredentials: true }
                 );
 
-                console.log("DEBUG: Successfully sent token to backend");
                 router.replace("/create-project?github_connected=true");
             } catch (error) {
                 console.error("DEBUG: Failed to send token to backend", error);

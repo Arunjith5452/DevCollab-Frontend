@@ -1,7 +1,6 @@
 import api from "@/lib/axios";
 import { create } from "zustand";
 
-// Module-level in-flight promise so concurrent callers share one request
 let fetchingPromise: Promise<void> | null = null;
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -34,10 +33,9 @@ export const useAuthStore = create<AuthState>()(
       user: null,
 
       fetchUser: async (force = false) => {
-        // Skip network call if user is already loaded and not forced
+
         if (!force && get().user) return;
 
-        // Deduplicate concurrent calls – share the same in-flight promise
         if (fetchingPromise) return fetchingPromise;
 
         fetchingPromise = (async () => {

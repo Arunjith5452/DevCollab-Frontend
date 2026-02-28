@@ -93,7 +93,6 @@ export default function MeetingsPage({
     agenda: ''
   })
 
-  // Modal State
   const [modal, setModal] = useState({
     open: false,
     title: '',
@@ -131,8 +130,6 @@ export default function MeetingsPage({
         status: statusParam
       });
 
-      // Backend now returns { items: [], total: number }
-      // And axios interceptor unwraps the response.data
       const { items, total } = res.data;
 
       if (type === 'upcoming') {
@@ -162,7 +159,6 @@ export default function MeetingsPage({
     init();
   }, [projectId, fetchUser]);
 
-  // Handle page changes
   useEffect(() => {
     if (projectId) fetchMeetings('upcoming', upcomingPage);
   }, [projectId, upcomingPage]);
@@ -184,10 +180,8 @@ export default function MeetingsPage({
 
     let formattedValue = '';
     if (field === 'date') {
-      // Format as YYYY-MM-DD
       formattedValue = value.toISOString().split('T')[0];
     } else if (field === 'time' || field === 'endTime') {
-      // Format as HH:mm
       const hours = value.getHours().toString().padStart(2, '0');
       const minutes = value.getMinutes().toString().padStart(2, '0');
       formattedValue = `${hours}:${minutes}`;
@@ -210,7 +204,6 @@ export default function MeetingsPage({
       return;
     }
 
-    // Validate that end time is after start time
     const startDateTime = new Date(`${formData.date}T${formData.time}`);
     const endDateTime = new Date(`${formData.date}T${formData.endTime}`);
 
@@ -228,7 +221,6 @@ export default function MeetingsPage({
         type: 'group'
       });
 
-      // Refresh upcoming meetings
       fetchMeetings('upcoming', upcomingPage);
 
       setFormData({

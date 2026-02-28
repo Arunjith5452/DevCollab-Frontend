@@ -84,7 +84,6 @@ export default function CreatorDashboardPage() {
             setProject(details.data);
             setStats(statsData);
         } catch (err: unknown) {
-            // Show access denied UI instead of a silent redirect
             const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
             const msg = axiosErr?.response?.data?.message || axiosErr?.message || "";
             if (msg.toLowerCase().includes("creator") || msg.toLowerCase().includes("denied") || msg.toLowerCase().includes("private")) {
