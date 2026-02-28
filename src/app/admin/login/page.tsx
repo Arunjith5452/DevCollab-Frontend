@@ -33,10 +33,8 @@ export default async function AdminLoginRoute() {
   if (token) {
     const payload = decodeJwtPayload(token);
     if (payload?.role === "admin") {
-      // Already logged in as admin → go to dashboard
       redirect("/admin/dashboard");
     } else {
-      // Logged in as a regular user → block access, send to home
       redirect("/home");
     }
   }

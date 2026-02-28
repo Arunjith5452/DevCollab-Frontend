@@ -1,17 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Sidebar, Header } from "@/shared/common/admin-common";
-import { Activity, ArrowUpRight, Bell, Calendar, ChevronDown, Code, DollarSign, Download, Filter, Folder, FolderOpen, Home, Mail, MoreVertical, Search, Settings, Target, TrendingUp, User, UserCheck, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import {ArrowUpRight, Bell, Calendar, Code, Download, Folder, FolderOpen, TrendingUp, UserCheck, Users } from "lucide-react";
 import { getActivities, getDashboardStats } from "../services/admin.api";
 import PageLoader from "@/shared/common/LoadingComponent";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardStats, ActivityItem, DateRangeQuery, ChartDataPoint, TechDataPoint } from "@/types/admin/dashboard.types";
-import { PlanList } from "../plans/components/PlanList";
-import { CreatePlanModal } from "../plans/components/CreatePlanModal";
-import { EditPlanModal } from "../plans/components/EditPlanModal";
-import { Plan } from "../services/plans.api";
-import { Plus } from "lucide-react";
 import { Pagination } from "@/shared/common/Pagination";
 
 export function Dashboard() {

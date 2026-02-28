@@ -44,7 +44,6 @@ export const SubscriptionList = () => {
         try {
             setLoading(true);
             const response = await getAllSubscriptions({ page, limit: 10, search: searchTerm, status: activeTab });
-            // Handle different response structures gracefully
             const data = response.data?.subscriptions || response.subscriptions || response.data || [];
             const totalCount = response.data?.total || response.total || 0;
 
@@ -62,7 +61,6 @@ export const SubscriptionList = () => {
         fetchSubscriptions();
     }, [page, searchTerm, activeTab]);
 
-    // Reset page on search or tab change
     useEffect(() => {
         setPage(1);
     }, [searchTerm, activeTab]);

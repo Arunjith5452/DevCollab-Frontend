@@ -269,7 +269,6 @@ export default function CreateTaskPage() {
     }
 
 
-    // Construct payload safely
     const payload: CreateTaskPayload = {
       title: data.title,
       description: data.description,
@@ -304,14 +303,12 @@ export default function CreateTaskPage() {
       try {
         toast.loading('Initializing task...', { id: 'create-task' });
 
-        // 1. Create the task first (with escrowStatus: 'not-paid')
         const setupRes = await createTask(payload);
 
         const taskId = setupRes?.id;
 
         if (!taskId) throw new Error("Task creation failed: No ID returned");
 
-        // 2. Create Stripe Checkout Session with taskId in metadata
         const amountInPaise = Math.round(paymentAmount * 100);
         const baseUrl = window.location.origin;
         const response = await createCheckoutSession({
@@ -321,13 +318,12 @@ export default function CreateTaskPage() {
             project_id: String(projectId || ''),
             task_title: String(data.title),
           },
-          // Explicitly set success/cancel URLs so projectId is always preserved
           success_url: `${baseUrl}/task-listing?projectId=${projectId}&session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${baseUrl}/task-listing?projectId=${projectId}`,
         });
 
         if (response.url) {
-          window.location.href = response.url; // Redirect to Stripe Checkout
+          window.location.href = response.url; 
         } else {
           toast.dismiss('create-task');
           toast.error('Failed to start payment');

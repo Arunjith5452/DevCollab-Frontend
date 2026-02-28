@@ -48,7 +48,6 @@ export function ResetPasswordPage() {
     <div className="relative flex size-full min-h-screen flex-col bg-white overflow-x-hidden">
       <div className="layout-container flex h-full grow flex-col">
         {/* Header */}
-        {/* Header */}
         <AuthHeader text="" showButton={false} onButtonClick={() => { }} />
 
         {/* Main Content */}
