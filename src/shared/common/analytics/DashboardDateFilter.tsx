@@ -107,7 +107,7 @@ const DashboardDateFilter: React.FC<DashboardDateFilterProps> = ({ onFilterChang
             </div>
 
             {isDropdownOpen && (
-                <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-xl bg-white border border-[#e2e8f0] focus:outline-none z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute right-0 sm:right-auto mt-2 w-48 rounded-xl shadow-xl bg-white border border-[#e2e8f0] focus:outline-none z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                     <div className="py-1" role="menu" aria-orientation="vertical">
                         {['all', 'today', 'week', 'month', 'year', 'custom'].map((option) => (
                             <button
@@ -126,7 +126,7 @@ const DashboardDateFilter: React.FC<DashboardDateFilterProps> = ({ onFilterChang
             )}
 
             {isCustomPickerOpen && (
-                <div className="absolute right-0 mt-2 bg-white p-4 shadow-xl rounded-xl border border-[#e2e8f0] z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute right-0 sm:right-auto mt-2 bg-white p-4 shadow-xl rounded-xl border border-[#e2e8f0] z-50 animate-in fade-in zoom-in-95 duration-100 max-w-[100vw] overflow-x-auto">
                     <DatePicker
                         selectsRange={true}
                         startDate={startDate}

@@ -32,11 +32,11 @@ export default function DoneTab({ tasks, getAssigneeName, onViewDetails }: DoneT
           >
             {/* Task Header */}
             <div className="mb-4">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="text-lg font-semibold text-[#0c1d1a]">{task.title}</h3>
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-0 mb-2">
+                <h3 className="text-lg font-semibold text-[#0c1d1a] w-full sm:flex-1">{task.title}</h3>
                 <button
                   onClick={() => onViewDetails(task)}
-                  className="px-3 py-1.5 text-sm border border-[#cdeae5] rounded-lg text-[#006b5b] hover:bg-[#e6f4f2] transition-colors"
+                  className="w-full sm:w-auto px-3 py-1.5 text-sm border border-[#cdeae5] rounded-lg text-[#006b5b] hover:bg-[#e6f4f2] transition-colors flex justify-center items-center"
                 >
                   View Details
                 </button>
@@ -81,13 +81,13 @@ export default function DoneTab({ tasks, getAssigneeName, onViewDetails }: DoneT
                   <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
                     <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                     <div className="flex-1">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                         <p className="text-sm font-semibold text-green-700">Approved</p>
-                        <span className="px-2 py-0.5 bg-green-600 text-white text-[10px] font-bold rounded-full uppercase">
+                        <span className="w-fit px-2 py-0.5 bg-green-600 text-white text-[10px] font-bold rounded-full uppercase">
                           Payment Released
                         </span>
                       </div>
-                      <p className="text-xs text-green-600">Your work has been approved and payment released.</p>
+                      <p className="text-xs text-green-600 mt-1 sm:mt-0">Your work has been approved and payment released.</p>
                     </div>
                   </div>
                 ) : task.approval === 'improvement-needed' ? (

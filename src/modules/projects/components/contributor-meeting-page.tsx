@@ -78,10 +78,10 @@ export default function ContributorMeetingPage({
                                 {upcomingMeetings.length > 0 ? (
                                     upcomingMeetings.map((meeting) => (
                                         <div key={meeting.id} className="border border-gray-200 rounded-lg p-6 hover:border-teal-300 transition-colors">
-                                            <div className="flex justify-between items-center"> {/* items-center for centering */}
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-3 mb-2"> {/* Group title and badge */}
-                                                        <h3 className="text-lg font-bold text-gray-900">{meeting.title}</h3>
+                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                                <div className="flex-1 min-w-0 w-full">
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <h3 className="text-lg font-bold text-gray-900 truncate">{meeting.title}</h3>
                                                         <StatusBadge status={meeting.status} />
                                                     </div>
                                                     <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
@@ -92,12 +92,14 @@ export default function ContributorMeetingPage({
                                                         <span className="font-medium">Scheduled By:</span> {meeting.createdByName}
                                                     </p>
                                                 </div>
-                                                <button
-                                                    onClick={() => handleJoinMeeting(meeting.id)}
-                                                    className="px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors text-sm shadow-sm"
-                                                >
-                                                    Join Call
-                                                </button>
+                                                <div className="w-full sm:w-auto">
+                                                    <button
+                                                        onClick={() => handleJoinMeeting(meeting.id)}
+                                                        className="w-full sm:w-auto px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors text-sm shadow-sm"
+                                                    >
+                                                        Join Call
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))
@@ -125,15 +127,17 @@ export default function ContributorMeetingPage({
                                             key={meeting.id}
                                             className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors opacity-75"
                                         >
-                                            <div className="flex justify-between items-center gap-4"> {/* items-center + gap */}
-                                                <div className="flex-1 min-w-0"> {/* min-w-0 prevents overflow on long titles */}
+                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                                <div className="flex-1 min-w-0 w-full">
                                                     <h3 className="text-lg font-bold text-gray-900 truncate">{meeting.title}</h3>
                                                     <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
                                                         <CalendarIcon size={16} />
                                                         <span className="font-medium">Time:</span> {new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(meeting.date).toLocaleDateString()})
                                                     </p>
                                                 </div>
-                                                <StatusBadge status={meeting.status} />
+                                                <div className="mt-2 sm:mt-0">
+                                                    <StatusBadge status={meeting.status} />
+                                                </div>
                                             </div>
                                         </div>
                                     ))
