@@ -178,7 +178,7 @@ export default function CreatorDashboardPage() {
                         <>
 
                             {/* Stats Cards */}
-                            <div className="grid grid-cols-2 gap-6 mb-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-8">
                                 {/* Completion Rate */}
                                 <div className="bg-white p-6 rounded-lg border border-[#e6f4f2]">
                                     <h3 className="text-[#0c1d1a] font-semibold mb-2">Completion Rate</h3>
@@ -244,14 +244,14 @@ export default function CreatorDashboardPage() {
                             </div>
 
                             {/* Analytics Graphs */}
-                            <div className="grid grid-cols-2 gap-6 mb-8">
-                                <div className="h-[400px]">
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 mb-8">
+                                <div className="h-[400px] w-full">
                                     <EarningTrendGraph
                                         data={stats?.earningsTimeline || []}
                                         title="Project Expenses"
                                     />
                                 </div>
-                                <div className="h-[400px]">
+                                <div className="h-[400px] w-full">
                                     <ActivityTrendGraph
                                         data={stats?.activityTimeline || []}
                                         type="project"
@@ -262,9 +262,9 @@ export default function CreatorDashboardPage() {
 
                             {/* Task Management */}
                             <div className="mb-8">
-                                <div className="flex items-center justify-between mb-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                                     <h2 className="text-[#0c1d1a] text-xl font-bold">Task Management</h2>
-                                    <button onClick={() => router.push(`/create-task?projectId=${projectId}`)} className="px-4 py-2 bg-[#006b5b] text-white text-sm font-medium rounded hover:bg-[#005a4d]">
+                                    <button onClick={() => router.push(`/create-task?projectId=${projectId}`)} className="w-full sm:w-auto px-4 py-2 bg-[#006b5b] text-white text-sm font-medium rounded hover:bg-[#005a4d]">
                                         Create Task
                                     </button>
                                 </div>

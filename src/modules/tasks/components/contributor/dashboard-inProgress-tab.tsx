@@ -44,19 +44,19 @@ export default function InProgressTab({
                         >
                             {/* Task Header */}
                             <div className="mb-4">
-                                <div className="flex items-start justify-between mb-2">
-                                    <h3 className="text-lg font-semibold text-[#0c1d1a] flex-1">{task.title}</h3>
-                                    <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                                <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-0 mb-2">
+                                    <h3 className="text-lg font-semibold text-[#0c1d1a] w-full sm:flex-1">{task.title}</h3>
+                                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-4 flex-shrink-0">
                                         <button
                                             onClick={() => onViewDetails(task)}
-                                            className="flex items-center gap-2 px-3 py-2 text-[#006b5b] bg-[#e6f4f2] rounded-lg text-sm font-semibold hover:bg-[#d0e8e4] transition-colors"
+                                            className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-3 py-2 text-[#006b5b] bg-[#e6f4f2] rounded-lg text-sm font-semibold hover:bg-[#d0e8e4] transition-colors"
                                         >
                                             <Eye className="w-4 h-4" />
                                             Details
                                         </button>
                                         <button
                                             onClick={() => onMarkAsDone(task.id)}
-                                            className="flex items-center gap-2 px-4 py-2 bg-[#006b5b] text-white rounded-lg text-sm font-semibold hover:bg-[#005a4d] transition-colors"
+                                            className="flex-1 sm:flex-none flex justify-center items-center gap-2 px-4 py-2 bg-[#006b5b] text-white rounded-lg text-sm font-semibold hover:bg-[#005a4d] transition-colors"
                                         >
                                             <CheckCircle2 className="w-4 h-4" />
                                             {needsImprovement ? 'Resubmit for Review' : 'Mark as Done'}

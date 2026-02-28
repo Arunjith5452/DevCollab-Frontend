@@ -217,7 +217,7 @@ export default function ContributorDashboardPage({
                             )}
 
                             {/* Earnings Cards */}
-                            <div className="grid grid-cols-3 gap-6 mb-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
                                 <div className="bg-white p-6 rounded-lg border border-[#e6f4f2]">
                                     <h3 className="text-[#0c1d1a] font-semibold mb-2">Total Earnings</h3>
                                     <p className="text-3xl font-bold text-[#0c1d1a] mb-1">
@@ -244,14 +244,14 @@ export default function ContributorDashboardPage({
                             </div>
 
                             {/* Analytics Graphs */}
-                            <div className="grid grid-cols-2 gap-6 mb-8">
-                                <div className="h-[400px]">
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 mb-8">
+                                <div className="h-[400px] w-full">
                                     <EarningTrendGraph
                                         data={stats?.earningsTimeline || []}
                                         title="My Earnings Trend"
                                     />
                                 </div>
-                                <div className="h-[400px]">
+                                <div className="h-[400px] w-full">
                                     <ActivityTrendGraph
                                         data={stats?.activityTimeline || []}
                                         type="contributor"
@@ -261,7 +261,7 @@ export default function ContributorDashboardPage({
                             </div>
 
                             {/* Task Statistics & Completion Rate */}
-                            <div className="grid grid-cols-2 gap-6 mb-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-8">
                                 <div className="bg-white p-6 rounded-lg border border-[#e6f4f2]">
                                     <h3 className="text-[#0c1d1a] font-semibold mb-4">Task Statistics</h3>
                                     <div className="space-y-4">
