@@ -65,7 +65,6 @@ export default function ApplicationsPage() {
         }
     };
 
-    // Reject handler
     const handleReject = async () => {
         if (!selectedApplicant) return;
         try {

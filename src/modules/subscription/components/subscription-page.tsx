@@ -95,14 +95,12 @@ const SubscriptionPage = () => {
 
 
     const isCurrentPlan = (planName: string, isFreePlan: boolean) => {
-        // If the user has an active subscription, compare current plan name
         if (user?.subscription?.status === 'active') {
             if (user.subscription.plan) {
                 return user.subscription.plan.toLowerCase() === planName.toLowerCase();
             }
         }
 
-        // If no active subscription, the Free plan is the default
         return isFreePlan;
     };
 

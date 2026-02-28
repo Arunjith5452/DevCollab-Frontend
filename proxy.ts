@@ -22,7 +22,6 @@ export default function proxy(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
 
-  // Always allow API auth routes and callback routes
   if (
     pathname.startsWith('/api/auth') ||
     pathname === '/callback' ||
@@ -33,7 +32,6 @@ export default function proxy(req: NextRequest) {
 
   const isAuthenticated = !!(accessToken || refreshToken);
 
-  // Decode role from the access token (falls back to refreshToken if access token missing)
   let userRole: string | undefined;
   const tokenToDecode = accessToken || refreshToken;
   if (tokenToDecode) {
@@ -58,29 +56,24 @@ export default function proxy(req: NextRequest) {
   // —— Admin route protection ——
   if (pathname.startsWith('/admin')) {
     if (pathname === '/admin/login') {
-      // If already logged in as admin, redirect to admin dashboard
       if (isAuthenticated && isAdmin) {
         return NextResponse.redirect(new URL('/admin/dashboard', req.url));
       }
-      // If logged in but NOT admin, redirect to /home (not admin login)
       if (isAuthenticated && !isAdmin) {
         return NextResponse.redirect(new URL('/home', req.url));
       }
       return NextResponse.next();
     }
 
-    // For all other /admin/* routes
     if (!isAuthenticated) {
       return NextResponse.redirect(new URL('/admin/login', req.url));
     }
     if (!isAdmin) {
-      // Authenticated user but not an admin — redirect to user home
       return NextResponse.redirect(new URL('/home', req.url));
     }
     return NextResponse.next();
   }
 
-  // —— Redirect authenticated users away from auth pages ——
   if (
     isAuthenticated &&
     (pathname === '/login' ||
@@ -93,12 +86,10 @@ export default function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL('/home', req.url));
   }
 
-  // —— Redirect authenticated users from root to /home ——
   if (pathname === '/' && isAuthenticated) {
     return NextResponse.redirect(new URL('/home', req.url));
   }
 
-  // —— Protect all non-public routes ——
   if (!publicRoutes.includes(pathname) && !isAuthenticated) {
     return NextResponse.redirect(new URL('/login', req.url));
   }

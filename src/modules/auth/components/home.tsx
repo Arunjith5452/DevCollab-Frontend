@@ -41,7 +41,6 @@ export function HomePage() {
 
   useEffect(() => {
     if (searchParams.get('subscription_success')) {
-      // Wait 5 seconds to allow Stripe webhook to update the backend DB before re-fetching
       setTimeout(() => {
         fetchUser(true);
       }, 5000);
@@ -53,15 +52,12 @@ export function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Try to fetch user profile (optional - only for authenticated users)
         try {
           await api.get('/api/profile/me', { withCredentials: true });
         } catch (error) {
-          // User not authenticated - this is fine for landing page
           console.log('User not authenticated');
         }
 
-        // Fetch platform stats and featured projects (public data)
         const [statsRes, projectsRes] = await Promise.all([
           getPlatformStats(),
           getFeaturedProjects()

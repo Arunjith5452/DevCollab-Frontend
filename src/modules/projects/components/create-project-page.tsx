@@ -112,7 +112,7 @@ export default function CreateProjectPage() {
         if (url) {
             setUploadedImage(url);
             setValue("image", url);
-            setImageError(''); // Clear error when image is uploaded
+            setImageError('');
         }
     };
 

@@ -38,7 +38,6 @@ interface ContributorMeetingPageProps {
 }
 
 export default function ContributorMeetingPage({
-    projectName,
     upcomingMeetings,
     pastMeetings,
     handleJoinMeeting,

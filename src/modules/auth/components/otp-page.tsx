@@ -45,7 +45,6 @@ export default function OtpVerificationForm({ type, email }: Props) {
     },
   });
 
-  // Ensure timer starts correctly on mount if valid time exists
   useEffect(() => {
     const savedTime = localStorage.getItem("otp_expiry_time");
     if (savedTime) {
@@ -111,7 +110,6 @@ export default function OtpVerificationForm({ type, email }: Props) {
     try {
       if (type === "register") {
         const token = localStorage.getItem("tempToken");
-        console.log("Resend OTP token:", token);
         if (!token) throw new Error("Session expired. Please register again.");
         await resendOTP(token);
       } else {

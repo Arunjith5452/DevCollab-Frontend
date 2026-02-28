@@ -81,13 +81,11 @@ export default function AuthCallbackPage() {
                     const { useAuthStore } = await import('@/store/useUserStore');
                     await useAuthStore.getState().fetchUser(true);
 
-                    // Give Zustand's persist middleware a brief moment to write to localStorage
                     await new Promise(resolve => setTimeout(resolve, 500));
                 } catch (err) {
                     console.error("Failed to fetch user profile post-login", err);
                 }
 
-                // Force layout re-render by doing a hard navigation
                 window.location.href = "/home";
 
             } catch (error) {

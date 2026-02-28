@@ -7,7 +7,7 @@ import { SubscriptionList } from "./components/SubscriptionList";
 import { CreatePlanModal } from "./components/CreatePlanModal";
 import { EditPlanModal } from "./components/EditPlanModal";
 import { Plan } from "../services/plans.api";
-import { Plus, CreditCard, Users, Download } from "lucide-react";
+import { Plus, CreditCard, Users } from "lucide-react";
 
 export const PlansPage = () => {
     const [activeTab, setActiveTab] = useState<'subscriptions' | 'plans'>('subscriptions');

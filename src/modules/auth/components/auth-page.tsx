@@ -50,7 +50,6 @@ export function AuthLogin({
 
       const hasAuthData = localStorage.getItem('auth-storage');
       if (!hasAuthData) {
-        // Fallback stub to unblock Header.tsx if fetchUser somehow didn't persist fast enough
         localStorage.setItem('auth-storage', JSON.stringify({ state: { user: {} }, version: 0 }));
       }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, Plus, Trash } from "lucide-react";
+import { X} from "lucide-react";
 import { editPlan, Plan } from "@/modules/admin/services/plans.api";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "@/shared/utils/ErrorMessage";

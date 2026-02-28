@@ -12,8 +12,6 @@ export default async function TeamMembers({
   const search = raw.search || "";
   const page = raw.page || "1";
 
-  console.log("✅ projectId from searchParams:", projectId);
-
   let initialData = {
     users: [] as Member[],
     currentPage: 1,
@@ -31,7 +29,6 @@ export default async function TeamMembers({
       const cookieStore = await cookies();
       const accessToken = cookieStore.get('accessToken')?.value
 
-      console.log("inside")
       const res = await fetch(
         `${API_BASE}/api/projects/${projectId}/members?search=${encodeURIComponent(currentSearch)}&page=${currentPage}&limit=10`,
         {
@@ -42,9 +39,6 @@ export default async function TeamMembers({
             : {},
         }
       );
-
-      console.log("res ponse is:", res)
-
 
       if (res.ok) {
         const payload = await res.json();
