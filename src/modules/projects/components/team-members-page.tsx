@@ -175,6 +175,7 @@ export default function TeamMembersPage({ initialData, projectId }: TeamMembersP
     const updateUrlAndFetch = useCallback(
         async (newSearch: string, newPage: number) => {
             const params = new URLSearchParams();
+            if (projectId) params.set("projectId", projectId);
             if (newSearch) params.set("search", newSearch);
             if (newPage > 1) params.set("page", String(newPage));
             router.push(`${pathname}?${params.toString()}`);
