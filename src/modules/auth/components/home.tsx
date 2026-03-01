@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/useUserStore';
 import api from '@/lib/axios';
 import { getPlatformStats, getFeaturedProjects } from '@/modules/projects/services/project.api';
 import PageLoader from '@/shared/common/LoadingComponent';
+import { Terminal, TypingAnimation, AnimatedSpan } from "@/components/ui/terminal";
 
 interface PlatformStats {
   totalUsers: number;
@@ -173,20 +174,47 @@ export function HomePage() {
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-2xl">
                 {/* Code Preview Card */}
-                <div className="bg-gray-900 rounded-xl p-6 font-mono text-sm mb-4 shadow-xl">
-                  <div className="flex items-center space-x-2 mb-4">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  </div>
-                  <div className="text-green-400 space-y-1">
-                    <p>{'const devCollab = {'}</p>
-                    <p className="ml-4 text-blue-400">{'mission: '}<span className="text-orange-400">&quot;collaborate&quot;</span>,</p>
-                    <p className="ml-4 text-blue-400">{'status: '}<span className="text-orange-400">&quot;active&quot;</span>,</p>
-                    <p className="ml-4 text-blue-400">{'impact: '}<span className="text-orange-400">&quot;worldwide&quot;</span></p>
-                    <p>{'};'}</p>
-                  </div>
-                </div>
+                <Terminal className="bg-gray-900 border-white/20 mb-4 shadow-xl font-mono max-w-full">
+                  <TypingAnimation className="text-green-400">
+                    {"> pnpm run devcollab --start"}
+                  </TypingAnimation>
+
+                  <AnimatedSpan className="text-gray-300">
+                    ✔ Connecting global developer network.
+                  </AnimatedSpan>
+
+                  <AnimatedSpan className="text-gray-300">
+                    ✔ Fetching Open Source projects.
+                  </AnimatedSpan>
+
+                  <AnimatedSpan className="text-green-500 font-bold mt-2">
+                    ✔ Connection successful.
+                  </AnimatedSpan>
+
+                  <TypingAnimation className="text-green-400 mt-4">
+                    {"const devCollab = {"}
+                  </TypingAnimation>
+
+                  <AnimatedSpan className="text-blue-400 ml-4">
+                    <span>mission: <span className="text-orange-400">&quot;collaborate&quot;</span>,</span>
+                  </AnimatedSpan>
+
+                  <AnimatedSpan className="text-blue-400 ml-4">
+                    <span>status: <span className="text-orange-400">&quot;active&quot;</span>,</span>
+                  </AnimatedSpan>
+
+                  <AnimatedSpan className="text-blue-400 ml-4">
+                    <span>impact: <span className="text-orange-400">&quot;worldwide&quot;</span></span>
+                  </AnimatedSpan>
+
+                  <AnimatedSpan className="text-green-400">
+                    {"};"}
+                  </AnimatedSpan>
+
+                  <TypingAnimation className="text-gray-400 mt-2">
+                    {"Success! Ready to build amazing things together."}
+                  </TypingAnimation>
+                </Terminal>
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 gap-4">
