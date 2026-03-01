@@ -180,7 +180,10 @@ export default function MeetingsPage({
 
     let formattedValue = '';
     if (field === 'date') {
-      formattedValue = value.toISOString().split('T')[0];
+      const year = value.getFullYear();
+      const month = (value.getMonth() + 1).toString().padStart(2, '0');
+      const day = value.getDate().toString().padStart(2, '0');
+      formattedValue = `${year}-${month}-${day}`;
     } else if (field === 'time' || field === 'endTime') {
       const hours = value.getHours().toString().padStart(2, '0');
       const minutes = value.getMinutes().toString().padStart(2, '0');
@@ -206,6 +209,12 @@ export default function MeetingsPage({
 
     const startDateTime = new Date(`${formData.date}T${formData.time}`);
     const endDateTime = new Date(`${formData.date}T${formData.endTime}`);
+
+    const now = new Date();
+    if (startDateTime < now) {
+      toast.error('Start time cannot be in the past');
+      return;
+    }
 
     if (endDateTime <= startDateTime) {
       toast.error('End time must be after start time');
