@@ -211,8 +211,8 @@ export default function MeetingsPage({
     const endDateTime = new Date(`${formData.date}T${formData.endTime}`);
 
     const now = new Date();
-    if (startDateTime < now) {
-      toast.error('Start time cannot be in the past');
+    if (endDateTime < now) {
+      toast.error('End time cannot be in the past');
       return;
     }
 
