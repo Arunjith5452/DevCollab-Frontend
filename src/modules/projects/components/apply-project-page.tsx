@@ -80,7 +80,16 @@ export default function ApplyToProjectPage() {
 
       setSubmitted(true);
 
-    } catch (error) {
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 401 || status === 403) {
+        setBackendError("Please login to apply for a project.");
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+        return;
+      }
+
       const msg = getErrorMessage(error);
       setBackendError(msg);
     }
