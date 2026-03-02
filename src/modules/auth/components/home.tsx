@@ -36,6 +36,7 @@ export function HomePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fetchUser = useAuthStore((state) => state.fetchUser);
+  const user = useAuthStore((state) => state.user);
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [featuredProjects, setFeaturedProjects] = useState<FeaturedProject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -148,7 +149,10 @@ export function HomePage() {
                   <span>Explore Projects</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <button onClick={() => { router.push("/create-project") }} className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-green-700 transition-all">
+                <button onClick={() => {
+                  if (!user) { toast.error('Please login to create a project'); router.push('/login'); }
+                  else { router.push("/create-project") }
+                }} className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-green-700 transition-all">
                   Create Project
                 </button>
               </div>
@@ -256,7 +260,14 @@ export function HomePage() {
                         {project.description}
                       </p>
                       <button
-                        onClick={() => router.push(`/apply-project?projectId=${project.id}`)}
+                        onClick={() => {
+                          if (!user) {
+                            toast.error('Please login to apply for a project');
+                            router.push('/login');
+                          } else {
+                            router.push(`/apply-project?projectId=${project.id}`)
+                          }
+                        }}
                         className="bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors"
                       >
                         Apply to Join
@@ -283,7 +294,14 @@ export function HomePage() {
               <div className="text-center py-12 text-gray-500">
                 <p>No featured projects available at the moment.</p>
                 <button
-                  onClick={() => router.push('/create-project')}
+                  onClick={() => {
+                    if (!user) {
+                      toast.error('Please login to create a project');
+                      router.push('/login');
+                    } else {
+                      router.push('/create-project');
+                    }
+                  }}
                   className="mt-4 bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors"
                 >
                   Create the First Project

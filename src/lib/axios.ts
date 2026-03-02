@@ -60,10 +60,15 @@ api.interceptors.response.use(
       } catch (refreshError: unknown) {
         if (typeof window !== "undefined") {
           const publicPaths = ['/home', '/login', '/register', '/forgot-password', '/reset-password', '/'];
-          if (!publicPaths.includes(window.location.pathname)) {
+          const isPublicPath = publicPaths.includes(window.location.pathname) ||
+            window.location.pathname.startsWith('/project-list') ||
+            window.location.pathname.startsWith('/project-details') ||
+            window.location.pathname.startsWith('/create-project');
+
+          if (!isPublicPath) {
             setTimeout(() => {
               window.location.href = "/login";
-            }, 1000);
+            }, 100);
           }
         }
         return Promise.reject(refreshError);
