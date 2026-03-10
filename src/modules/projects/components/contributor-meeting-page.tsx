@@ -16,6 +16,8 @@ interface Meeting {
     link?: string;
     createdBy: string;
     createdByName: string;
+    participants: Array<{ userId: string; joinedAt?: string }>;
+    notes?: Array<{ userId: string; userName: string; content: string }>;
 }
 
 interface ContributorMeetingPageProps {
@@ -54,6 +56,15 @@ export default function ContributorMeetingPage({
     itemsPerPage,
     StatusBadge
 }: ContributorMeetingPageProps) {
+    const [expandedNotes, setExpandedNotes] = React.useState<Record<string, boolean>>({});
+
+    const toggleNotes = (meetingId: string) => {
+        setExpandedNotes(prev => ({
+            ...prev,
+            [meetingId]: !prev[meetingId]
+        }));
+    };
+
     const totalUpcomingPages = Math.ceil(upcomingTotal / itemsPerPage);
     const totalPastPages = Math.ceil(pastTotal / itemsPerPage);
 
@@ -125,7 +136,7 @@ export default function ContributorMeetingPage({
                                     pastMeetings.map((meeting) => (
                                         <div
                                             key={meeting.id}
-                                            className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors opacity-75"
+                                            className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors"
                                         >
                                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                                 <div className="flex-1 min-w-0 w-full">
@@ -135,9 +146,36 @@ export default function ContributorMeetingPage({
                                                         <span className="font-medium">Time:</span> {new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(meeting.date).toLocaleDateString()})
                                                     </p>
                                                 </div>
-                                                <div className="mt-2 sm:mt-0">
+                                                <div className="mt-2 sm:mt-0 items-end flex flex-col gap-2">
                                                     <StatusBadge status={meeting.status} />
                                                 </div>
+                                            </div>
+                                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h4 className="text-sm font-semibold text-gray-900">My Meeting Notes</h4>
+                                                    <button
+                                                        onClick={() => toggleNotes(meeting.id)}
+                                                        className="text-xs font-medium text-teal-600 hover:text-teal-700 transition-colors"
+                                                    >
+                                                        {expandedNotes[meeting.id] ? 'Hide Notes' : 'View Notes'}
+                                                    </button>
+                                                </div>
+
+                                                {expandedNotes[meeting.id] && (
+                                                    <div className="bg-gray-50 p-4 rounded-lg">
+                                                        {meeting.notes && meeting.notes.some(n => n.userId === userId) ? (
+                                                            meeting.notes
+                                                                .filter(n => n.userId === userId)
+                                                                .map((note: { userName: string; content: string }, idx: number) => (
+                                                                    <div key={idx} className="text-sm text-gray-700 whitespace-pre-wrap">
+                                                                        {note.content}
+                                                                    </div>
+                                                                ))
+                                                        ) : (
+                                                            <span className="text-gray-400 italic text-sm">You didn't record any notes for this meeting.</span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))
@@ -164,6 +202,8 @@ export default function ContributorMeetingPage({
                         roomId={`meeting-${activeMeetingId}`}
                         userId={userId}
                         userName={userName}
+                        meetingId={activeMeetingId}
+                        initialNotes={activeMeeting?.notes || []}
                         onLeave={() => setActiveMeetingId(null)}
                     />
                 </div>

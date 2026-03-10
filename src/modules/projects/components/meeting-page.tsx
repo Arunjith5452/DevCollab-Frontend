@@ -23,6 +23,8 @@ interface Meeting {
   link?: string;
   createdBy: string;
   createdByName: string;
+  participants: Array<{ userId: string; joinedAt?: string }>;
+  notes?: Array<{ userId: string; userName: string; content: string }>;
 }
 
 export const StatusBadge = ({ status }: { status: string }) => {
