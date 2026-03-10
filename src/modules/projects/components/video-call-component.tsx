@@ -39,7 +39,6 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
 
     const [isNotesOpen, setIsNotesOpen] = useState(false);
     const [notes, setNotes] = useState("");
-    const [remoteNotes, setRemoteNotes] = useState<Map<string, { userName: string; content: string }>>(new Map());
     const notesRef = useRef(notes);
     const [isSavingNotes, setIsSavingNotes] = useState(false);
 
@@ -90,27 +89,18 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
                 setRemoteVideoStates(prev => new Map(prev).set(peerId, enabled)),
             onRemoteAudioState: (peerId, enabled) =>
                 setRemoteAudioStates(prev => new Map(prev).set(peerId, enabled)),
-            onNoteSynced: ({ userId, userName, content }) => {
-                setRemoteNotes(prev => new Map(prev).set(userId, { userName, content }));
-            }
+
         });
 
         videoService.current = service;
         service.joinRoom(roomId, userId, userName);
 
-        // Initialize notes from initialNotes
+        // Initialize my own notes from initialNotes
         if (Array.isArray(initialNotes)) {
             const myNote = initialNotes.find(n => n.userId === userId);
             if (myNote) {
                 setNotes(myNote.content);
             }
-            const others = new Map();
-            initialNotes.forEach(n => {
-                if (n.userId !== userId) {
-                    others.set(n.userId, { userName: n.userName, content: n.content });
-                }
-            });
-            setRemoteNotes(others);
         }
 
         return () => service.leaveRoom();
@@ -250,7 +240,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
                         <div className="fixed inset-0 z-[60] md:relative md:inset-auto md:z-auto md:w-80 flex-shrink-0 bg-gray-800 md:rounded-xl flex flex-col overflow-hidden border border-gray-700 shadow-xl">
                             <div className="p-3 bg-gray-700/50 border-b border-gray-700 font-medium flex justify-between items-center text-sm">
                                 <div className="flex items-center gap-2">
-                                    <span>Shared Meeting Notes</span>
+                                    <span>Meeting Notes</span>
                                     {isSavingNotes && <span className="text-xs text-teal-400 opacity-70 animate-pulse">Saving...</span>}
                                 </div>
                                 <button 
@@ -272,26 +262,11 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
                                         className="w-full bg-gray-900/50 rounded-lg p-3 outline-none resize-none text-gray-200 placeholder-gray-600 text-sm border border-gray-700 focus:border-teal-500/50 transition-colors h-64 md:h-32"
                                         placeholder="Start typing your notes..."
                                         value={notes}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            setNotes(val);
-                                            videoService.current?.syncNote(val);
-                                        }}
+                                        onChange={(e) => setNotes(e.target.value)}
                                     />
                                 </div>
 
-                                {/* Remote Users Sections */}
-                                {Array.from(remoteNotes.entries()).map(([pUserId, { userName: pUserName, content }]) => (
-                                    <div key={pUserId} className="bg-gray-900/30 rounded-lg p-3 border border-gray-700/50">
-                                        <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-1.5 flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                                            {pUserName}&apos;s Notes
-                                        </div>
-                                        <div className="text-sm text-gray-300 whitespace-pre-wrap">
-                                            {content || <span className="text-gray-600 italic">No notes yet...</span>}
-                                        </div>
-                                    </div>
-                                ))}
+
                             </div>
                         </div>
                     )}
