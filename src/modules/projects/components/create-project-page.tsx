@@ -181,8 +181,9 @@ export default function CreateProjectPage() {
             const response = await createProject(formattedPayload);
             toast.success("Project Created Successfully")
             router.push('/project-list')
-        } catch (error: any) {
-            const status = error?.response?.status;
+        } catch (error: unknown) {
+            const axiosError = error as { response?: { status: number } };
+            const status = axiosError?.response?.status;
             if (status === 401 || status === 403) {
                 toast.error("Please login to create a project");
                 router.push('/login');

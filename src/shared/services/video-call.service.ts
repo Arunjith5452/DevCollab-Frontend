@@ -9,7 +9,6 @@ export type VideoCallEvents = {
     onRemoteVideoState?: (userId: string, enabled: boolean) => void;
     onRemoteAudioState?: (userId: string, enabled: boolean) => void;
     onRoomState?: (state: { video: Record<string, boolean>; audio: Record<string, boolean> }) => void;
-    onNoteSynced?: (payload: { userId: string; userName: string; content: string }) => void;
     onMediaError?: (error: Error) => void;
 };
 
@@ -109,22 +108,9 @@ export class VideoCallService {
 
             this.events.onRoomState?.(payload);
         });
-
-        this.socket.on('note-synced', (payload: { userId: string; userName: string; content: string }) => {
-            this.events.onNoteSynced?.(payload);
-        });
     }
 
-    public syncNote(content: string) {
-        if (this.currentRoomId && this.myUserId) {
-            this.socket.emit('sync-note', {
-                roomId: this.currentRoomId,
-                userId: this.myUserId,
-                userName: this.myUserName,
-                content
-            });
-        }
-    }
+
 
     public async joinRoom(roomId: string, userId: string, userName: string) {
         this.myUserId = userId;
