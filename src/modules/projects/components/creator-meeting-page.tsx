@@ -271,7 +271,7 @@ export default function CreatorMeetingPage({
                                                                     </div>
                                                                 ))
                                                         ) : (
-                                                            <span className="text-gray-400 italic text-sm">You didn't record any notes for this meeting.</span>
+                                                            <span className="text-gray-400 italic text-sm">You didn&apos;t record any notes for this meeting.</span>
                                                         )}
                                                     </div>
                                                 )}
