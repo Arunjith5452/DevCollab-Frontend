@@ -285,7 +285,7 @@ export const VideoCallComponent: React.FC<VideoCallComponentProps> = ({
                                     <div key={pUserId} className="bg-gray-900/30 rounded-lg p-3 border border-gray-700/50">
                                         <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-1.5 flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                                            {pUserName}'s Notes
+                                            {pUserName}&apos;s Notes
                                         </div>
                                         <div className="text-sm text-gray-300 whitespace-pre-wrap">
                                             {content || <span className="text-gray-600 italic">No notes yet...</span>}

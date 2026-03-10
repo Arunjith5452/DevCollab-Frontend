@@ -80,8 +80,9 @@ export default function ApplyToProjectPage() {
 
       setSubmitted(true);
 
-    } catch (error: any) {
-      const status = error?.response?.status;
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status: number } };
+      const status = axiosError?.response?.status;
       if (status === 401 || status === 403) {
         setBackendError("Please login to apply for a project.");
         setTimeout(() => {

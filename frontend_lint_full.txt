@@ -1,0 +1,224 @@
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(auth)/forgot-otp/page.tsx
+  6:8  warning  'PageLoader' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(auth)/register-otp/page.tsx
+  3:8  warning  'PageLoader' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(auth)/reset-password/page.tsx
+  3:8  warning  'PageLoader' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(main)/applications/page.tsx
+  3:8  warning  'PageLoader' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(main)/apply-project/page.tsx
+  3:8  warning  'PageLoader' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(main)/contributor-meetings/page.tsx
+  3:10  warning  'redirect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(main)/create-task/page.tsx
+  3:8  warning  'PageLoader' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(main)/creator-dashboard/page.tsx
+  3:8  warning  'PageLoader' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(main)/creator-meetings/page.tsx
+  3:10  warning  'redirect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(main)/meetings/page.tsx
+  3:10  warning  'redirect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/app/(main)/team-members/page.tsx
+  55:12  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/components/ui/terminal.tsx
+   59:6  warning  React Hook useEffect has a missing dependency: 'sequence'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+  142:6  warning  React Hook useEffect has a missing dependency: 'sequence'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+  171:6  warning  React Hook useEffect has missing dependencies: 'itemIndex' and 'sequence'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/admin/components/Project-mangement.tsx
+  30:12  warning  'totalItems' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/admin/components/dashboard.tsx
+  13:9  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/admin/components/user-management.tsx
+  78:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/admin/plans/components/PlanList.tsx
+  39:8  warning  React Hook useEffect has a missing dependency: 'fetchPlans'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/admin/plans/components/SubscriptionList.tsx
+  62:8  warning  React Hook useEffect has a missing dependency: 'fetchSubscriptions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/auth/components/home.tsx
+   59:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  283:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/auth/components/resetPassword.tsx
+  36:13  warning  'result' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  41:13  warning  'message' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/application-page.tsx
+   23:25  warning  'data' is assigned a value but never used                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   42:18  warning  'err' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   51:8   warning  React Hook useEffect has a missing dependency: 'fetchApplications'. Either include it or remove the dependency array                                                                                                                                                                     react-hooks/exhaustive-deps
+   64:18  warning  'err' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  149:65  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  221:61  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  277:49  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/applied-project.tsx
+  44:14  warning  'err' is defined but never used                                                                                          @typescript-eslint/no-unused-vars
+  53:6   warning  React Hook useEffect has a missing dependency: 'fetchAppliedProjects'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/apply-project-page.tsx
+  83:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/contributor-dashboard-page.tsx
+   26:12  warning  'projectId' is assigned a value but never used                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  197:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/contributor-meeting-page.tsx
+  175:116  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/create-project-page.tsx
+   95:25  warning  'fileUrl' is assigned a value but never used                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  181:19  warning  'response' is assigned a value but never used                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  184:25  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  218:45  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/creator-dashboard-page.tsx
+  163:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/creator-meeting-page.tsx
+    4:43   warning  'Copy' is defined but never used                                 @typescript-eslint/no-unused-vars
+   57:5    warning  'projectName' is defined but never used                          @typescript-eslint/no-unused-vars
+  274:116  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/edit-project-page.tsx
+   15:10  warning  'BaseProjectPayload' is defined but never used                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  218:45  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/meeting-page.tsx
+   70:3  warning  'initialMeetings' is assigned a value but never used                                                              @typescript-eslint/no-unused-vars
+  162:6  warning  React Hook useEffect has a missing dependency: 'setProject'. Either include it or remove the dependency array     react-hooks/exhaustive-deps
+  166:6  warning  React Hook useEffect has a missing dependency: 'fetchMeetings'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  170:6  warning  React Hook useEffect has a missing dependency: 'fetchMeetings'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/my-projects.page.tsx
+  42:18  warning  'err' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+  51:8   warning  React Hook useEffect has a missing dependency: 'fetchMyProjects'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/project-detail-page.tsx
+   68:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  118:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/project-listing-page.tsx
+   80:16  warning  'error' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  110:5   warning  'showCustomInput' is assigned a value but never used                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  414:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  468:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/team-members-page.tsx
+  144:25  warning  'data' is assigned a value but never used                                                                             @typescript-eslint/no-unused-vars
+  172:8   warning  React Hook useEffect has a missing dependency: 'updateUrlAndFetch'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  231:19  warning  'message' is assigned a value but never used                                                                          @typescript-eslint/no-unused-vars
+  251:18  warning  'err' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/projects/components/video-call-component.tsx
+   31:12  warning  'localStream' is assigned a value but never used                                                           @typescript-eslint/no-unused-vars
+   37:12  warning  'remoteVideoStates' is assigned a value but never used                                                     @typescript-eslint/no-unused-vars
+   38:12  warning  'remoteAudioStates' is assigned a value but never used                                                     @typescript-eslint/no-unused-vars
+  191:8   warning  React Hook useEffect has a missing dependency: 'userId'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  288:56  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                            react/no-unescaped-entities
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/subscription/components/subscription-page.tsx
+  8:32  warning  'Shield' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/tasks/components/contributor/contributor-dashboard-page.tsx
+  81:16  warning  'err' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  86:6   warning  React Hook useEffect has a missing dependency: 'tasks.length'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  97:10  warning  'projectData' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/tasks/components/contributor/contributor-tasks-page.tsx
+  82:16  warning  'err' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  87:6   warning  React Hook useEffect has a missing dependency: 'tasks.length'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  98:10  warning  'projectData' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/tasks/components/contributor/dashboard-done-tab.tsx
+  12:42  warning  'getAssigneeName' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/tasks/components/contributor/dashboard-inProgress-tab.tsx
+  15:5  warning  'getAssigneeName' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/tasks/components/contributor/dashboard-todo-tab.tsx
+  3:15  warning  'EyeOff' is defined but never used  @typescript-eslint/no-unused-vars
+  3:23  warning  'Play' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/tasks/components/create-task-page.tsx
+   55:5   warning  'trigger' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   70:9   warning  'watchPayment' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  184:16  warning  'err' is defined but never used                    @typescript-eslint/no-unused-vars
+  217:28  warning  '_' is assigned a value but never used             @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/tasks/components/task-listing-page.tsx
+   5:53  warning  'FileText' is defined but never used                       @typescript-eslint/no-unused-vars
+   5:63  warning  'X' is defined but never used                              @typescript-eslint/no-unused-vars
+   5:66  warning  'Download' is defined but never used                       @typescript-eslint/no-unused-vars
+   5:76  warning  'ExternalLink' is defined but never used                   @typescript-eslint/no-unused-vars
+  89:10  warning  'reassignMember' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  90:10  warning  'showReassignDropdown' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/user/components/edit-userProfile-page.tsx
+   19:23  warning  'fileUrl' is assigned a value but never used                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  146:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/modules/user/components/user-profle-page.tsx
+   3:10  warning  'useEffect' is defined but never used                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  10:3   warning  'PlusCircle' is defined but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  13:3   warning  'GitBranch' is defined but never used                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  17:8   warning  'api' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  36:26  warning  'error' is assigned a value but never used                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  79:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/shared/common/admin-common/Header.tsx
+   3:10  warning  'Bell' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  16:43  warning  'actions' is defined but never used                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  85:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/shared/common/admin-common/Sidebar.tsx
+  4:10  warning  'Activity' is defined but never used    @typescript-eslint/no-unused-vars
+  4:26  warning  'DollarSign' is defined but never used  @typescript-eslint/no-unused-vars
+  4:52  warning  'Settings' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/shared/common/user-common/Creator-header.tsx
+  58:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/shared/common/user-common/Creator-sidebar.tsx
+  3:47  warning  'Megaphone' is defined but never used  @typescript-eslint/no-unused-vars
+  3:58  warning  'User' is defined but never used       @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/shared/common/user-common/Footer.tsx
+  53:3  warning  'brandName' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/arunjith/Desktop/DevCollab/frontend/src/shared/common/user-common/Header.tsx
+    6:3   warning  'Bell' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    6:21  warning  'Search' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   28:3   warning  'showSearch' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   29:3   warning  'showNotifications' is assigned a value but never used                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  168:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  180:31  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  204:35  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  310:54  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/shared/common/user-common/contributor-common/ContributorHeader.tsx
+  59:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/arunjith/Desktop/DevCollab/frontend/src/shared/common/user-common/contributor-common/ContributorSidebar.tsx
+  3:37  warning  'MessageSquare' is defined but never used  @typescript-eslint/no-unused-vars
+  3:52  warning  'Bell' is defined but never used           @typescript-eslint/no-unused-vars
+
+✖ 117 problems (5 errors, 112 warnings)
+
