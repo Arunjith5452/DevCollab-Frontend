@@ -16,14 +16,14 @@ export function Pagination({
   totalItems,
   itemsPerPage = 10
 }: PaginationProps) {
-  // Calculate range
+
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems || (currentPage * itemsPerPage));
   const showInfo = totalItems !== undefined;
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4">
-      {/* Info Text */}
+
       <div className="text-sm text-gray-500 font-medium">
         {showInfo ? (
           <>Showing <span className="text-gray-900">{startItem}</span> to <span className="text-gray-900">{endItem}</span> of <span className="text-gray-900">{totalItems}</span> results</>
