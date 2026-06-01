@@ -37,7 +37,7 @@ export function AuthLogin({
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('demo') === 'true') {
       setEmail("demoDevcollab@gmail.com");
-      setPassword("A1234qwer");
+      setPassword("demoPassword123");
     }
   }, []);
 
@@ -175,7 +175,7 @@ export function AuthLogin({
                   type="button"
                   onClick={() => {
                     setEmail("demoDevcollab@gmail.com");
-                    setPassword("A1234qwer");
+                    setPassword("demoPassword123");
                   }}
                   className="flex min-w-[84px] items-center justify-center rounded h-12 px-5 w-full text-base font-bold border-2 border-[#006b5b] text-[#006b5b] hover:bg-[#e6f4f1] transition-colors"
                 >
