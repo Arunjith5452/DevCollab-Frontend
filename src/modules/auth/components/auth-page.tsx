@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthHeader, Footer, GitHubButton, GoogleButton } from "@/shared/common/auth-common";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -32,6 +32,14 @@ export function AuthLogin({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('demo') === 'true') {
+      setEmail("demoDevcollab@gmail.com");
+      setPassword("A1234qwer");
+    }
+  }, []);
 
   const handleLogin = async () => {
     setIsLoading(true);
@@ -160,9 +168,25 @@ export function AuthLogin({
               </div>
             )}
 
+            {/* Demo Credentials Button */}
+            <div className="flex justify-center">
+              <div className="flex max-w-[480px] w-full px-4 pt-2 pb-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("demoDevcollab@gmail.com");
+                    setPassword("A1234qwer");
+                  }}
+                  className="flex min-w-[84px] items-center justify-center rounded h-12 px-5 w-full text-base font-bold border-2 border-[#006b5b] text-[#006b5b] hover:bg-[#e6f4f1] transition-colors"
+                >
+                  Use Demo Credentials
+                </button>
+              </div>
+            </div>
+
             {/* Login Button */}
             <div className="flex justify-center">
-              <div className="flex max-w-[480px] w-full px-4 py-6">
+              <div className="flex max-w-[480px] w-full px-4 py-2">
                 <button
                   onClick={handleLogin}
                   disabled={isLoading || !email || !password}
