@@ -103,7 +103,6 @@ export default function ProfileEditPage() {
 
       toast.success("Profile updated successfully!");
       await refetch();
-      // Force refresh the global header state
       const { fetchUser } = useAuthStore.getState();
       await fetchUser(true);
       router.push("/user-profile");
