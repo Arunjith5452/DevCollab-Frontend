@@ -145,6 +145,19 @@ export function RegisterPage() {
                 fieldErrors={fieldErrors}
               />
 
+              {/* Demo Credentials Button */}
+              <div className="flex justify-center">
+                <div className="flex max-w-[480px] w-full px-4 pt-3 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/login?demo=true")}
+                    className="flex min-w-[84px] items-center justify-center rounded h-12 px-5 w-full text-base font-bold border-2 border-[#006b5b] text-[#006b5b] hover:bg-[#e6f4f1] transition-colors"
+                  >
+                    Use Demo Credentials
+                  </button>
+                </div>
+              </div>
+
               {/* Sign Up Button */}
               <div className="flex justify-center">
                 <div className="flex max-w-[480px] w-full px-4 py-3">
