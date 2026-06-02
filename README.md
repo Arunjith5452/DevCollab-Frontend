@@ -40,11 +40,6 @@ In a world where developers juggle Jira, Slack, Zoom, and Upwork, context switch
 
 ## 📸 Screenshots
 
-> **💡 How to add your own screenshots:**  
-> 1. Create a folder named `docs/screenshots/` in the root of your `frontend` directory.
-> 2. Save your screenshot images inside that folder (e.g., `task-board.png`).
-> 3. Replace the `src` attribute in the `<img />` tags below with the path to your image, like `src="docs/screenshots/task-board.png"`.
-
 ### 1. Interactive Kanban Board
 > Drag-and-drop tasks with sub-second synchronization. Discuss tasks right where the work happens.
 
