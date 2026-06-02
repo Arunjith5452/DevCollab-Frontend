@@ -74,7 +74,7 @@ This application is built with an absolute focus on **Performance**, **Scalabili
 
 - **Next.js 15 (App Router)**: Utilizing React Server Components for lightning-fast initial loads and SEO optimization.
 - **TypeScript**: Strict type interactions ensuring robust, bug-free implementations.
-- **TanStack Query & Zustand**: State-of-the-art state management separating server and client state efficiently.
+- **Zustand**: State-of-the-art state management separating server and client state efficiently.
 - **Socket.io Client**: Optimistic UI updates for a "feels-instant" user experience.
 
 ---
