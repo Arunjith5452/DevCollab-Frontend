@@ -7,6 +7,7 @@ import { getAllSubscriptions } from "@/modules/admin/services/admin.api";
 import { Loader2, Calendar, CheckCircle, XCircle, Clock } from "lucide-react";
 import { SearchInput } from "@/shared/common/Searching";
 import toast from "react-hot-toast";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 
 interface Subscription {
     _id: string;
@@ -38,12 +39,13 @@ export const SubscriptionList = () => {
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
     const [searchTerm, setSearchTerm] = useState("");
+    const debouncedSearch = useDebounce(searchTerm, 500);
     const [activeTab, setActiveTab] = useState("");
 
     const fetchSubscriptions = async () => {
         try {
             setLoading(true);
-            const response = await getAllSubscriptions({ page, limit: 10, search: searchTerm, status: activeTab });
+            const response = await getAllSubscriptions({ page, limit: 10, search: debouncedSearch, status: activeTab });
             const data = response.data?.subscriptions || response.subscriptions || response.data || [];
             const totalCount = response.data?.total || response.total || 0;
 
@@ -59,7 +61,7 @@ export const SubscriptionList = () => {
 
     useEffect(() => {
         fetchSubscriptions();
-    }, [page, searchTerm, activeTab]);
+    }, [page, debouncedSearch, activeTab]);
 
     useEffect(() => {
         setPage(1);
