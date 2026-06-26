@@ -8,6 +8,8 @@ import { SearchInput } from "@/shared/common/Searching";
 import toast from "react-hot-toast";
 import PageLoader from "@/shared/common/LoadingComponent";
 
+import { useDebounce } from "@/shared/hooks/useDebounce";
+
 export interface Project {
     _id: string;
     title: string;
@@ -23,6 +25,7 @@ export interface Project {
 export default function ProjectManagement() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
+    const debouncedSearch = useDebounce(searchTerm, 500);
     const [statusFilter, setStatusFilter] = useState("all");
     const [difficultyFilter, setDifficultyFilter] = useState("all");
     const [projects, setProjects] = useState<Project[]>([]);
@@ -35,7 +38,7 @@ export default function ProjectManagement() {
             setLoading(true);
             try {
                 const data = await getAllProjects({
-                    search: searchTerm,
+                    search: debouncedSearch,
                     status: statusFilter === "all" ? undefined : statusFilter,
                     difficulty: difficultyFilter === "all" ? undefined : difficultyFilter,
                     page: currentPage,
@@ -57,7 +60,7 @@ export default function ProjectManagement() {
         };
 
         fetchProjects();
-    }, [searchTerm, statusFilter, difficultyFilter, currentPage]);
+    }, [debouncedSearch, statusFilter, difficultyFilter, currentPage]);
 
 
     const columns = [

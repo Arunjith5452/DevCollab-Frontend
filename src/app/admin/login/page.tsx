@@ -2,14 +2,7 @@ import { AdminLoginPage } from "@/modules/auth/components/admin/login-page";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
-/**
- * Admin login page.
- *
- * Server-side: If ANY token exists, we decode the role from the JWT payload.
- * - Admin token   → redirect to /admin/dashboard
- * - Non-admin token → redirect to /home (they are a regular user)
- * - No token       → show the login form
- */
+
 function decodeJwtPayload(token: string): { role?: string } | null {
   try {
     const parts = token.split(".");

@@ -1,499 +1,373 @@
 "use client";
 import React, { useEffect, useState, useRef } from 'react';
-import { ChevronDown, X, Filter, Code2, BarChart3, Users } from 'lucide-react';
+import {
+  Search, SlidersHorizontal, ChevronDown, X,
+  MapPin, Clock, Briefcase, Code2, ShieldAlert,
+  ArrowRight, Users, LayoutGrid, CheckCircle2,
+  FolderDot
+} from 'lucide-react';
 import { Header } from '@/shared/common/user-common/Header';
 import { Pagination } from '@/shared/common/admin-common';
 import { listProject } from '../services/project.api';
-import { SearchInput } from '@/shared/common/Searching';
-import { CustomSelectProps, ListProjectResponse, Project } from '../types/project.types';
+import { ListProjectResponse, Project } from '../types/project.types';
 import Link from 'next/link';
 import PageLoader from '@/shared/common/LoadingComponent';
+import { formatDistanceToNow } from 'date-fns';
+import { useDebounce } from '@/shared/hooks/useDebounce';
+
+/* ── Standard UI Constants ───────────────────────────── */
+const DIFFICULTY_STYLES: Record<string, string> = {
+  beginner: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+  intermediate: 'bg-blue-50 text-blue-700 ring-blue-600/20',
+  advanced: 'bg-purple-50 text-purple-700 ring-purple-600/20',
+};
+
+const TECH_OPTIONS = ['React', 'Node.js', 'Python', 'TypeScript', 'Next.js', 'Vue', 'Flutter', 'Django'];
+const ROLE_OPTIONS = ['Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'UI/UX Designer', 'DevOps Engineer'];
+const DIFF_OPTIONS = ['Beginner', 'Intermediate', 'Advanced'];
 
 export default function ExploreProjectsPage() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   const [projects, setProjects] = useState<Project[]>([]);
+
+  // Filters
+  const [selectedTech, setSelectedTech] = useState<string[]>([]);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string[]>([]);
+  
+  // Custom input states
+  const [customTech, setCustomTech] = useState('');
+  const [isCustomTech, setIsCustomTech] = useState(false);
+  const [customRole, setCustomRole] = useState('');
+  const [isCustomRole, setIsCustomRole] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  const [selectedTech, setSelectedTech] = useState("");
-  const [selectedDifficulty, setSelectedDifficulty] = useState("");
-
-  const [showTechInput, setShowTechInput] = useState(false);
-  const [customTech, setCustomTech] = useState("");
-  const [selectedRole, setSelectedRole] = useState("");
-  const [showRoleInput, setShowRoleInput] = useState(false);
-  const [customRole, setCustomRole] = useState("");
-  const roleInputRef = useRef<HTMLInputElement>(null);
-  const techInputRef = useRef<HTMLInputElement>(null);
-
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const { data } = await api.get('/api/profile/me', { withCredentials: true });
-  //     } catch (error) {
-  //       let err = error as Error
-  //       console.error(err.message);
-  //     }
-  //   };
-  //   fetchData();
-  // }, [])
-
-
-  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
-
-  useEffect(() => {
-    if (showTechInput && techInputRef.current) techInputRef.current.focus();
-  }, [showTechInput]);
-
-  useEffect(() => {
-    if (showRoleInput && roleInputRef.current) roleInputRef.current.focus();
-  }, [showRoleInput]);
-
-  useEffect(() => {
-    const fetchFeatured = async () => {
-      try {
-        const data = await listProject({ sort: 'featured', limit: 1 });
-        setFeaturedProjects(data.projects ?? []);
-      } catch (error) {
-        console.error("Failed to fetch featured projects", error);
-      }
-    };
-    fetchFeatured();
-  }, []);
+  // Debounced Values
+  const debouncedSearch = useDebounce(searchTerm, 500);
+  const debouncedCustomTech = useDebounce(customTech, 500);
+  const debouncedCustomRole = useDebounce(customRole, 500);
 
   useEffect(() => {
     const fetchProject = async () => {
       setLoading(true);
       try {
+        const rawTech = [...selectedTech, ...(isCustomTech && debouncedCustomTech ? [debouncedCustomTech] : [])];
+        const finalTech = rawTech.map(t => t.replace(/\.js$/i, ''));
+        const finalRole = [...selectedRole, ...(isCustomRole && debouncedCustomRole ? [debouncedCustomRole] : [])];
+
         const data: ListProjectResponse = await listProject({
-          search: searchTerm,
-          techStack: selectedTech || undefined,
-          difficulty: selectedDifficulty || undefined,
-          roleNeeded: selectedRole || undefined,
-          page: currentPage
+          search: debouncedSearch,
+          techStack: finalTech.length > 0 ? finalTech.join(',') : undefined,
+          difficulty: selectedDifficulty.length > 0 ? selectedDifficulty.join(',') : undefined,
+          roleNeeded: finalRole.length > 0 ? finalRole.join(',') : undefined,
+          page: currentPage,
         });
         setProjects(data.projects ?? []);
         setTotalPages(data.total ?? 1);
-      } catch (error) {
+      } catch {
         setProjects([]);
         setTotalPages(1);
       } finally {
         setLoading(false);
       }
     };
+    
     fetchProject();
-  }, [searchTerm, selectedTech, selectedDifficulty, selectedRole, currentPage]);
+  }, [debouncedSearch, selectedTech, selectedDifficulty, selectedRole, debouncedCustomTech, debouncedCustomRole, isCustomTech, isCustomRole, currentPage]);
 
-
-
-  const activeFiltersCount = [selectedTech, selectedDifficulty, selectedRole].filter(Boolean).length;
-
-  const clearFilters = () => {
-    setSelectedTech("");
-    setSelectedDifficulty("");
-    setCustomRole("");
-    setShowTechInput(false);
-    setShowRoleInput(false);
-    setCustomTech("");
-    setSelectedRole("");
+  const toggleFilter = (setState: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
+    setState(prev => prev.includes(value) ? prev.filter(i => i !== value) : [...prev, value]);
+    setCurrentPage(1);
   };
 
-  const CustomSelect: React.FC<CustomSelectProps> = ({
-    value,
-    onChange,
-    placeholder,
-    options,
-    allowCustom = false,
-    showCustomInput = false,
-    onShowCustomInput = () => { }
-  }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const selectRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      const handleClickOutside = (e: MouseEvent) => {
-        if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
-          setIsOpen(false);
-        }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const displayValue = value || placeholder;
-
-    // if (loading)
-    //   return (
-    //     <div className="flex items-center justify-center min-h-screen">
-    //       <PageLoader />
-    //     </div>
-    //   );
-
-
-    return (
-      <div ref={selectRef} className="relative">
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between px-3 py-2.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
-        >
-          <span className={value ? "text-gray-900" : "text-gray-500"}>{displayValue}</span>
-          <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
-
-        {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-            {options.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  if (opt.value === 'other' && allowCustom) {
-                    onShowCustomInput(true);
-                    onChange("");
-                  } else {
-                    onChange(opt.value === '__any__' ? '' : opt.value);
-                    if (allowCustom) onShowCustomInput(false);
-                  }
-                  setIsOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${opt.value === value ? 'bg-teal-50 text-teal-700' : 'text-gray-900'
-                  } ${opt.value === 'other' ? 'text-teal-600 font-medium border-t border-gray-200' : ''}`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    );
+  const clearAllFilters = () => {
+    setSelectedTech([]);
+    setSelectedDifficulty([]);
+    setSelectedRole([]);
+    setCustomTech('');
+    setCustomRole('');
+    setIsCustomTech(false);
+    setIsCustomRole(false);
+    setSearchTerm('');
+    setCurrentPage(1);
   };
 
+  const activeFilterCount = selectedTech.length + selectedDifficulty.length + selectedRole.length + (isCustomTech ? 1 : 0) + (isCustomRole ? 1 : 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F8FAFC]">
       <Header />
 
-      <main className="pt-16 pb-16 md:pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="py-6 sm:py-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-              Explore Projects
-            </h1>
-            <p className="text-sm sm:text-base lg:text-lg text-gray-600">
-              Find projects that match your skills and interests. Collaborate with other developers.
-            </p>
+      <main className="pt-24 pb-20 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Page Header */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Project Directory</h1>
+            <p className="mt-2 text-gray-500 text-sm">Discover and contribute to open-source initiatives across the globe.</p>
           </div>
-
-          {/* Search */}
-          <div className="mb-6">
-            <SearchInput
+          
+          <div className="w-full md:w-96 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search projects..."
               value={searchTerm}
-              onChange={(v) => setSearchTerm(v)}
-              placeholder="Search projects by title"
-              debounceTime={500}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-shadow shadow-sm"
             />
           </div>
+        </div>
 
+        <div className="flex flex-col lg:flex-row gap-8">
+          
+          {/* ── Left Sidebar: Filters ── */}
+          <div className={`lg:w-64 flex-shrink-0 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
+            <div className="bg-white border border-gray-200 rounded-xl p-5 sticky top-28 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-semibold text-gray-900">Filters</h2>
+                {activeFilterCount > 0 && (
+                  <button onClick={clearAllFilters} className="text-xs font-medium text-red-600 hover:text-red-700">
+                    Clear all
+                  </button>
+                )}
+              </div>
 
-          {/* Filters Section */}
-          <div className="mb-8">
-            {/* Mobile Filter Toggle */}
-            <div className="lg:hidden mb-4">
-              <button
-                type="button"
-                onClick={() => setShowMobileFilters(!showMobileFilters)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-gray-600" />
-                  <span className="font-medium text-gray-900">Filters</span>
-                  {activeFiltersCount > 0 && (
-                    <span className="px-2 py-0.5 bg-teal-600 text-white text-xs font-semibold rounded-full">
-                      {activeFiltersCount}
-                    </span>
-                  )}
-                </div>
-                <ChevronDown className={`w-5 h-5 text-gray-600 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} />
-              </button>
-            </div>
-
-            {/* Filter Grid */}
-            <div className={`${showMobileFilters ? 'block' : 'hidden'} lg:block`}>
-              <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-gray-600" />
-                    <h3 className="font-semibold text-gray-900">Filter Projects</h3>
-                  </div>
-                  {activeFiltersCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={clearFilters}
-                      className="flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                      Clear all
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Tech Stack Filter */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-                      <Code2 className="w-4 h-4" />
-                      Technology
+              {/* Technology Filter */}
+              <div className="mb-6">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Technology</h3>
+                <div className="space-y-2.5">
+                  {TECH_OPTIONS.map(tech => (
+                    <label key={tech} className="flex items-center gap-3 cursor-pointer group" onClick={() => toggleFilter(setSelectedTech, tech)}>
+                      <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${selectedTech.includes(tech) ? 'bg-green-600 border-green-600' : 'border-gray-300 bg-white group-hover:border-green-500'}`}>
+                        {selectedTech.includes(tech) && <CheckCircle2 className="w-3 h-3 text-white" />}
+                      </div>
+                      <span className="text-sm text-gray-700 group-hover:text-gray-900">{tech}</span>
                     </label>
-                    <CustomSelect
-                      value={showTechInput ? "Custom" : selectedTech}
-                      onChange={setSelectedTech}
-                      placeholder="Any Technology"
-                      showCustomInput={showTechInput}
-                      onShowCustomInput={setShowTechInput}
-                      options={[
-                        { value: '__any__', label: 'Any Technology' },
-                        { value: 'React', label: 'React' },
-                        { value: 'Node.js', label: 'Node.js' },
-                        { value: 'Python', label: 'Python' },
-                        { value: 'TypeScript', label: 'TypeScript' },
-                        { value: 'Next.js', label: 'Next.js' },
-                        { value: 'Vue', label: 'Vue' },
-                        { value: 'Flutter', label: 'Flutter' },
-                        { value: 'Django', label: 'Django' },
-                        { value: 'other', label: '+ Add Custom' }
-                      ]}
-                      allowCustom
-                    />
-                    {showTechInput && (
-                      <input
-                        ref={techInputRef}
-                        type="text"
-                        placeholder="e.g. Svelte, Go, Rust..."
+                  ))}
+                  
+                  {/* Custom Tech */}
+                  <label className="flex items-center gap-3 cursor-pointer group" onClick={() => { setIsCustomTech(!isCustomTech); setCurrentPage(1); }}>
+                    <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${isCustomTech ? 'bg-green-600 border-green-600' : 'border-gray-300 bg-white group-hover:border-green-500'}`}>
+                      {isCustomTech && <CheckCircle2 className="w-3 h-3 text-white" />}
+                    </div>
+                    <span className="text-sm text-gray-700 group-hover:text-gray-900">Other</span>
+                  </label>
+                  {isCustomTech && (
+                    <div className="pl-7 mt-2">
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Go, Rust..." 
                         value={customTech}
                         onChange={(e) => {
                           setCustomTech(e.target.value);
-                          setSelectedTech(e.target.value);
+                          setCurrentPage(1);
                         }}
-                        className="w-full px-3 py-2 text-sm border-2 border-teal-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-teal-50"
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
                       />
-                    )}
-                  </div>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-                  {/* Difficulty Filter */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-                      <BarChart3 className="w-4 h-4" />
-                      Difficulty Level
-                    </label>
-                    <CustomSelect
-                      value={selectedDifficulty}
-                      onChange={setSelectedDifficulty}
-                      placeholder="Any Level"
-                      options={[
-                        { value: '__any__', label: 'Any Level' },
-                        { value: 'Beginner', label: 'Beginner' },
-                        { value: 'Intermediate', label: 'Intermediate' },
-                        { value: 'Advanced', label: 'Advanced' }
-                      ]}
-                    />
-                  </div>
+              <div className="h-px bg-gray-100 my-6" />
 
-                  {/* Role Needed Filter */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-                      <Users className="w-4 h-4" /> Role Needed
+              {/* Role Filter */}
+              <div className="mb-6">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Role Needed</h3>
+                <div className="space-y-2.5">
+                  {ROLE_OPTIONS.map(role => (
+                    <label key={role} className="flex items-center gap-3 cursor-pointer group" onClick={() => toggleFilter(setSelectedRole, role)}>
+                      <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${selectedRole.includes(role) ? 'bg-green-600 border-green-600' : 'border-gray-300 bg-white group-hover:border-green-500'}`}>
+                        {selectedRole.includes(role) && <CheckCircle2 className="w-3 h-3 text-white" />}
+                      </div>
+                      <span className="text-sm text-gray-700 group-hover:text-gray-900">{role}</span>
                     </label>
-                    <CustomSelect
-                      value={selectedRole}
-                      onChange={setSelectedRole}
-                      placeholder="Any Role"
-                      options={[
-                        { value: '__any__', label: 'Any Role' },
-                        { value: 'Frontend Developer', label: 'Frontend Developer' },
-                        { value: 'Backend Developer', label: 'Backend Developer' },
-                        { value: 'Full Stack Developer', label: 'Full Stack Developer' },
-                        { value: 'UI/UX Designer', label: 'UI/UX Designer' },
-                        { value: 'DevOps Engineer', label: 'DevOps Engineer' },
-                        { value: 'Data Scientist', label: 'Data Scientist' },
-                        { value: 'other', label: '+ Add Custom Role' }
-                      ]}
-                      allowCustom
-                      showCustomInput={showRoleInput}
-                      onShowCustomInput={setShowRoleInput}
-                    />
-                    {showRoleInput && (
-                      <input
-                        ref={roleInputRef}
-                        type="text"
-                        placeholder="e.g. Mobile Developer"
+                  ))}
+                  
+                  {/* Custom Role */}
+                  <label className="flex items-center gap-3 cursor-pointer group" onClick={() => { setIsCustomRole(!isCustomRole); setCurrentPage(1); }}>
+                    <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${isCustomRole ? 'bg-green-600 border-green-600' : 'border-gray-300 bg-white group-hover:border-green-500'}`}>
+                      {isCustomRole && <CheckCircle2 className="w-3 h-3 text-white" />}
+                    </div>
+                    <span className="text-sm text-gray-700 group-hover:text-gray-900">Other Role</span>
+                  </label>
+                  {isCustomRole && (
+                    <div className="pl-7 mt-2">
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Product Manager" 
                         value={customRole}
                         onChange={(e) => {
                           setCustomRole(e.target.value);
-                          setSelectedRole(e.target.value);
+                          setCurrentPage(1);
                         }}
-                        className="w-full px-3 py-2 text-sm border-2 border-teal-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-teal-50"
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
                       />
-                    )}
-                  </div>
-                </div>
-
-                {/* Active Filters Display */}
-                {activeFiltersCount > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="flex flex-wrap gap-2">
-                      {selectedTech && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-teal-50 text-teal-700 text-sm font-medium rounded-full border border-teal-200">
-                          {selectedTech}
-                          <button
-                            type="button"
-                            onClick={() => { setSelectedTech(""); setShowTechInput(false); }}
-                            className="hover:bg-teal-100 rounded-full p-0.5"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </span>
-                      )}
-                      {selectedDifficulty && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-50 text-purple-700 text-sm font-medium rounded-full border border-purple-200">
-                          {selectedDifficulty}
-                          <button
-                            type="button"
-                            onClick={() => setSelectedDifficulty("")}
-                            className="hover:bg-purple-100 rounded-full p-0.5"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </span>
-                      )}
-                      {selectedRole && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full border border-blue-200">
-                          {selectedRole}
-                          <button
-                            type="button"
-                            onClick={() => { setSelectedRole(""); setShowRoleInput(false); }}
-                            className="hover:bg-blue-100 rounded-full p-0.5"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </span>
-                      )}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+              </div>
+
+              <div className="h-px bg-gray-100 my-6" />
+
+              {/* Difficulty Filter */}
+              <div>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Difficulty</h3>
+                <div className="space-y-2.5">
+                  {DIFF_OPTIONS.map(diff => (
+                    <label key={diff} className="flex items-center gap-3 cursor-pointer group" onClick={() => toggleFilter(setSelectedDifficulty, diff)}>
+                      <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${selectedDifficulty.includes(diff) ? 'bg-green-600 border-green-600' : 'border-gray-300 bg-white group-hover:border-green-500'}`}>
+                        {selectedDifficulty.includes(diff) && <CheckCircle2 className="w-3 h-3 text-white" />}
+                      </div>
+                      <span className="text-sm text-gray-700 group-hover:text-gray-900">{diff}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Featured Project */}
-          <section className="mb-12">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5">Featured Project</h2>
-            {featuredProjects.map((project) => (
-              <div key={project.id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-5 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex flex-col md:grid md:grid-cols-3 gap-4 sm:gap-6 items-start md:items-center">
-                  <div className="w-full md:col-span-2 space-y-3 order-2 md:order-1">
-                    <div className="inline-block px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-semibold rounded-full">
-                      Featured
-                    </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                      {project.title}
-                    </h3>
-                    <p className="text-sm sm:text-base text-gray-600 line-clamp-3">
-                      {project.description}
-                    </p>
-                    <Link href={`/project-details/${project.id}`} className="mt-3 inline-block px-5 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-lg hover:bg-teal-100 transition-colors">
-                      View Project
-                    </Link>
-                  </div>
-                  <div className="w-full md:w-auto flex justify-center items-center rounded-xl h-48 sm:h-40 order-1 md:order-2 overflow-hidden bg-gray-50">
-                    {project.image ? (
-                      <img
-                        src={project.image}
-                        alt={project.title}
-                        className="w-full h-full object-cover sm:object-contain rounded-xl"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl flex items-center justify-center">
-                        <Code2 className="w-12 h-12 text-orange-400" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </section>
+          {/* Mobile Filter Toggle */}
+          <div className="lg:hidden flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200">
+            <span className="font-medium text-gray-700">Filter Projects</span>
+            <button onClick={() => setShowMobileFilters(!showMobileFilters)} className="p-2 bg-gray-50 rounded-md border border-gray-200">
+              <SlidersHorizontal className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
 
-          {/* All Projects */}
-          <section>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5">All Projects</h2>
-
+          {/* ── Right Content: Project List ── */}
+          <div className="flex-1 min-w-0">
             {loading ? (
-              <div className="flex items-center justify-center min-h-screen">
+              <div className="py-20 flex justify-center">
                 <PageLoader />
               </div>
             ) : projects.length === 0 ? (
-              <p className="text-center text-gray-500 py-12 text-sm sm:text-base">No projects found.</p>
+              <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
+                <div className="mx-auto w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                  <FolderDot className="w-6 h-6 text-gray-400" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900">No projects found</h3>
+                <p className="mt-1 text-sm text-gray-500">We couldn't find any projects matching your criteria.</p>
+                {activeFilterCount > 0 && (
+                  <button onClick={clearAllFilters} className="mt-4 text-sm font-medium text-green-600 hover:text-green-700">
+                    Clear all filters
+                  </button>
+                )}
+              </div>
             ) : (
-              <div className="space-y-5">
-                {projects.map((project, index) => (
-                  <div key={project.id || index} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex flex-col md:grid md:grid-cols-3 gap-4 sm:gap-6 items-start md:items-center">
-                      <div className="w-full md:col-span-2 space-y-3 order-2 md:order-1">
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                          {project.title}
-                        </h3>
-                        <p className="text-sm sm:text-base text-gray-600 line-clamp-2">
-                          {project.description}
-                        </p>
-                        <Link
-                          href={`/project-details/${project.id}`}
-                          className="inline-block mt-3 px-5 py-2 bg-teal-50 text-teal-700 text-sm font-medium rounded-lg hover:bg-teal-100 transition-colors"
-                        >
-                          View Project
-                        </Link>
-                      </div>
+              <div className="space-y-4">
+                {projects.map((project) => {
+                  const diffClass = DIFFICULTY_STYLES[project.difficulty?.toLowerCase() || ''] || 'bg-gray-50 text-gray-700 ring-gray-500/20';
+                  
+                  return (
+                    <div key={project.id} className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col sm:flex-row gap-5">
+                        
+                        {/* Project Logo/Icon Area */}
+                        <div className="hidden sm:flex flex-shrink-0 w-16 h-16 bg-gray-50 rounded-lg border border-gray-100 items-center justify-center overflow-hidden">
+                          {project.image ? (
+                            <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <Code2 className="w-6 h-6 text-gray-400" />
+                          )}
+                        </div>
 
-                      <div
-                        className="w-full md:w-auto flex justify-center items-center rounded-xl h-48 sm:h-40 overflow-hidden order-1 md:order-2"
-                        style={{
-                          backgroundColor: project.image ? 'transparent' : 'var(--fallback-bg-color, #f0fff4)',
-                          padding: project.image ? '0' : '1.5rem'
-                        }}
-                      >
-                        {project.image ? (
-                          <img
-                            src={project.image}
-                            alt={`Image for ${project.title}`}
-                            className="w-full h-full object-cover sm:object-contain rounded-xl"
-                          />
-                        ) : (
-                          <div className="text-4xl text-gray-500 flex justify-center items-center h-full w-full bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl">
-                            <Code2 className="w-12 h-12" />
+                        {/* Main Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-2">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                {project.featured && (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                                    Featured
+                                  </span>
+                                )}
+                                <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-green-600 transition-colors">
+                                  {project.title}
+                                </h3>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500">
+                                {project.creator?.name && (
+                                  <div className="flex items-center gap-1.5">
+                                    {project.creator.avatar ? (
+                                      <img src={project.creator.avatar} alt="" className="w-4 h-4 rounded-full" />
+                                    ) : (
+                                      <div className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center text-[8px] font-bold text-gray-600">
+                                        {project.creator.name.charAt(0)}
+                                      </div>
+                                    )}
+                                    <span>{project.creator.name}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <Link
+                              href={`/project-details/${project.id}`}
+                              className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap"
+                            >
+                              View Details
+                            </Link>
                           </div>
-                        )}
-                      </div>
 
+                          <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
+                            {project.description}
+                          </p>
+
+                          {/* Metadata Bottom Row */}
+                          <div className="flex flex-wrap items-center gap-4 border-t border-gray-100 pt-4">
+                            {project.difficulty && (
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset ${diffClass}`}>
+                                {project.difficulty}
+                              </span>
+                            )}
+                            
+                            {project.roleNeeded && (
+                              <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                                <Briefcase className="w-3.5 h-3.5 text-gray-400" />
+                                <span>{project.roleNeeded}</span>
+                              </div>
+                            )}
+
+                            {/* Tech Stack */}
+                            {project.techStack && project.techStack.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 ml-auto">
+                                {project.techStack.slice(0, 4).map(tech => (
+                                  <span key={tech} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                                    {tech}
+                                  </span>
+                                ))}
+                                {project.techStack.length > 4 && (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200">
+                                    +{project.techStack.length - 4}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
-          </section>
 
-          {/* Pagination */}
-          {!loading && projects.length > 0 && (
-            <div className="mt-10 flex justify-center">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
-          )}
+            {/* Pagination */}
+            {!loading && projects.length > 0 && (
+              <div className="mt-8">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>

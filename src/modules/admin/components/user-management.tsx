@@ -9,6 +9,8 @@ import toast from "react-hot-toast";
 import PageLoader from "@/shared/common/LoadingComponent";
 
 
+import { useDebounce } from "@/shared/hooks/useDebounce";
+
 export interface User {
   id: string;
   _id: string;
@@ -19,10 +21,10 @@ export interface User {
   createdAt: string;
 }
 
-
 export default function UserManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 500);
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [users, setUsers] = useState<User[]>([]);
@@ -38,7 +40,7 @@ export default function UserManagement() {
       setLoading(true);
       try {
         const data = await getAllUsers({
-          search: searchTerm,
+          search: debouncedSearch,
           role: roleFilter,
           status: statusFilter,
           page: currentPage,
@@ -54,7 +56,7 @@ export default function UserManagement() {
       }
     };
     fetchUsers();
-  }, [searchTerm, roleFilter, statusFilter, currentPage]);
+  }, [debouncedSearch, roleFilter, statusFilter, currentPage]);
 
   const confirmAction = (user: User) => {
     setSelectedUser(user);
