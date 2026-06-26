@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 
+import { useDebounce } from "@/shared/hooks/useDebounce";
+
 interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -15,16 +17,13 @@ export function SearchInput({
   debounceTime = 500, 
 }: SearchInputProps) {
   const [inputValue, setInputValue] = useState(value);
+  const debouncedValue = useDebounce(inputValue, debounceTime);
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      onChange(inputValue);
-    }, debounceTime);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [inputValue, onChange, debounceTime]);
+    if (debouncedValue !== value) {
+      onChange(debouncedValue);
+    }
+  }, [debouncedValue, onChange, value]);
 
   return (
     <div className="relative">
