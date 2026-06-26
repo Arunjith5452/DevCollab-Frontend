@@ -10,6 +10,8 @@ import { ProjectDetails } from "../types/project.types";
 
 import { useProjectStore } from "@/store/useProjectStore";
 import { RequiredRole } from "../types/project.types";
+import { useAuthStore } from '@/store/useUserStore';
+import toast from 'react-hot-toast';
 
 export default function ProjectDetailsPage() {
 
@@ -19,6 +21,7 @@ export default function ProjectDetailsPage() {
   const [project, setProjectData] = useState<ProjectDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const { setProject } = useProjectStore();
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
 
@@ -233,7 +236,12 @@ export default function ProjectDetailsPage() {
             ) : (
               <button
                 onClick={() => {
-                  router.push(`/apply-project?projectId=${id}&tech=${encodeURIComponent(JSON.stringify(project.techStack))}`);
+                  if (!user) {
+                    toast.error('Please login to apply for a project');
+                    router.push('/login');
+                  } else {
+                    router.push(`/apply-project?projectId=${id}&tech=${encodeURIComponent(JSON.stringify(project.techStack))}`);
+                  }
                 }}
                 className="px-8 py-3 bg-[#006b5b] text-white text-base font-bold rounded hover:bg-[#005a4d] transition-colors"
               >

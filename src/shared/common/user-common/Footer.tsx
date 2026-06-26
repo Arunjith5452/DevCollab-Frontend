@@ -51,7 +51,7 @@ export function Footer({
     }
   ],
   brandName = 'DevCollab',
-  copyrightText = '© 2024 DevCollab. All rights reserved.',
+  copyrightText = '© 2026 DevCollab. All rights reserved.',
   socialLinks = [
     { name: 'Twitter', href: '#' },
     { name: 'GitHub', href: '#' },
