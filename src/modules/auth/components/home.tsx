@@ -261,16 +261,11 @@ export function HomePage() {
                       </p>
                       <button
                         onClick={() => {
-                          if (!user) {
-                            toast.error('Please login to apply for a project');
-                            router.push('/login');
-                          } else {
-                            router.push(`/apply-project?projectId=${project.id}`)
-                          }
+                          router.push(`/project-details/${project.id}`)
                         }}
                         className="bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors"
                       >
-                        Apply to Join
+                        View Details
                       </button>
                     </div>
                     <div className={`bg-gradient-to-br ${index === 0 ? 'from-gray-800 to-gray-900' :
