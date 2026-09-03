@@ -17,25 +17,44 @@ export const useS3Upload = (): UploadResult => {
             setLoading(true);
             setError(null);
 
-            //  Request signed URL from backend
             const { data } = await api.post("/api/signed-url", {
                 fileName: file.name,
                 fileType: file.type,
             });
 
-            const { uploadUrl, fileUrl: finalUrl } = data;
+            const responseData = data.data ? data.data : data;
+            const { uploadUrl, fileUrl: finalUrl, provider, cloudinaryData } = responseData;
 
-            // Upload directly to S3 using fetch
-            const s3Response = await fetch(uploadUrl, {
-                method: "PUT",
-                body: file,
-                headers: {
-                    "Content-Type": file.type,
-                },
-            });
+            if (provider === 'cloudinary' && cloudinaryData) {
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("api_key", cloudinaryData.apiKey);
+                formData.append("timestamp", cloudinaryData.timestamp.toString());
+                formData.append("signature", cloudinaryData.signature);
+                formData.append("folder", cloudinaryData.folder);
+                formData.append("public_id", cloudinaryData.publicId);
 
-            if (!s3Response.ok) {
-                throw new Error("S3 upload failed");
+                const cloudinaryResponse = await fetch(uploadUrl, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!cloudinaryResponse.ok) {
+                    throw new Error("Cloudinary upload failed");
+                }
+            } else {
+                // Upload directly to S3 using fetch
+                const s3Response = await fetch(uploadUrl, {
+                    method: "PUT",
+                    body: file,
+                    headers: {
+                        "Content-Type": file.type,
+                    },
+                });
+
+                if (!s3Response.ok) {
+                    throw new Error("S3 upload failed");
+                }
             }
 
             setFileUrl(finalUrl);
